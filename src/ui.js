@@ -6,6 +6,14 @@ export class PrimeHUD {
     this.lastTargets = [];
     this.activeTarget = null;
     this.phaseMarker = null;
+    this.cachedModelCurve = [];
+    this.cachedObservedCurve = [];
+    this.cachedSummary = null;
+    this.observationSignature = "";
+    this.observationAlpha = 1;
+    this.observationFadeFrame = null;
+    this.lightcurveCanvas = this.$("lightcurve-canvas");
+    this.lightcurveContext = this.lightcurveCanvas ? this.lightcurveCanvas.getContext("2d") : null;
 
     this.controls = {
       rpRs: this.$("control-rp-rs"),
@@ -51,11 +59,6 @@ export class PrimeHUD {
       ttvAmplitude: this.$("output-ttv-amplitude"),
       ttvPeriodEpochs: this.$("output-ttv-period")
     };
-
-    this.lightcurveCanvas = this.$("lightcurve-canvas");
-    this.lightcurveContext = this.lightcurveCanvas ? this.lightcurveCanvas.getContext("2d") : null;
-    this.cachedCurve = [];
-    this.cachedSummary = null;
   }
 
   bind(callbacks = {}) {
@@ -116,9 +119,8 @@ export class PrimeHUD {
     });
 
     window.addEventListener("resize", () => {
-      if (this.cachedCurve.length && this.cachedSummary) {
-        this.renderLightCurve(this.cachedCurve, this.cachedSummary);
-        if (this.phaseMarker !== null) this.markCurvePhase(this.phaseMarker);
+      if (this.cachedModelCurve.length || this.cachedObservedCurve.length) {
+        this.drawPhotometryFrame(this.phaseMarker);
       }
     }, { passive: true });
   }
@@ -209,18 +211,40 @@ export class PrimeHUD {
     }
   }
 
+  setFooterStatus(status = {}) {
+    if (status.fps !== undefined) {
+      const fps = Number(status.fps);
+      setText(this.$("footer-fps"), Number.isFinite(fps) ? String(Math.round(fps)) : String(status.fps));
+    }
+
+    if (status.data !== undefined) {
+      setText(this.$("footer-data-status"), status.data);
+    }
+  }
+
   setKernel(kernel = {}) {
     setText(this.$("kernel-rings"), integer(kernel.rings ?? 82));
     setText(this.$("kernel-azimuth"), integer(kernel.azimuth ?? 150));
     setText(this.$("kernel-samples"), comma(kernel.samples ?? 12300));
     setText(this.$("kernel-moon-state"), kernel.moon ? "ON" : "OFF");
     setText(this.$("kernel-spot-state"), kernel.spot ? "ON" : "OFF");
+
+    if (kernel.observation !== undefined) {
+      setText(this.$("kernel-observation-state"), kernel.observation);
+    }
+  }
+
+  setObservationState(state, count = 0) {
+    const text = count > 0 ? `${state} · ${comma(count)} PTS` : state;
+    setText(this.$("observation-status-chip"), text);
+    setText(this.$("kernel-observation-state"), state);
   }
 
   setClock() {
     const now = new Date();
     const text = now.toISOString().slice(11, 19) + " UTC";
     const clock = this.$("utc-clock");
+
     if (clock) {
       clock.textContent = text;
       clock.setAttribute("datetime", now.toISOString());
@@ -248,7 +272,9 @@ export class PrimeHUD {
   setTapExpanded(expanded) {
     const panel = this.$("tap-panel");
     const button = this.$("tap-expand-button");
+
     if (!panel) return;
+
     panel.classList.toggle("expanded", !!expanded);
     setText(button, expanded ? "COLLAPSE" : "EXPAND");
   }
@@ -256,6 +282,7 @@ export class PrimeHUD {
   flashTapWarning(message) {
     const tile = this.$("tap-warning-tile");
     setText(this.$("tap-channel-status"), message || "TAP WARNING");
+
     if (tile) {
       tile.classList.add("warning");
       clearTimeout(this._tapFlashTimer);
@@ -301,7 +328,10 @@ export class PrimeHUD {
       button.type = "button";
       button.className = "target-card";
       button.dataset.id = target.id || "";
-      if (activeTarget && activeTarget.id === target.id) button.classList.add("active");
+
+      if (activeTarget && activeTarget.id === target.id) {
+        button.classList.add("active");
+      }
 
       const main = document.createElement("div");
       const title = document.createElement("strong");
@@ -345,89 +375,130 @@ export class PrimeHUD {
     setText(this.$("dossier-ingress"), finite(dossier.ingressMinutes) ? `${fmt(dossier.ingressMinutes, 1)} min` : "— min");
   }
 
-  renderLightCurve(curve = [], summary = {}) {
-    this.cachedCurve = curve;
-    this.cachedSummary = summary;
+  renderLightCurve(modelCurve = [], summary = {}, observedCurve = []) {
+    this.cachedModelCurve = Array.isArray(modelCurve) ? modelCurve : [];
+    this.cachedSummary = summary || {};
+    const nextObserved = Array.isArray(observedCurve) ? observedCurve : [];
+    const nextSignature = this.curveSignature(nextObserved);
 
+    if (nextSignature !== this.observationSignature) {
+      this.observationSignature = nextSignature;
+      this.cachedObservedCurve = nextObserved;
+      this.startObservationFade();
+    } else {
+      this.cachedObservedCurve = nextObserved;
+      this.drawPhotometryFrame(this.phaseMarker);
+    }
+  }
+
+  startObservationFade() {
+    if (this.observationFadeFrame) {
+      cancelAnimationFrame(this.observationFadeFrame);
+      this.observationFadeFrame = null;
+    }
+
+    const start = performance.now();
+    const duration = 480;
+    this.observationAlpha = this.cachedObservedCurve.length ? 0 : 1;
+
+    const animate = now => {
+      const t = Math.min(1, (now - start) / duration);
+      this.observationAlpha = this.cachedObservedCurve.length ? easeOutCubic(t) : 1;
+      this.drawPhotometryFrame(this.phaseMarker);
+
+      if (t < 1) {
+        this.observationFadeFrame = requestAnimationFrame(animate);
+      } else {
+        this.observationAlpha = 1;
+        this.observationFadeFrame = null;
+        this.drawPhotometryFrame(this.phaseMarker);
+      }
+    };
+
+    this.observationFadeFrame = requestAnimationFrame(animate);
+  }
+
+  drawPhotometryFrame(markerPhase = null) {
     const canvas = this.lightcurveCanvas;
     const ctx = this.lightcurveContext;
+
     if (!canvas || !ctx) return;
 
     this.resizeCanvasToDisplay(canvas);
+
     const w = canvas.width;
     const h = canvas.height;
+    const dpr = devicePixelRatioSafe();
     const pad = {
-      left: Math.max(52, w * 0.048),
-      right: Math.max(18, w * 0.018),
-      top: Math.max(20, h * 0.075),
-      bottom: Math.max(36, h * 0.14)
+      left: Math.max(52 * dpr, w * 0.048),
+      right: Math.max(18 * dpr, w * 0.018),
+      top: Math.max(20 * dpr, h * 0.075),
+      bottom: Math.max(38 * dpr, h * 0.15)
     };
+
+    const model = this.cachedModelCurve;
+    const observed = this.cachedObservedCurve;
+    const allPoints = [...model, ...observed];
 
     ctx.clearRect(0, 0, w, h);
     ctx.fillStyle = "#020303";
     ctx.fillRect(0, 0, w, h);
-
     this.drawGrid(ctx, w, h, pad);
 
-    if (!curve.length) {
+    if (!allPoints.length) {
       ctx.fillStyle = "#7d8993";
-      ctx.font = `${12 * devicePixelRatioSafe()}px JetBrains Mono, monospace`;
+      ctx.font = `${12 * dpr}px JetBrains Mono, monospace`;
       ctx.fillText("No photometric samples available", pad.left, h * 0.5);
       return;
     }
 
-    const phases = curve.map(p => p.phase);
-    const fluxes = curve.map(p => p.flux);
-    const minPhase = Math.min(...phases);
-    const maxPhase = Math.max(...phases);
-    const minFluxRaw = Math.min(...fluxes);
-    const maxFluxRaw = Math.max(...fluxes);
-    const yMin = Math.min(0.999, minFluxRaw - Math.max(0.0001, (1 - minFluxRaw) * 0.18));
-    const yMax = Math.max(1.0002, maxFluxRaw + 0.00012);
+    const scale = this.computeCurveScale(model, observed);
+    const xMap = phase => pad.left + (phase - scale.minPhase) / Math.max(1e-9, scale.maxPhase - scale.minPhase) * (w - pad.left - pad.right);
+    const yMap = flux => pad.top + (scale.yMax - flux) / Math.max(1e-9, scale.yMax - scale.yMin) * (h - pad.top - pad.bottom);
 
-    const xMap = phase => pad.left + (phase - minPhase) / Math.max(1e-9, maxPhase - minPhase) * (w - pad.left - pad.right);
-    const yMap = flux => pad.top + (yMax - flux) / Math.max(1e-9, yMax - yMin) * (h - pad.top - pad.bottom);
+    this.drawTransitBand(ctx, w, h, pad, xMap, model);
+    this.drawObservedScatter(ctx, observed, xMap, yMap);
+    this.drawModelLine(ctx, model, xMap, yMap);
+    this.drawAxesLabels(ctx, w, h, pad, scale);
 
-    ctx.save();
-    ctx.beginPath();
-    curve.forEach((point, index) => {
-      const x = xMap(point.phase);
-      const y = yMap(point.flux);
-      if (index === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.lineWidth = Math.max(2, 2.2 * devicePixelRatioSafe());
-    ctx.strokeStyle = "#ffb000";
-    ctx.shadowColor = "rgba(255,176,0,.45)";
-    ctx.shadowBlur = 12 * devicePixelRatioSafe();
-    ctx.stroke();
-    ctx.restore();
+    if (markerPhase !== null && Number.isFinite(markerPhase)) {
+      this.drawPhaseMarker(ctx, markerPhase, scale, pad, w, h);
+    }
+  }
 
-    ctx.save();
-    ctx.beginPath();
-    curve.forEach((point, index) => {
-      const x = xMap(point.phase);
-      const y = yMap(point.flux);
-      if (index === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.lineTo(xMap(maxPhase), yMap(yMin));
-    ctx.lineTo(xMap(minPhase), yMap(yMin));
-    ctx.closePath();
-    const fill = ctx.createLinearGradient(0, pad.top, 0, h - pad.bottom);
-    fill.addColorStop(0, "rgba(255,176,0,.20)");
-    fill.addColorStop(1, "rgba(255,176,0,0)");
-    ctx.fillStyle = fill;
-    ctx.fill();
-    ctx.restore();
+  computeCurveScale(model, observed) {
+    const phases = [];
+    const fluxes = [];
 
-    this.drawAxesLabels(ctx, w, h, pad, { minPhase, maxPhase, yMin, yMax });
-    this.drawTransitBand(ctx, w, h, pad, xMap, yMap, curve);
-    this.phaseMarker = null;
+    for (const point of model) {
+      if (finite(point.phase)) phases.push(point.phase);
+      if (finite(point.flux)) fluxes.push(point.flux);
+    }
+
+    for (const point of observed) {
+      if (finite(point.phase)) phases.push(point.phase);
+      if (finite(point.flux)) fluxes.push(point.flux);
+    }
+
+    const minPhase = phases.length ? Math.min(...phases) : -0.085;
+    const maxPhase = phases.length ? Math.max(...phases) : 0.085;
+    const minFluxRaw = fluxes.length ? Math.min(...fluxes) : 0.99;
+    const maxFluxRaw = fluxes.length ? Math.max(...fluxes) : 1.001;
+    const fluxSpan = Math.max(0.0004, maxFluxRaw - minFluxRaw);
+    const yMin = Math.min(0.999, minFluxRaw - fluxSpan * 0.18);
+    const yMax = Math.max(1.0002, maxFluxRaw + fluxSpan * 0.15);
+
+    return {
+      minPhase,
+      maxPhase,
+      yMin,
+      yMax
+    };
   }
 
   drawGrid(ctx, w, h, pad) {
     const dpr = devicePixelRatioSafe();
+
     ctx.save();
     ctx.strokeStyle = "rgba(0,240,255,.12)";
     ctx.lineWidth = 1 * dpr;
@@ -453,8 +524,73 @@ export class PrimeHUD {
     ctx.restore();
   }
 
+  drawObservedScatter(ctx, observed, xMap, yMap) {
+    if (!observed.length) return;
+
+    const dpr = devicePixelRatioSafe();
+    const radius = Math.max(1.05, 1.35 * dpr);
+    const alpha = clamp(this.observationAlpha, 0, 1);
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = "rgba(0, 240, 255, 0.45)";
+    ctx.shadowColor = "rgba(0,240,255,.18)";
+    ctx.shadowBlur = 4 * dpr;
+
+    for (const point of observed) {
+      if (!finite(point.phase) || !finite(point.flux)) continue;
+      const x = xMap(point.phase);
+      const y = yMap(point.flux);
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
+  }
+
+  drawModelLine(ctx, model, xMap, yMap) {
+    if (!model.length) return;
+
+    const dpr = devicePixelRatioSafe();
+
+    ctx.save();
+    ctx.beginPath();
+
+    model.forEach((point, index) => {
+      const x = xMap(point.phase);
+      const y = yMap(point.flux);
+      if (index === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+
+    ctx.lineWidth = Math.max(2, 2.25 * dpr);
+    ctx.strokeStyle = "#ffb000";
+    ctx.shadowColor = "rgba(255,176,0,.55)";
+    ctx.shadowBlur = 12 * dpr;
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath();
+
+    model.forEach((point, index) => {
+      const x = xMap(point.phase);
+      const y = yMap(point.flux);
+      if (index === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+
+    ctx.lineWidth = Math.max(0.8, 0.9 * dpr);
+    ctx.strokeStyle = "#ffd078";
+    ctx.globalAlpha = 0.7;
+    ctx.stroke();
+    ctx.restore();
+  }
+
   drawAxesLabels(ctx, w, h, pad, scale) {
     const dpr = devicePixelRatioSafe();
+
     ctx.save();
     ctx.fillStyle = "#7d8993";
     ctx.font = `${10 * dpr}px JetBrains Mono, monospace`;
@@ -469,6 +605,7 @@ export class PrimeHUD {
 
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
+
     for (let i = 0; i <= 4; i++) {
       const flux = scale.yMax - i / 4 * (scale.yMax - scale.yMin);
       const y = pad.top + i / 4 * (h - pad.top - pad.bottom);
@@ -479,6 +616,7 @@ export class PrimeHUD {
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
     ctx.fillText("phase", pad.left, h - 18 * dpr);
+
     ctx.save();
     ctx.translate(14 * dpr, h * 0.5);
     ctx.rotate(-Math.PI / 2);
@@ -487,8 +625,9 @@ export class PrimeHUD {
     ctx.restore();
   }
 
-  drawTransitBand(ctx, w, h, pad, xMap, yMap, curve) {
-    const transit = curve.filter(p => p.depth > 1e-6);
+  drawTransitBand(ctx, w, h, pad, xMap, model) {
+    const transit = model.filter(point => point.depth > 1e-6);
+
     if (!transit.length) return;
 
     const x0 = xMap(transit[0].phase);
@@ -509,40 +648,36 @@ export class PrimeHUD {
   }
 
   markCurvePhase(phase) {
-    if (!this.cachedCurve.length || !this.lightcurveCanvas || !this.lightcurveContext) return;
-    this.renderLightCurve(this.cachedCurve, this.cachedSummary || {});
-    this.phaseMarker = phase;
+    this.phaseMarker = Number.isFinite(phase) ? phase : null;
+    this.drawPhotometryFrame(this.phaseMarker);
+  }
 
-    const canvas = this.lightcurveCanvas;
-    const ctx = this.lightcurveContext;
-    const w = canvas.width;
-    const h = canvas.height;
-    const pad = {
-      left: Math.max(52, w * 0.048),
-      right: Math.max(18, w * 0.018),
-      top: Math.max(20, h * 0.075),
-      bottom: Math.max(36, h * 0.14)
-    };
+  drawPhaseMarker(ctx, phase, scale, pad, w, h) {
+    if (phase < scale.minPhase || phase > scale.maxPhase) return;
 
-    const minPhase = Math.min(...this.cachedCurve.map(p => p.phase));
-    const maxPhase = Math.max(...this.cachedCurve.map(p => p.phase));
-    if (phase < minPhase || phase > maxPhase) return;
+    const dpr = devicePixelRatioSafe();
+    const x = pad.left + (phase - scale.minPhase) / Math.max(1e-9, scale.maxPhase - scale.minPhase) * (w - pad.left - pad.right);
 
-    const x = pad.left + (phase - minPhase) / Math.max(1e-9, maxPhase - minPhase) * (w - pad.left - pad.right);
     ctx.save();
     ctx.strokeStyle = "#00f0ff";
-    ctx.lineWidth = 1.5 * devicePixelRatioSafe();
+    ctx.lineWidth = 1.5 * dpr;
     ctx.shadowColor = "rgba(0,240,255,.65)";
-    ctx.shadowBlur = 10 * devicePixelRatioSafe();
+    ctx.shadowBlur = 10 * dpr;
     ctx.beginPath();
     ctx.moveTo(x, pad.top);
     ctx.lineTo(x, h - pad.bottom);
     ctx.stroke();
+
+    ctx.fillStyle = "rgba(0,240,255,.95)";
+    ctx.beginPath();
+    ctx.arc(x, pad.top + 7 * dpr, 3.5 * dpr, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   }
 
   setFluxSummary(summary = {}) {
     setText(this.$("flux-min-chip"), finite(summary.minFlux) ? `MIN ${fmt(summary.minFlux, 6)}` : "MIN —");
+    setText(this.$("model-depth-chip"), finite(summary.depthPpm) ? `MODEL ${Math.round(summary.depthPpm)} PPM` : "MODEL — PPM");
     setText(this.$("scene-depth-readout"), finite(summary.depthPpm) ? `${Math.round(summary.depthPpm)} ppm` : "— ppm");
     setText(this.$("ttv-chip"), this.controls.ttvEnabled?.checked ? "TTV ON" : "TTV OFF");
   }
@@ -553,6 +688,7 @@ export class PrimeHUD {
     setText(this.$("moon-transform-readout"), readouts.moon || "DISABLED");
     setText(this.$("scene-depth-readout"), finite(readouts.depthPpm) ? `${Math.round(readouts.depthPpm)} ppm` : "— ppm");
     setText(this.$("fps-chip"), finite(readouts.fps) ? `${Math.round(readouts.fps)} FPS` : "-- FPS");
+    setText(this.$("footer-fps"), finite(readouts.fps) ? `${Math.round(readouts.fps)}` : "--");
     setText(this.$("scene-state-chip"), "SCENE ONLINE");
   }
 
@@ -571,6 +707,7 @@ export class PrimeHUD {
     if (!log) return;
 
     const fragment = document.createDocumentFragment();
+
     this.logLines.slice(0, 80).forEach(item => {
       const line = document.createElement("div");
       line.className = `log-line ${item.level === "info" ? "" : item.level}`;
@@ -596,6 +733,26 @@ export class PrimeHUD {
       canvas.height = height;
     }
   }
+
+  curveSignature(curve) {
+    if (!Array.isArray(curve) || !curve.length) {
+      return "empty";
+    }
+
+    const first = curve[0];
+    const last = curve[curve.length - 1];
+    const mid = curve[Math.floor(curve.length / 2)];
+
+    return [
+      curve.length,
+      finite(first.phase) ? first.phase.toFixed(6) : "x",
+      finite(first.flux) ? first.flux.toFixed(6) : "y",
+      finite(mid.phase) ? mid.phase.toFixed(6) : "x",
+      finite(mid.flux) ? mid.flux.toFixed(6) : "y",
+      finite(last.phase) ? last.phase.toFixed(6) : "x",
+      finite(last.flux) ? last.flux.toFixed(6) : "y"
+    ].join("|");
+  }
 }
 
 function setText(node, value) {
@@ -604,8 +761,12 @@ function setText(node, value) {
 
 function setInput(input, value) {
   if (!input || value === undefined || value === null) return;
-  if (input.type === "checkbox") input.checked = !!value;
-  else input.value = String(value);
+
+  if (input.type === "checkbox") {
+    input.checked = !!value;
+  } else {
+    input.value = String(value);
+  }
 }
 
 function num(input, fallback) {
@@ -649,4 +810,13 @@ function hzLabel(value) {
 
 function devicePixelRatioSafe() {
   return Math.min(window.devicePixelRatio || 1, 2);
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function easeOutCubic(t) {
+  const x = clamp(t, 0, 1);
+  return 1 - Math.pow(1 - x, 3);
 }
