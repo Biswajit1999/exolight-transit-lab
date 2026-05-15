@@ -21,6 +21,10 @@ export const DEFAULT_ADQL = `SELECT TOP 150
   discoverymethod
 FROM pscomppars
 WHERE tran_flag = 1
+  AND pl_name IS NOT NULL
+  AND hostname IS NOT NULL
+  AND pl_orbper IS NOT NULL
+  AND pl_orbsmax IS NOT NULL
   AND pl_ratror IS NOT NULL
   AND pl_orbincl IS NOT NULL
   AND pl_orbeccen IS NOT NULL
@@ -54,7 +58,8 @@ const EMBEDDED_FALLBACK = [
     st_logg: 4.2,
     st_met: 0.3,
     disc_year: 2008,
-    discoverymethod: "Transit"
+    discoverymethod: "Transit",
+    lightcurve_file: "wasp-12-b.json"
   },
   {
     pl_name: "HD 209458 b",
@@ -76,7 +81,8 @@ const EMBEDDED_FALLBACK = [
     st_logg: 4.38,
     st_met: 0.02,
     disc_year: 1999,
-    discoverymethod: "Transit"
+    discoverymethod: "Transit",
+    lightcurve_file: "hd-209458-b.json"
   },
   {
     pl_name: "TrES-3 b",
@@ -98,7 +104,8 @@ const EMBEDDED_FALLBACK = [
     st_logg: 4.54,
     st_met: -0.19,
     disc_year: 2007,
-    discoverymethod: "Transit"
+    discoverymethod: "Transit",
+    lightcurve_file: "tres-3-b.json"
   },
   {
     pl_name: "HAT-P-7 b",
@@ -120,7 +127,8 @@ const EMBEDDED_FALLBACK = [
     st_logg: 4.07,
     st_met: 0.26,
     disc_year: 2008,
-    discoverymethod: "Transit"
+    discoverymethod: "Transit",
+    lightcurve_file: "hat-p-7-b.json"
   },
   {
     pl_name: "KELT-9 b",
@@ -142,7 +150,8 @@ const EMBEDDED_FALLBACK = [
     st_logg: 4.09,
     st_met: -0.03,
     disc_year: 2017,
-    discoverymethod: "Transit"
+    discoverymethod: "Transit",
+    lightcurve_file: "kelt-9-b.json"
   },
   {
     pl_name: "Kepler-10 b",
@@ -164,7 +173,8 @@ const EMBEDDED_FALLBACK = [
     st_logg: 4.34,
     st_met: -0.15,
     disc_year: 2011,
-    discoverymethod: "Transit"
+    discoverymethod: "Transit",
+    lightcurve_file: "kepler-10-b.json"
   },
   {
     pl_name: "Kepler-22 b",
@@ -186,7 +196,8 @@ const EMBEDDED_FALLBACK = [
     st_logg: 4.44,
     st_met: -0.29,
     disc_year: 2011,
-    discoverymethod: "Transit"
+    discoverymethod: "Transit",
+    lightcurve_file: "kepler-22-b.json"
   },
   {
     pl_name: "TRAPPIST-1 e",
@@ -208,7 +219,8 @@ const EMBEDDED_FALLBACK = [
     st_logg: 5.23,
     st_met: 0.04,
     disc_year: 2017,
-    discoverymethod: "Transit"
+    discoverymethod: "Transit",
+    lightcurve_file: "trappist-1-e.json"
   },
   {
     pl_name: "GJ 1214 b",
@@ -230,7 +242,8 @@ const EMBEDDED_FALLBACK = [
     st_logg: 5.03,
     st_met: 0.29,
     disc_year: 2009,
-    discoverymethod: "Transit"
+    discoverymethod: "Transit",
+    lightcurve_file: "gj-1214-b.json"
   },
   {
     pl_name: "55 Cnc e",
@@ -252,28 +265,35 @@ const EMBEDDED_FALLBACK = [
     st_logg: 4.45,
     st_met: 0.35,
     disc_year: 2004,
-    discoverymethod: "Radial Velocity"
+    discoverymethod: "Radial Velocity",
+    lightcurve_file: "55-cnc-e.json"
   }
 ];
 
 export class DataOrchestrator {
   constructor(options = {}) {
     this.cacheUrl = options.cacheUrl || "./data/exoplanets.json";
+    this.lightcurveBaseUrl = options.lightcurveBaseUrl || "./data/lightcurves/";
     this.tapUrl = options.tapUrl || TAP_URL;
     this.timeoutMs = Number.isFinite(options.timeoutMs) ? options.timeoutMs : 12000;
     this.cache = null;
+    this.lightcurveCache = new Map();
     this.lastSource = "unloaded";
     this.lastError = null;
   }
 
   async loadLocalCache(force = false) {
-    if (this.cache && !force) return this.cloneTargets(this.cache);
+    if (this.cache && !force) {
+      return this.cloneTargets(this.cache);
+    }
 
     const bust = force ? `?t=${Date.now()}` : "";
     const response = await fetch(`${this.cacheUrl}${bust}`, {
       method: "GET",
       cache: force ? "reload" : "default",
-      headers: { "Accept": "application/json" }
+      headers: {
+        "Accept": "application/json"
+      }
     });
 
     if (!response.ok) {
@@ -345,9 +365,144 @@ export class DataOrchestrator {
     }
   }
 
+  async loadLightCurve(target) {
+    if (!target) {
+      throw new Error("No target supplied for light-curve loading");
+    }
+
+    const file = this.getLightCurveFile(target);
+    const url = `${this.lightcurveBaseUrl}${encodeURIComponent(file).replace(/%2F/g, "/")}`;
+    const cacheKey = `${target.id || target.pl_name || file}|${file}`;
+
+    if (this.lightcurveCache.has(cacheKey)) {
+      return this.cloneLightCurve(this.lightcurveCache.get(cacheKey));
+    }
+
+    const response = await fetch(url, {
+      method: "GET",
+      cache: "default",
+      headers: {
+        "Accept": "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Light-curve file ${file} HTTP ${response.status}`);
+    }
+
+    const payload = await response.json();
+    const curve = this.normalizeLightCurve(payload);
+
+    if (!curve.length) {
+      throw new Error(`Light-curve file ${file} contained no valid phase/flux rows`);
+    }
+
+    this.lightcurveCache.set(cacheKey, curve);
+    return this.cloneLightCurve(curve);
+  }
+
+  normalizeLightCurve(payload) {
+    const rows = this.extractLightCurveRows(payload);
+    const clean = [];
+
+    for (const row of rows) {
+      const phase = number(firstDefined(row.phase, row.Phase, row.ph, row.x, row.time_phase));
+      const flux = number(firstDefined(row.flux, row.Flux, row.normalized_flux, row.norm_flux, row.y, row.sap_flux_norm, row.pdcsap_flux_norm));
+      const error = number(firstDefined(row.error, row.flux_err, row.err, row.sigma));
+
+      if (!Number.isFinite(phase) || !Number.isFinite(flux)) {
+        continue;
+      }
+
+      if (phase < -1.5 || phase > 1.5 || flux < 0.2 || flux > 1.8) {
+        continue;
+      }
+
+      clean.push({
+        phase,
+        flux,
+        error: Number.isFinite(error) ? error : null
+      });
+    }
+
+    clean.sort((a, b) => a.phase - b.phase);
+    return clean;
+  }
+
+  extractLightCurveRows(payload) {
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+
+    if (!payload || typeof payload !== "object") {
+      return [];
+    }
+
+    if (Array.isArray(payload.points)) {
+      return payload.points;
+    }
+
+    if (Array.isArray(payload.data)) {
+      if (payload.data.length && Array.isArray(payload.data[0])) {
+        return payload.data.map(row => ({
+          phase: row[0],
+          flux: row[1],
+          error: row[2]
+        }));
+      }
+      return payload.data;
+    }
+
+    if (Array.isArray(payload.phase) && Array.isArray(payload.flux)) {
+      const n = Math.min(payload.phase.length, payload.flux.length);
+      const err = Array.isArray(payload.error) ? payload.error : Array.isArray(payload.flux_err) ? payload.flux_err : [];
+      const out = [];
+
+      for (let i = 0; i < n; i++) {
+        out.push({
+          phase: payload.phase[i],
+          flux: payload.flux[i],
+          error: err[i] ?? null
+        });
+      }
+
+      return out;
+    }
+
+    if (Array.isArray(payload.phases) && Array.isArray(payload.fluxes)) {
+      const n = Math.min(payload.phases.length, payload.fluxes.length);
+      const out = [];
+
+      for (let i = 0; i < n; i++) {
+        out.push({
+          phase: payload.phases[i],
+          flux: payload.fluxes[i],
+          error: null
+        });
+      }
+
+      return out;
+    }
+
+    return [];
+  }
+
+  getLightCurveFile(target) {
+    const explicit = text(firstDefined(target.lightcurve_file, target.lightcurveFile, target.lc_file, target.photometry_file));
+    if (explicit) {
+      return explicit;
+    }
+
+    const name = text(firstDefined(target.pl_name, target.name, target.planet, "unknown-target"));
+    return `${slugify(name)}.json`;
+  }
+
   validateAdql(adql) {
     const clean = String(adql || "").trim();
-    if (!clean) throw new Error("ADQL query is empty");
+
+    if (!clean) {
+      throw new Error("ADQL query is empty");
+    }
 
     const compact = clean.replace(/\s+/g, " ").toLowerCase();
     const forbidden = [
@@ -382,9 +537,13 @@ export class DataOrchestrator {
   }
 
   extractTapRows(payload) {
-    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+
     if (payload && Array.isArray(payload.data) && Array.isArray(payload.metadata)) {
       const names = payload.metadata.map(col => col.name || col.label || col.ID || col.id);
+
       return payload.data.map(row => {
         const out = {};
         names.forEach((name, index) => {
@@ -393,8 +552,15 @@ export class DataOrchestrator {
         return out;
       });
     }
-    if (payload && Array.isArray(payload.rows)) return payload.rows;
-    if (payload && Array.isArray(payload.targets)) return payload.targets;
+
+    if (payload && Array.isArray(payload.rows)) {
+      return payload.rows;
+    }
+
+    if (payload && Array.isArray(payload.targets)) {
+      return payload.targets;
+    }
+
     return [];
   }
 
@@ -405,16 +571,18 @@ export class DataOrchestrator {
       .map((row, index) => this.normalizeRow(row, source, index))
       .filter(row => {
         const key = `${row.pl_name}|${row.hostname}`;
-        if (!row.pl_name || !row.hostname || seen.has(key)) return false;
+        if (!row.pl_name || !row.hostname || seen.has(key)) {
+          return false;
+        }
         seen.add(key);
         return true;
       })
       .sort((a, b) => {
+        const scoreA = finiteNumber(a.signal_score, 0);
+        const scoreB = finiteNumber(b.signal_score, 0);
         const depthA = finiteNumber(a.pl_trandep, 0);
         const depthB = finiteNumber(b.pl_trandep, 0);
-        const snrA = finiteNumber(a.signal_score, 0);
-        const snrB = finiteNumber(b.signal_score, 0);
-        return (snrB || depthB) - (snrA || depthA);
+        return (scoreB || depthB) - (scoreA || depthA);
       });
   }
 
@@ -440,14 +608,16 @@ export class DataOrchestrator {
     const logg = number(r.st_logg);
     const metallicity = number(firstDefined(r.st_met, r.st_metratio, r.metallicity));
     const snr = number(firstDefined(r.snr, r.signal_to_noise, r.transit_snr));
+    const explicitLightCurveFile = text(firstDefined(r.lightcurve_file, r.lightcurvefile, r.lc_file, r.photometry_file));
 
     const inferredRpRs = finiteNumber(rpRs, null) ?? inferRpRs(rpEarth, stRad);
     const inferredARs = inferARs(semiMajor, stRad);
     const inferredDepth = finiteNumber(depth, null) ?? (finiteNumber(inferredRpRs, null) !== null ? inferredRpRs * inferredRpRs * 1e6 : null);
     const score = finiteNumber(snr, null) ?? finiteNumber(inferredDepth, 0);
+    const id = stableId(plName || `planet-${index}`, host || "unknown-host");
 
     return {
-      id: stableId(plName || `planet-${index}`, host || "unknown-host"),
+      id,
       source,
       pl_name: plName,
       hostname: host,
@@ -470,15 +640,20 @@ export class DataOrchestrator {
       disc_year: finiteNumber(discoveryYear, null),
       discoverymethod: method || "Transit",
       a_rs: finiteNumber(inferredARs, null),
-      signal_score: finiteNumber(score, 0)
+      signal_score: finiteNumber(score, 0),
+      lightcurve_file: explicitLightCurveFile || `${slugify(plName || id)}.json`
     };
   }
 
   filterTargets(targets, query) {
     const q = String(query || "").trim().toLowerCase();
-    if (!q) return this.cloneTargets(targets);
+
+    if (!q) {
+      return this.cloneTargets(targets);
+    }
 
     const tokens = q.split(/\s+/).filter(Boolean);
+
     return this.cloneTargets(targets.filter(target => {
       const haystack = [
         target.pl_name,
@@ -504,6 +679,10 @@ export class DataOrchestrator {
     return (targets || []).map(target => ({ ...target }));
   }
 
+  cloneLightCurve(curve) {
+    return (curve || []).map(point => ({ ...point }));
+  }
+
   getDefaultQuery() {
     return DEFAULT_ADQL;
   }
@@ -519,19 +698,29 @@ export class DataOrchestrator {
 
 function firstDefined(...values) {
   for (const value of values) {
-    if (value !== undefined && value !== null && value !== "") return value;
+    if (value !== undefined && value !== null && value !== "") {
+      return value;
+    }
   }
   return null;
 }
 
 function text(value) {
-  if (value === undefined || value === null) return "";
+  if (value === undefined || value === null) {
+    return "";
+  }
   return String(value).trim();
 }
 
 function number(value) {
-  if (value === undefined || value === null || value === "") return null;
-  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (value === undefined || value === null || value === "") {
+    return null;
+  }
+
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+
   const n = Number(String(value).replace(/,/g, "").trim());
   return Number.isFinite(n) ? n : null;
 }
@@ -547,19 +736,25 @@ function finiteNumber(value, fallback) {
 
 function lowerKeyClone(row) {
   const out = {};
+
   Object.entries(row || {}).forEach(([key, value]) => {
     out[String(key).toLowerCase()] = value;
   });
+
   return out;
 }
 
 function inferRpRs(rpEarth, stRadSolar) {
-  if (!Number.isFinite(rpEarth) || !Number.isFinite(stRadSolar) || stRadSolar <= 0) return null;
+  if (!Number.isFinite(rpEarth) || !Number.isFinite(stRadSolar) || stRadSolar <= 0) {
+    return null;
+  }
   return (rpEarth * R_EARTH_R_SUN) / stRadSolar;
 }
 
 function inferARs(aAu, stRadSolar) {
-  if (!Number.isFinite(aAu) || !Number.isFinite(stRadSolar) || stRadSolar <= 0) return null;
+  if (!Number.isFinite(aAu) || !Number.isFinite(stRadSolar) || stRadSolar <= 0) {
+    return null;
+  }
   return aAu / (stRadSolar * R_SUN_AU);
 }
 
@@ -568,6 +763,16 @@ function stableId(planet, host) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function slugify(value) {
+  return String(value || "unknown-target")
+    .trim()
+    .toLowerCase()
+    .replace(/\+/g, " plus ")
+    .replace(/['’"]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "unknown-target";
 }
 
 export const DATA_CONSTANTS = {
