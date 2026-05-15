@@ -1,2 +1,0 @@
-import { useExoStore } from "../state/useExoStore";
-export function PhaseFoldDock(){ const target=useExoStore(s=>s.selectedTarget); return <section className="panel"><h2>Phase Folding</h2><p className="readout">P = <b>{target?.period_days.toFixed(6) ?? "—"}</b> d</p><p className="microcopy">MAST time-series will be folded with φ = ((t − T0) / P) mod 1 and linked to the orrery longitude.</p></section>; }

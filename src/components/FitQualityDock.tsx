@@ -1,2 +1,0 @@
-import { useExoStore } from "../state/useExoStore";
-export function FitQualityDock(){ const model=useExoStore(s=>s.model); const depth=model.length? (1-Math.min(...model.map(m=>m.modelFlux)))*1e6:0; return <section className="panel"><h2>Fit Quality</h2><div className="metric-grid"><div><span>Model depth</span><b>{depth.toFixed(0)} ppm</b></div><div><span>Samples</span><b>{model.length}</b></div></div></section>; }
