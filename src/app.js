@@ -3,7 +3,7 @@ import { TransitPhysicsEngine, createDefaultParams, deriveDossier, mergeTargetIn
 import { ObservatoryScene } from "./scene.js";
 import { PrimeHUD } from "./ui.js";
 
-const APP_VERSION = "ExoIntel-Prime v1.0.0";
+const APP_VERSION = "ExoIntel-Prime Iteration III";
 const TARGET_CACHE_URL = "./data/exoplanets.json";
 const FRAME_BUDGET_MS = 1000 / 60;
 const CURVE_PHASE_MIN = -0.085;
@@ -15,13 +15,15 @@ class ExoIntelPrimeApp {
     this.params = createDefaultParams();
     this.target = null;
     this.targets = [];
-    this.curve = [];
+    this.modelCurve = [];
+    this.observedCurve = [];
     this.phase = -0.075;
     this.epoch = 0;
     this.running = false;
     this.lastFrame = 0;
     this.lastCurveHash = "";
     this.lastRenderTick = 0;
+    this.lastObservationTargetId = "";
     this.physics = new TransitPhysicsEngine({ rings: 82, azimuth: 150 });
     this.data = new DataOrchestrator({ cacheUrl: TARGET_CACHE_URL });
     this.hud = new PrimeHUD();
@@ -55,15 +57,27 @@ class ExoIntelPrimeApp {
       warning: false
     });
 
+    this.hud.setFooterStatus?.({
+      fps: "--",
+      data: "DATA INGESTION STATUS: INITIALISING // TARGET CATALOG: AWAITING CACHE"
+    });
+
     this.hud.setAdql(DEFAULT_ADQL);
-    this.hud.setKernel({ rings: 82, azimuth: 150, samples: 12300, moon: false, spot: false });
+    this.hud.setKernel({
+      rings: 82,
+      azimuth: 150,
+      samples: 12300,
+      moon: false,
+      spot: false,
+      observation: "WAITING"
+    });
     this.hud.setControls(this.params);
     this.hud.log(`${APP_VERSION} bootstrap sequence engaged.`, "info");
 
     try {
       await this.scene.init();
       this.hud.setStatus({ render: "WEBGL ONLINE" });
-      this.hud.log("Native WebGL scene layer initialized with volumetric star shader pipeline.", "info");
+      this.hud.log("Native WebGL scene layer initialized with shader-driven stellar surface.", "info");
     } catch (error) {
       this.hud.setStatus({ render: "CANVAS SAFE MODE" });
       this.hud.log(`WebGL initialization degraded: ${error.message}`, "warn");
@@ -72,29 +86,52 @@ class ExoIntelPrimeApp {
     await this.loadCache(false);
 
     if (this.targets.length > 0) {
-      this.selectTarget(this.targets[0]);
+      await this.selectTarget(this.targets[0]);
     } else {
       this.recompute(true);
       this.hud.renderDossier(deriveDossier(null, this.params));
+      this.hud.setObservationState?.("NO TARGET", 0);
     }
 
     this.running = true;
     this.hud.setStatus({ runtime: "ONLINE" });
+    this.hud.setFooterStatus?.({
+      data: `DATA INGESTION STATUS: SECURE // TARGET CATALOG: ${Math.max(this.targets.length, 0)} NODES ACTIVE`
+    });
     requestAnimationFrame(time => this.loop(time));
   }
 
   async loadCache(force) {
-    this.hud.setStatus({ data: "CACHE LOAD", tap: force ? "CACHE REQUEST" : "IDLE", warning: false });
+    this.hud.setStatus({
+      data: "CACHE LOAD",
+      tap: force ? "CACHE REQUEST" : "IDLE",
+      warning: false
+    });
+
     try {
       const targets = await this.data.loadLocalCache(force);
       this.targets = targets;
-      this.hud.setStatus({ data: "LOCAL CACHE", tap: "IDLE", warning: false });
+      this.hud.setStatus({
+        data: "LOCAL CACHE",
+        tap: "IDLE",
+        warning: false
+      });
+      this.hud.setFooterStatus?.({
+        data: `DATA INGESTION STATUS: SECURE // TARGET CATALOG: ${targets.length} NODES ACTIVE`
+      });
       this.hud.log(`Loaded ${targets.length} local exoplanet targets.`, "info");
       this.renderTargetList(this.hud.getSearchQuery());
       return targets;
     } catch (error) {
       this.targets = this.data.getEmbeddedFallback();
-      this.hud.setStatus({ data: "EMBEDDED FALLBACK", tap: "CACHE ERROR", warning: true });
+      this.hud.setStatus({
+        data: "EMBEDDED FALLBACK",
+        tap: "CACHE ERROR",
+        warning: true
+      });
+      this.hud.setFooterStatus?.({
+        data: `DATA INGESTION STATUS: DEGRADED // TARGET CATALOG: ${this.targets.length} EMBEDDED NODES ACTIVE`
+      });
       this.hud.flashTapWarning("LOCAL CACHE ERROR / EMBEDDED FALLBACK ACTIVE");
       this.hud.log(`Local cache load failed: ${error.message}`, "error");
       this.renderTargetList(this.hud.getSearchQuery());
@@ -104,28 +141,56 @@ class ExoIntelPrimeApp {
 
   async runTapQuery() {
     const adql = this.hud.getAdql().trim();
+
     if (!adql) {
       this.hud.log("TAP query blocked because ADQL editor is empty.", "warn");
       return;
     }
 
-    this.hud.setStatus({ tap: "QUERYING", data: "NASA TAP", warning: false });
+    this.hud.setStatus({
+      tap: "QUERYING",
+      data: "NASA TAP",
+      warning: false
+    });
+    this.hud.setFooterStatus?.({
+      data: "DATA INGESTION STATUS: LIVE TAP QUERY RUNNING // TARGET CATALOG: HOLDING"
+    });
     this.hud.log("NASA TAP synchronous query dispatched.", "info");
 
     try {
       const targets = await this.data.queryTap(adql);
       this.targets = targets;
-      this.hud.setStatus({ tap: "LIVE TAP OK", data: "NASA TAP", warning: false });
+      this.hud.setStatus({
+        tap: "LIVE TAP OK",
+        data: "NASA TAP",
+        warning: false
+      });
+      this.hud.setFooterStatus?.({
+        data: `DATA INGESTION STATUS: LIVE TAP SECURE // TARGET CATALOG: ${targets.length} NODES ACTIVE`
+      });
       this.hud.log(`TAP query returned ${targets.length} normalized targets.`, "info");
       this.renderTargetList("");
       this.hud.setSearchQuery("");
-      if (targets.length > 0) this.selectTarget(targets[0]);
+
+      if (targets.length > 0) {
+        await this.selectTarget(targets[0]);
+      }
     } catch (error) {
-      this.hud.setStatus({ tap: "CORS WALL", data: "LOCAL CACHE", warning: true });
+      this.hud.setStatus({
+        tap: "CORS WALL",
+        data: "LOCAL CACHE",
+        warning: true
+      });
+      this.hud.setFooterStatus?.({
+        data: "DATA INGESTION STATUS: TAP WALL DETECTED // FALLBACK CACHE ENGAGED"
+      });
       this.hud.flashTapWarning("TAP TIMEOUT / CORS WALL DETECTED");
       this.hud.log(`TAP live query failed: ${error.message}`, "error");
+
       const fallback = await this.loadCache(false);
-      if (fallback.length > 0) this.selectTarget(fallback[0]);
+      if (fallback.length > 0) {
+        await this.selectTarget(fallback[0]);
+      }
     }
   }
 
@@ -135,29 +200,75 @@ class ExoIntelPrimeApp {
     this.hud.setTargetCount(filtered.length, this.targets.length);
   }
 
-  selectTarget(target) {
+  async selectTarget(target) {
     this.target = target;
     this.params = mergeTargetIntoParams(this.params, target);
     this.phase = -0.075;
     this.epoch = 0;
+    this.observedCurve = [];
+    this.lastObservationTargetId = target?.id || "";
+
     this.hud.setActiveTarget(target);
     this.hud.setControls(this.params);
     this.hud.renderDossier(deriveDossier(target, this.params));
+    this.hud.setObservationState?.("LOADING REAL LC", 0);
     this.hud.log(`Target lock: ${target.pl_name || target.name || "Unknown planet"} around ${target.hostname || target.host || "unknown host"}.`, "info");
+
     this.recompute(true);
+
+    try {
+      const observed = await this.data.loadLightCurve(target);
+      if ((target?.id || "") !== this.lastObservationTargetId) return;
+
+      this.observedCurve = observed;
+      this.hud.setObservationState?.("REAL LC ONLINE", observed.length);
+      this.hud.setKernel({
+        rings: 82,
+        azimuth: 150,
+        samples: 12300,
+        moon: !!this.params.moonEnabled,
+        spot: !!this.params.spotEnabled,
+        observation: observed.length ? "ONLINE" : "EMPTY"
+      });
+      this.hud.log(`Loaded ${observed.length} real photometric samples for ${target.pl_name}.`, "info");
+      this.renderPhotometry();
+    } catch (error) {
+      if ((target?.id || "") !== this.lastObservationTargetId) return;
+
+      this.observedCurve = [];
+      this.hud.setObservationState?.("NO LOCAL LC", 0);
+      this.hud.setKernel({
+        rings: 82,
+        azimuth: 150,
+        samples: 12300,
+        moon: !!this.params.moonEnabled,
+        spot: !!this.params.spotEnabled,
+        observation: "MISSING"
+      });
+      this.hud.log(`No local real light curve for ${target.pl_name}: ${error.message}`, "warn");
+      this.renderPhotometry();
+    }
   }
 
   updateParams(nextParams, recomputeCurve) {
-    this.params = { ...this.params, ...nextParams };
+    this.params = {
+      ...this.params,
+      ...nextParams
+    };
+
     this.hud.setKernel({
       rings: 82,
       azimuth: 150,
       samples: 12300,
       moon: !!this.params.moonEnabled,
-      spot: !!this.params.spotEnabled
+      spot: !!this.params.spotEnabled,
+      observation: this.observedCurve.length ? "ONLINE" : "MISSING"
     });
     this.hud.renderDossier(deriveDossier(this.target, this.params));
-    if (recomputeCurve) this.recompute(false);
+
+    if (recomputeCurve) {
+      this.recompute(false);
+    }
   }
 
   resetControls() {
@@ -173,10 +284,14 @@ class ExoIntelPrimeApp {
 
   recompute(force) {
     const hash = this.hashParams(this.params);
-    if (!force && hash === this.lastCurveHash) return;
+
+    if (!force && hash === this.lastCurveHash) {
+      this.renderPhotometry();
+      return;
+    }
 
     this.lastCurveHash = hash;
-    this.curve = this.physics.generateLightCurve({
+    this.modelCurve = this.physics.generateLightCurve({
       params: this.params,
       phaseMin: CURVE_PHASE_MIN,
       phaseMax: CURVE_PHASE_MAX,
@@ -184,8 +299,15 @@ class ExoIntelPrimeApp {
       epoch: this.epoch
     });
 
-    const summary = this.physics.summarizeCurve(this.curve);
-    this.hud.renderLightCurve(this.curve, summary);
+    const summary = this.physics.summarizeCurve(this.modelCurve);
+    this.scene.setCurveSummary(summary);
+    this.hud.setFluxSummary(summary);
+    this.renderPhotometry();
+  }
+
+  renderPhotometry() {
+    const summary = this.physics.summarizeCurve(this.modelCurve);
+    this.hud.renderLightCurve(this.modelCurve, summary, this.observedCurve);
     this.hud.setFluxSummary(summary);
     this.scene.setCurveSummary(summary);
   }
@@ -206,14 +328,17 @@ class ExoIntelPrimeApp {
     const sample = this.physics.evaluateAtPhase(shiftedPhase, this.params, this.epoch);
     const moonState = this.physics.computeMoonState(shiftedPhase, this.params);
     const impact = this.physics.computeImpactParameter(this.params);
+    const fps = this.scene.getFPS();
 
     this.hud.setSceneReadouts({
       phase: shiftedPhase,
       impact,
       depthPpm: sample.depthPpm,
       moon: this.params.moonEnabled ? moonState.label : "DISABLED",
-      fps: this.scene.getFPS()
+      fps
     });
+
+    this.hud.setFooterStatus?.({ fps });
 
     this.scene.render({
       time: time * 0.001,
@@ -234,17 +359,34 @@ class ExoIntelPrimeApp {
 
   hashParams(p) {
     return [
-      p.rpRs, p.aRs, p.inclinationDeg, p.periodDays, p.eccentricity,
-      p.u1, p.u2, p.moonEnabled, p.moonRadius, p.moonDistance,
-      p.moonPhaseDeg, p.moonInclinationDeg, p.moonNodeDeg,
-      p.spotEnabled, p.spotX, p.spotY, p.spotRadius, p.spotContrast,
-      p.ttvEnabled, p.ttvAmplitude, p.ttvPeriodEpochs
-    ].map(v => typeof v === "number" ? v.toFixed(6) : String(v)).join("|");
+      p.rpRs,
+      p.aRs,
+      p.inclinationDeg,
+      p.periodDays,
+      p.eccentricity,
+      p.u1,
+      p.u2,
+      p.moonEnabled,
+      p.moonRadius,
+      p.moonDistance,
+      p.moonPhaseDeg,
+      p.moonInclinationDeg,
+      p.moonNodeDeg,
+      p.spotEnabled,
+      p.spotX,
+      p.spotY,
+      p.spotRadius,
+      p.spotContrast,
+      p.ttvEnabled,
+      p.ttvAmplitude,
+      p.ttvPeriodEpochs
+    ].map(value => typeof value === "number" ? value.toFixed(6) : String(value)).join("|");
   }
 }
 
 const start = () => {
   const app = new ExoIntelPrimeApp();
+
   app.boot().catch(error => {
     const hud = new PrimeHUD();
     hud.log(`Fatal bootstrap failure: ${error.message}`, "error");
@@ -255,6 +397,10 @@ const start = () => {
       render: "HALTED",
       tap: "HALTED",
       warning: true
+    });
+    hud.setFooterStatus?.({
+      fps: "--",
+      data: "DATA INGESTION STATUS: BOOT FAILURE // TARGET CATALOG: OFFLINE"
     });
     console.error(error);
   });
