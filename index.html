@@ -1,30 +1,434 @@
-<!doctype html><html lang="en"><head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>ExoIntel Prime — Exoplanet Observatory</title>
-<meta name="author" content="Biswajit Jana"/>
-<link rel="icon" href="favicon.svg"/><link rel="stylesheet" href="styles.css"/>
-</head><body>
-<div class="app">
-<header class="top glass"><div><div class="eyebrow">EXOINTEL-PRIME / TRANSIT INTELLIGENCE SYSTEM</div><h1>Exoplanetary Analysis Laboratory</h1><p>NASA Archive TAP + MAST-ready photometry + high-fidelity transit quadrature + true-unit orrery.</p></div><div class="top-actions"><button id="btnNASA" class="prime">INITIALIZE NASA DATASTREAM</button><button id="btnBootstrap">LOAD BOOTSTRAP TARGETS</button></div></header>
-<aside class="dock left glass">
-<section><h2>Target Control</h2><select id="targetSelect"></select><div class="readout" id="targetInfo"></div></section>
-<section><h2>Manual Fit</h2>
-<label>Rp/Rs <output id="rpOut"></output><input id="rp" type="range" min="0.005" max="0.25" step="0.001"/></label>
-<label>a/Rs <output id="aOut"></output><input id="a" type="range" min="2" max="120" step="0.1"/></label>
-<label>Inclination <output id="iOut"></output><input id="inc" type="range" min="75" max="90" step="0.01"/></label>
-<label>Eccentricity <output id="eOut"></output><input id="ecc" type="range" min="0" max="0.8" step="0.001"/></label>
-<label>ω Periastron <output id="wOut"></output><input id="omega" type="range" min="0" max="360" step="1"/></label>
-</section>
-<section><h2>4-Parameter Limb Darkening</h2>
-<label>c1 <output id="c1Out"></output><input id="c1" type="range" min="0" max="1" step="0.01" value="0.45"/></label>
-<label>c2 <output id="c2Out"></output><input id="c2" type="range" min="0" max="1" step="0.01" value="0.20"/></label>
-<label>c3 <output id="c3Out"></output><input id="c3" type="range" min="0" max="1" step="0.01" value="0.10"/></label>
-<label>c4 <output id="c4Out"></output><input id="c4" type="range" min="0" max="1" step="0.01" value="0.05"/></label>
-</section>
-<section><h2>Research Layers</h2><label class="check"><input id="spot" type="checkbox" checked/> Active regions affect flux</label><label class="check"><input id="moon" type="checkbox"/> Exomoon demonstrator</label><select id="filter"><option value="visual">Visual filter</option><option value="ir">Infrared filter</option><option value="uv">Ultraviolet filter</option></select></section>
-<section><h2>Data Tools</h2><button id="downloadCSV">Download model CSV</button><label class="upload"><input id="upload" type="file" accept=".csv,.json"/> Upload photometry CSV/JSON</label></section>
-</aside>
-<main class="center glass"><div class="tabs"><button class="active">3D Orrery</button><button>Phase-Fold</button><button>Residuals</button></div><section class="hero"><canvas id="scene"></canvas><div class="overlay"><span id="status">STANDBY</span><span id="fluxNow">Flux 1.00000</span><span id="phaseNow">Phase 0.500</span></div></section><section class="plotgrid"><div class="panel"><h2>Light Curve</h2><canvas id="curve"></canvas></div><div class="panel"><h2>Phase-Fold Workspace</h2><canvas id="phase"></canvas></div><div class="panel"><h2>Residuals</h2><canvas id="resid"></canvas></div></section></main>
-<aside class="dock right glass"><section><h2>Telemetry</h2><div class="telemetry" id="telemetry"></div></section><section><h2>NASA / MAST Console</h2><div class="console" id="console"></div></section><section><h2>Gold Query</h2><pre id="sql"></pre></section></aside>
-<footer class="footer glass"><span>Created by <b>Biswajit Jana</b> · © 2026</span><span>Static GitHub Pages · no Actions · no localhost</span><span>NASA Archive TAP / MAST-ready</span></footer>
-</div><script type="module" src="src/main.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="ExoIntel-Prime: a zero-dependency WebGL exoplanet transit photometry laboratory with quadratic limb-darkening, exomoon geometry, starspot perturbations, TTV modelling, NASA TAP ingestion, and an Obsidian Prime scientific HUD.">
+  <meta name="theme-color" content="#050505">
+  <title>ExoIntel-Prime | ExoLight Transit Lab</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar glass-panel">
+      <section class="brand-zone">
+        <div class="brand-emblem" aria-hidden="true">
+          <div class="emblem-core"></div>
+          <div class="emblem-ring ring-a"></div>
+          <div class="emblem-ring ring-b"></div>
+        </div>
+        <div class="brand-copy">
+          <h1>ExoIntel-Prime</h1>
+          <p>ExoLight Transit Lab · Sovereign Reconstruction Protocol</p>
+        </div>
+      </section>
+
+      <section class="mission-grid" aria-label="Primary system telemetry">
+        <article class="mission-tile">
+          <span>Runtime</span>
+          <strong id="runtime-status">BOOTING</strong>
+        </article>
+        <article class="mission-tile">
+          <span>Data Link</span>
+          <strong id="data-link-status">CACHE STANDBY</strong>
+        </article>
+        <article class="mission-tile">
+          <span>Solver</span>
+          <strong id="solver-status">82×150 POLAR</strong>
+        </article>
+        <article class="mission-tile">
+          <span>Render Layer</span>
+          <strong id="render-layer-status">WEBGL INIT</strong>
+        </article>
+        <article class="mission-tile mission-alert" id="tap-warning-tile">
+          <span>TAP Channel</span>
+          <strong id="tap-channel-status">IDLE</strong>
+        </article>
+      </section>
+    </header>
+
+    <main class="prime-grid">
+      <aside class="left-stack">
+        <section class="panel glass-panel target-panel">
+          <div class="panel-header">
+            <div>
+              <h2>Gold Target Vault</h2>
+              <p>Confirmed transiting systems ranked by signal depth</p>
+            </div>
+            <span class="chip cyan" id="target-count-chip">000</span>
+          </div>
+
+          <div class="search-band">
+            <input id="target-search" type="search" autocomplete="off" spellcheck="false" placeholder="Search planet, host, method, year...">
+            <button id="cache-reload-button" class="mini-button" type="button" title="Reload local cache">↻</button>
+          </div>
+
+          <div id="target-list" class="target-list" role="listbox" aria-label="Selectable exoplanet targets"></div>
+        </section>
+
+        <section class="panel glass-panel dossier-panel">
+          <div class="panel-header compact">
+            <div>
+              <h2>Target Astro-Dossier</h2>
+              <p>Instant physical indicators from selected system</p>
+            </div>
+            <span class="chip amber" id="dossier-lock-chip">NO LOCK</span>
+          </div>
+
+          <div class="dossier-matrix">
+            <article class="dossier-cell">
+              <span>Planet</span>
+              <strong id="dossier-planet">—</strong>
+            </article>
+            <article class="dossier-cell">
+              <span>Host Star</span>
+              <strong id="dossier-host">—</strong>
+            </article>
+            <article class="dossier-cell">
+              <span>Stellar Class</span>
+              <strong id="dossier-stellar-class">—</strong>
+            </article>
+            <article class="dossier-cell">
+              <span>T<sub>eff</sub></span>
+              <strong id="dossier-teff">— K</strong>
+            </article>
+            <article class="dossier-cell">
+              <span>a/R<sub>*</sub></span>
+              <strong id="dossier-a-rs">—</strong>
+            </article>
+            <article class="dossier-cell">
+              <span>R<sub>p</sub>/R<sub>*</sub></span>
+              <strong id="dossier-rp-rs">—</strong>
+            </article>
+            <article class="dossier-cell">
+              <span>M<sub>p</sub>/M<sub>*</sub></span>
+              <strong id="dossier-mp-ms">—</strong>
+            </article>
+            <article class="dossier-cell">
+              <span>Transit Probability</span>
+              <strong id="dossier-transit-probability">— %</strong>
+            </article>
+            <article class="dossier-cell">
+              <span>HZ Proximity Index</span>
+              <strong id="dossier-hz-index">—</strong>
+            </article>
+            <article class="dossier-cell">
+              <span>Ingress / Egress</span>
+              <strong id="dossier-ingress">— min</strong>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel glass-panel compact-panel">
+          <div class="panel-header compact">
+            <div>
+              <h2>Scientific Kernel</h2>
+              <p>Deterministic forward model state</p>
+            </div>
+            <span class="chip cyan">LIVE</span>
+          </div>
+
+          <div class="telemetry-table">
+            <div><span>Rings</span><strong id="kernel-rings">82</strong></div>
+            <div><span>Azimuth</span><strong id="kernel-azimuth">150</strong></div>
+            <div><span>Samples</span><strong id="kernel-samples">12,300</strong></div>
+            <div><span>Limb Law</span><strong>Quadratic</strong></div>
+            <div><span>Exomoon</span><strong id="kernel-moon-state">OFF</strong></div>
+            <div><span>Starspot</span><strong id="kernel-spot-state">OFF</strong></div>
+          </div>
+        </section>
+      </aside>
+
+      <section class="central-stack">
+        <section class="panel glass-panel observatory-panel">
+          <div class="panel-header">
+            <div>
+              <h2>3D WebGL Observatory</h2>
+              <p>Volumetric limb-darkened star · nested planet-moon transforms · physical occlusion</p>
+            </div>
+            <div class="status-row">
+              <span class="chip cyan" id="scene-state-chip">SCENE OFFLINE</span>
+              <span class="chip amber" id="fps-chip">-- FPS</span>
+            </div>
+          </div>
+
+          <div class="scene-shell">
+            <canvas id="scene-canvas" width="1440" height="840" aria-label="Three-dimensional exoplanet transit observatory"></canvas>
+
+            <div class="scene-hud hud-nw">
+              <span>Orbital Phase</span>
+              <strong id="phase-readout">0.0000</strong>
+            </div>
+            <div class="scene-hud hud-ne">
+              <span>Impact Parameter</span>
+              <strong id="impact-readout">0.000</strong>
+            </div>
+            <div class="scene-hud hud-sw">
+              <span>Moon Transform</span>
+              <strong id="moon-transform-readout">DISABLED</strong>
+            </div>
+            <div class="scene-hud hud-se">
+              <span>Depth</span>
+              <strong id="scene-depth-readout">— ppm</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel glass-panel photometry-panel">
+          <div class="panel-header">
+            <div>
+              <h2>Photometric Forward Model</h2>
+              <p>Normalized flux from polar-grid stellar integration</p>
+            </div>
+            <div class="status-row">
+              <span class="chip cyan" id="flux-min-chip">MIN —</span>
+              <span class="chip amber" id="ttv-chip">TTV OFF</span>
+            </div>
+          </div>
+
+          <div class="curve-shell">
+            <canvas id="lightcurve-canvas" width="1440" height="360" aria-label="Transit light curve generated by the numerical solver"></canvas>
+          </div>
+        </section>
+      </section>
+
+      <aside class="right-stack">
+        <section class="panel glass-panel control-panel">
+          <div class="panel-header">
+            <div>
+              <h2>Control Matrix</h2>
+              <p>Orbital mechanics, limb darkening, perturbation modules</p>
+            </div>
+            <button id="reset-controls-button" class="ghost-button" type="button">RESET</button>
+          </div>
+
+          <div class="control-scroll">
+            <fieldset class="control-group">
+              <legend>System Geometry</legend>
+
+              <label class="slider-line">
+                <span>R<sub>p</sub>/R<sub>*</sub></span>
+                <input id="control-rp-rs" type="range" min="0.01" max="0.22" step="0.001" value="0.100">
+                <output id="output-rp-rs">0.100</output>
+              </label>
+
+              <label class="slider-line">
+                <span>a/R<sub>*</sub></span>
+                <input id="control-a-rs" type="range" min="2.5" max="55" step="0.1" value="12.0">
+                <output id="output-a-rs">12.0</output>
+              </label>
+
+              <label class="slider-line">
+                <span>Inclination</span>
+                <input id="control-inclination" type="range" min="80" max="90" step="0.01" value="88.50">
+                <output id="output-inclination">88.50°</output>
+              </label>
+
+              <label class="slider-line">
+                <span>Period</span>
+                <input id="control-period" type="range" min="0.5" max="120" step="0.1" value="4.0">
+                <output id="output-period">4.0 d</output>
+              </label>
+
+              <label class="slider-line">
+                <span>Eccentricity</span>
+                <input id="control-eccentricity" type="range" min="0" max="0.75" step="0.01" value="0.00">
+                <output id="output-eccentricity">0.00</output>
+              </label>
+            </fieldset>
+
+            <fieldset class="control-group">
+              <legend>Quadratic Limb Darkening</legend>
+
+              <label class="slider-line">
+                <span>u<sub>1</sub></span>
+                <input id="control-u1" type="range" min="0" max="1" step="0.01" value="0.32">
+                <output id="output-u1">0.32</output>
+              </label>
+
+              <label class="slider-line">
+                <span>u<sub>2</sub></span>
+                <input id="control-u2" type="range" min="0" max="1" step="0.01" value="0.28">
+                <output id="output-u2">0.28</output>
+              </label>
+            </fieldset>
+
+            <fieldset class="control-group">
+              <legend>Nested Exomoon Orbit</legend>
+
+              <label class="toggle-line">
+                <span>Enable Exomoon</span>
+                <input id="control-moon-enabled" type="checkbox">
+              </label>
+
+              <label class="slider-line">
+                <span>R<sub>m</sub>/R<sub>*</sub></span>
+                <input id="control-moon-radius" type="range" min="0.003" max="0.08" step="0.001" value="0.025">
+                <output id="output-moon-radius">0.025</output>
+              </label>
+
+              <label class="slider-line">
+                <span>Moon Orbit</span>
+                <input id="control-moon-distance" type="range" min="0.12" max="1.80" step="0.01" value="0.55">
+                <output id="output-moon-distance">0.55 R*</output>
+              </label>
+
+              <label class="slider-line">
+                <span>Moon Phase</span>
+                <input id="control-moon-phase" type="range" min="0" max="360" step="1" value="45">
+                <output id="output-moon-phase">45°</output>
+              </label>
+
+              <label class="slider-line">
+                <span>Moon Inclination</span>
+                <input id="control-moon-inclination" type="range" min="0" max="90" step="1" value="12">
+                <output id="output-moon-inclination">12°</output>
+              </label>
+
+              <label class="slider-line">
+                <span>Moon Node</span>
+                <input id="control-moon-node" type="range" min="0" max="360" step="1" value="35">
+                <output id="output-moon-node">35°</output>
+              </label>
+            </fieldset>
+
+            <fieldset class="control-group">
+              <legend>Starspot Crossing</legend>
+
+              <label class="toggle-line">
+                <span>Enable Starspot</span>
+                <input id="control-spot-enabled" type="checkbox">
+              </label>
+
+              <label class="slider-line">
+                <span>Spot X</span>
+                <input id="control-spot-x" type="range" min="-0.95" max="0.95" step="0.01" value="0.20">
+                <output id="output-spot-x">0.20</output>
+              </label>
+
+              <label class="slider-line">
+                <span>Spot Y</span>
+                <input id="control-spot-y" type="range" min="-0.95" max="0.95" step="0.01" value="0.10">
+                <output id="output-spot-y">0.10</output>
+              </label>
+
+              <label class="slider-line">
+                <span>Spot Radius</span>
+                <input id="control-spot-radius" type="range" min="0.02" max="0.35" step="0.01" value="0.12">
+                <output id="output-spot-radius">0.12</output>
+              </label>
+
+              <label class="slider-line">
+                <span>Contrast</span>
+                <input id="control-spot-contrast" type="range" min="0.05" max="0.95" step="0.01" value="0.55">
+                <output id="output-spot-contrast">0.55</output>
+              </label>
+            </fieldset>
+
+            <fieldset class="control-group">
+              <legend>Transit Timing Variation</legend>
+
+              <label class="toggle-line">
+                <span>Enable TTV</span>
+                <input id="control-ttv-enabled" type="checkbox">
+              </label>
+
+              <label class="slider-line">
+                <span>Amplitude</span>
+                <input id="control-ttv-amplitude" type="range" min="0" max="0.08" step="0.001" value="0.010">
+                <output id="output-ttv-amplitude">0.010 phase</output>
+              </label>
+
+              <label class="slider-line">
+                <span>Superperiod</span>
+                <input id="control-ttv-period" type="range" min="2" max="100" step="1" value="16">
+                <output id="output-ttv-period">16 epochs</output>
+              </label>
+            </fieldset>
+          </div>
+        </section>
+
+        <section class="panel glass-panel tap-panel" id="tap-panel">
+          <div class="panel-header compact">
+            <div>
+              <h2>ADQL / SQL Console</h2>
+              <p>NASA Exoplanet Archive TAP synchronous query viewport</p>
+            </div>
+            <button id="tap-expand-button" class="ghost-button" type="button">EXPAND</button>
+          </div>
+
+          <div class="tap-body">
+            <textarea id="adql-editor" spellcheck="false">SELECT TOP 150
+  pl_name,
+  hostname,
+  sy_snum,
+  sy_pnum,
+  pl_orbper,
+  pl_orbsmax,
+  pl_ratror,
+  pl_rade,
+  pl_bmasse,
+  pl_orbincl,
+  pl_orbeccen,
+  pl_trandep,
+  pl_trandur,
+  st_teff,
+  st_rad,
+  st_mass,
+  st_logg,
+  st_met,
+  disc_year,
+  discoverymethod
+FROM pscomppars
+WHERE tran_flag = 1
+  AND pl_ratror IS NOT NULL
+  AND pl_orbincl IS NOT NULL
+  AND pl_orbeccen IS NOT NULL
+  AND st_rad IS NOT NULL
+  AND st_teff IS NOT NULL
+ORDER BY pl_trandep DESC</textarea>
+
+            <div class="tap-actions">
+              <button id="tap-run-button" class="primary-button" type="button">RUN TAP QUERY</button>
+              <button id="tap-cache-button" class="ghost-button" type="button">USE LOCAL CACHE</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel glass-panel log-panel">
+          <div class="panel-header compact">
+            <div>
+              <h2>Telemetry Bus</h2>
+              <p>Runtime events, fallbacks, solver warnings</p>
+            </div>
+            <span class="chip cyan" id="log-count-chip">000</span>
+          </div>
+
+          <div id="telemetry-log" class="telemetry-log" aria-live="polite"></div>
+        </section>
+      </aside>
+    </main>
+
+    <footer class="statusbar glass-panel">
+      <div class="ticker">
+        <span>ZERO DEPENDENCY</span>
+        <span>STATIC ROOT DEPLOY</span>
+        <span>ES MODULE BOOTSTRAP</span>
+        <span>QUADRATIC LIMB DARKENING</span>
+        <span>NESTED EXOMOON FRAME</span>
+        <span>TAP FALLBACK ENGINE</span>
+      </div>
+      <time id="utc-clock" datetime="">00:00:00 UTC</time>
+    </footer>
+  </div>
+
+  <noscript>
+    <div class="noscript">
+      ExoIntel-Prime requires JavaScript ES Modules. Enable JavaScript to run the photometric solver and WebGL observatory.
+    </div>
+  </noscript>
+
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>
