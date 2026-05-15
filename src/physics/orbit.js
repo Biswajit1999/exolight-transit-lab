@@ -1,0 +1,3 @@
+export function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+export function solveKepler(M,e){let E=M;for(let i=0;i<12;i++){const f=E-e*Math.sin(E)-M,fp=1-e*Math.cos(E);E-=f/Math.max(fp,1e-9)}return E}
+export function projectedOrbit({phase,aRs,incDeg,ecc,omegaDeg}){const M=((2*Math.PI*(phase-.5))%(2*Math.PI)+2*Math.PI)%(2*Math.PI),E=solveKepler(M,ecc),cosf=(Math.cos(E)-ecc)/(1-ecc*Math.cos(E)),sinf=(Math.sqrt(Math.max(0,1-ecc*ecc))*Math.sin(E))/(1-ecc*Math.cos(E)),f=Math.atan2(sinf,cosf),r=aRs*(1-ecc*Math.cos(E)),arg=f+omegaDeg*Math.PI/180,inc=incDeg*Math.PI/180;return{x:-r*Math.cos(arg),y:-r*Math.sin(arg)*Math.cos(inc),z:r*Math.sin(arg)*Math.sin(inc),r,trueAnomaly:f}}

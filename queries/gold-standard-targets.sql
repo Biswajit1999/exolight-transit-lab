@@ -1,0 +1,1 @@
+SELECT TOP 150 pl_name, hostname, pl_orbper, pl_trandep, pl_trandur, pl_ratror, pl_ratdor, pl_orbincl, pl_orbeccen, pl_orblper, st_teff, st_rad, st_lum, sy_vmag FROM pscomppars WHERE tran_flag = 1 AND pl_ratror IS NOT NULL AND pl_ratdor IS NOT NULL AND sy_vmag < 12 ORDER BY pl_trandep DESC;

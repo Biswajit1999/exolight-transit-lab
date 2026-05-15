@@ -1,0 +1,30 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ExoIntel Prime — Exoplanet Observatory</title>
+<meta name="author" content="Biswajit Jana"/>
+<link rel="icon" href="favicon.svg"/><link rel="stylesheet" href="styles.css"/>
+</head><body>
+<div class="app">
+<header class="top glass"><div><div class="eyebrow">EXOINTEL-PRIME / TRANSIT INTELLIGENCE SYSTEM</div><h1>Exoplanetary Analysis Laboratory</h1><p>NASA Archive TAP + MAST-ready photometry + high-fidelity transit quadrature + true-unit orrery.</p></div><div class="top-actions"><button id="btnNASA" class="prime">INITIALIZE NASA DATASTREAM</button><button id="btnBootstrap">LOAD BOOTSTRAP TARGETS</button></div></header>
+<aside class="dock left glass">
+<section><h2>Target Control</h2><select id="targetSelect"></select><div class="readout" id="targetInfo"></div></section>
+<section><h2>Manual Fit</h2>
+<label>Rp/Rs <output id="rpOut"></output><input id="rp" type="range" min="0.005" max="0.25" step="0.001"/></label>
+<label>a/Rs <output id="aOut"></output><input id="a" type="range" min="2" max="120" step="0.1"/></label>
+<label>Inclination <output id="iOut"></output><input id="inc" type="range" min="75" max="90" step="0.01"/></label>
+<label>Eccentricity <output id="eOut"></output><input id="ecc" type="range" min="0" max="0.8" step="0.001"/></label>
+<label>ω Periastron <output id="wOut"></output><input id="omega" type="range" min="0" max="360" step="1"/></label>
+</section>
+<section><h2>4-Parameter Limb Darkening</h2>
+<label>c1 <output id="c1Out"></output><input id="c1" type="range" min="0" max="1" step="0.01" value="0.45"/></label>
+<label>c2 <output id="c2Out"></output><input id="c2" type="range" min="0" max="1" step="0.01" value="0.20"/></label>
+<label>c3 <output id="c3Out"></output><input id="c3" type="range" min="0" max="1" step="0.01" value="0.10"/></label>
+<label>c4 <output id="c4Out"></output><input id="c4" type="range" min="0" max="1" step="0.01" value="0.05"/></label>
+</section>
+<section><h2>Research Layers</h2><label class="check"><input id="spot" type="checkbox" checked/> Active regions affect flux</label><label class="check"><input id="moon" type="checkbox"/> Exomoon demonstrator</label><select id="filter"><option value="visual">Visual filter</option><option value="ir">Infrared filter</option><option value="uv">Ultraviolet filter</option></select></section>
+<section><h2>Data Tools</h2><button id="downloadCSV">Download model CSV</button><label class="upload"><input id="upload" type="file" accept=".csv,.json"/> Upload photometry CSV/JSON</label></section>
+</aside>
+<main class="center glass"><div class="tabs"><button class="active">3D Orrery</button><button>Phase-Fold</button><button>Residuals</button></div><section class="hero"><canvas id="scene"></canvas><div class="overlay"><span id="status">STANDBY</span><span id="fluxNow">Flux 1.00000</span><span id="phaseNow">Phase 0.500</span></div></section><section class="plotgrid"><div class="panel"><h2>Light Curve</h2><canvas id="curve"></canvas></div><div class="panel"><h2>Phase-Fold Workspace</h2><canvas id="phase"></canvas></div><div class="panel"><h2>Residuals</h2><canvas id="resid"></canvas></div></section></main>
+<aside class="dock right glass"><section><h2>Telemetry</h2><div class="telemetry" id="telemetry"></div></section><section><h2>NASA / MAST Console</h2><div class="console" id="console"></div></section><section><h2>Gold Query</h2><pre id="sql"></pre></section></aside>
+<footer class="footer glass"><span>Created by <b>Biswajit Jana</b> · © 2026</span><span>Static GitHub Pages · no Actions · no localhost</span><span>NASA Archive TAP / MAST-ready</span></footer>
+</div><script type="module" src="src/main.js"></script></body></html>
