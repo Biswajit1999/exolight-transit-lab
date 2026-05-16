@@ -14,6 +14,8 @@ export class PrimeHUD {
     this.observationFadeFrame = null;
     this.lightcurveCanvas = this.$("lightcurve-canvas");
     this.lightcurveContext = this.lightcurveCanvas ? this.lightcurveCanvas.getContext("2d") : null;
+    this.diagnosticNodes = {};
+    this.lastDiagnostics = null;
 
     this.controls = {
       rpRs: this.$("control-rp-rs"),
@@ -63,6 +65,7 @@ export class PrimeHUD {
 
   bind(callbacks = {}) {
     this.callbacks = callbacks;
+    this.ensureDiagnosticsPanel();
 
     const search = this.$("target-search");
     const reload = this.$("cache-reload-button");
@@ -111,10 +114,17 @@ export class PrimeHUD {
 
     Object.entries(this.controls).forEach(([key, input]) => {
       if (!input) return;
+
       const eventName = input.type === "checkbox" ? "change" : "input";
+
       input.addEventListener(eventName, () => {
         this.syncOutputsFromInputs();
-        if (this.callbacks.onControlsChange) this.callbacks.onControlsChange(this.readControls());
+
+        if (this.callbacks.onControlsChange) {
+          this.callbacks.onControlsChange(this.readControls());
+        }
+
+        this.updateDiagnostics();
       });
     });
 
@@ -123,6 +133,144 @@ export class PrimeHUD {
         this.drawPhotometryFrame(this.phaseMarker);
       }
     }, { passive: true });
+  }
+
+  ensureDiagnosticsPanel() {
+    if (this.$("diagnostic-period")) return;
+
+    const kernelPanel = this.$("kernel-samples")?.closest(".compact-panel");
+    const kernelTable = kernelPanel?.querySelector(".telemetry-table");
+
+    if (!kernelPanel || !kernelTable) return;
+
+    const section = document.createElement("div");
+    section.className = "research-diagnostics";
+    section.innerHTML = `
+      <div class="diagnostics-title">
+        <strong>Observed-Light-Curve Diagnostics</strong>
+        <span>candidate morphology only · not a discovery claim</span>
+      </div>
+      <div class="diagnostics-grid">
+        <div><span>Period</span><strong id="diagnostic-period">—</strong></div>
+        <div><span>Transit Duration</span><strong id="diagnostic-duration">—</strong></div>
+        <div><span>Duration Phase</span><strong id="diagnostic-duration-phase">—</strong></div>
+        <div><span>Observed Min Phase</span><strong id="diagnostic-observed-min">—</strong></div>
+        <div><span>Model Min Phase</span><strong id="diagnostic-model-min">—</strong></div>
+        <div><span>Phase Offset</span><strong id="diagnostic-phase-offset">—</strong></div>
+        <div><span>OOT Scatter</span><strong id="diagnostic-oot-scatter">—</strong></div>
+        <div><span>Residual Scatter</span><strong id="diagnostic-residual-scatter">—</strong></div>
+        <div><span>Secondary Feature</span><strong id="diagnostic-secondary">—</strong></div>
+        <div><span>Secondary Phase</span><strong id="diagnostic-secondary-phase">—</strong></div>
+        <div><span>Star System</span><strong id="diagnostic-star-system">—</strong></div>
+        <div><span>Planet System</span><strong id="diagnostic-planet-system">—</strong></div>
+        <div class="diagnostic-wide"><span>Exomoon Status</span><strong id="diagnostic-exomoon-status">simulation only unless externally confirmed</strong></div>
+      </div>
+    `;
+
+    kernelTable.insertAdjacentElement("afterend", section);
+
+    const style = document.createElement("style");
+    style.textContent = `
+      .research-diagnostics{
+        margin:0 8px 8px;
+        padding:8px;
+        border:1px solid rgba(0,240,255,.12);
+        background:
+          linear-gradient(135deg,rgba(0,240,255,.055),transparent 60%),
+          rgba(0,0,0,.28);
+      }
+
+      .diagnostics-title{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:8px;
+        margin-bottom:6px;
+        padding-bottom:6px;
+        border-bottom:1px solid rgba(255,255,255,.06);
+      }
+
+      .diagnostics-title strong{
+        color:#e8f7ff;
+        font-size:9px;
+        letter-spacing:.06em;
+        text-transform:uppercase;
+      }
+
+      .diagnostics-title span{
+        overflow:hidden;
+        color:#7d8993;
+        font-size:8px;
+        white-space:nowrap;
+        text-overflow:ellipsis;
+        text-transform:uppercase;
+      }
+
+      .diagnostics-grid{
+        display:grid;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:5px;
+      }
+
+      .diagnostics-grid div{
+        min-height:32px;
+        padding:5px 6px;
+        display:flex;
+        flex-direction:column;
+        justify-content:space-between;
+        border:1px solid rgba(255,255,255,.055);
+        background:rgba(0,0,0,.22);
+      }
+
+      .diagnostics-grid .diagnostic-wide{
+        grid-column:1 / -1;
+      }
+
+      .diagnostics-grid span{
+        color:#7d8993;
+        font-size:8px;
+        line-height:1;
+        text-transform:uppercase;
+      }
+
+      .diagnostics-grid strong{
+        overflow:hidden;
+        color:#00f0ff;
+        font-size:9px;
+        line-height:1.15;
+        white-space:nowrap;
+        text-overflow:ellipsis;
+        text-shadow:0 0 8px rgba(0,240,255,.22);
+      }
+
+      .diagnostics-grid strong.warn{
+        color:#ffb000;
+        text-shadow:0 0 8px rgba(255,176,0,.22);
+      }
+
+      .diagnostics-grid strong.bad{
+        color:#ff3149;
+        text-shadow:0 0 8px rgba(255,49,73,.22);
+      }
+    `;
+
+    document.head.appendChild(style);
+
+    this.diagnosticNodes = {
+      period: this.$("diagnostic-period"),
+      duration: this.$("diagnostic-duration"),
+      durationPhase: this.$("diagnostic-duration-phase"),
+      observedMin: this.$("diagnostic-observed-min"),
+      modelMin: this.$("diagnostic-model-min"),
+      phaseOffset: this.$("diagnostic-phase-offset"),
+      ootScatter: this.$("diagnostic-oot-scatter"),
+      residualScatter: this.$("diagnostic-residual-scatter"),
+      secondary: this.$("diagnostic-secondary"),
+      secondaryPhase: this.$("diagnostic-secondary-phase"),
+      starSystem: this.$("diagnostic-star-system"),
+      planetSystem: this.$("diagnostic-planet-system"),
+      exomoonStatus: this.$("diagnostic-exomoon-status")
+    };
   }
 
   readControls() {
@@ -174,10 +322,12 @@ export class PrimeHUD {
     setInput(this.controls.ttvAmplitude, params.ttvAmplitude);
     setInput(this.controls.ttvPeriodEpochs, params.ttvPeriodEpochs);
     this.syncOutputsFromInputs();
+    this.updateDiagnostics();
   }
 
   syncOutputsFromInputs() {
     const p = this.readControls();
+
     setText(this.outputs.rpRs, fmt(p.rpRs, 3));
     setText(this.outputs.aRs, fmt(p.aRs, 1));
     setText(this.outputs.inclinationDeg, `${fmt(p.inclinationDeg, 2)}°`);
@@ -206,6 +356,7 @@ export class PrimeHUD {
     if (status.tap !== undefined) setText(this.$("tap-channel-status"), status.tap);
 
     const warningTile = this.$("tap-warning-tile");
+
     if (warningTile && status.warning !== undefined) {
       warningTile.classList.toggle("warning", !!status.warning);
     }
@@ -232,6 +383,8 @@ export class PrimeHUD {
     if (kernel.observation !== undefined) {
       setText(this.$("kernel-observation-state"), kernel.observation);
     }
+
+    this.updateDiagnostics();
   }
 
   setObservationState(state, count = 0) {
@@ -297,14 +450,18 @@ export class PrimeHUD {
 
   setActiveTarget(target) {
     this.activeTarget = target || null;
+
     setText(this.$("data-link-status"), target?.source ? target.source.toUpperCase() : "LOCAL CACHE");
     setText(this.$("dossier-planet"), target?.pl_name || "—");
     setText(this.$("dossier-host"), target?.hostname || "—");
 
     const cards = document.querySelectorAll(".target-card");
+
     cards.forEach(card => {
       card.classList.toggle("active", target && card.dataset.id === target.id);
     });
+
+    this.updateDiagnostics();
   }
 
   renderTargets(targets = [], activeTarget = null) {
@@ -334,25 +491,38 @@ export class PrimeHUD {
       }
 
       const main = document.createElement("div");
+      const titleRow = document.createElement("div");
       const title = document.createElement("strong");
+      const badge = document.createElement("i");
       const meta = document.createElement("span");
       const depth = document.createElement("em");
 
+      titleRow.className = "target-title-row";
       title.textContent = target.pl_name || "Unknown Planet";
+
+      badge.className = target.lightcurve_available ? "lc-badge real" : "lc-badge model";
+      badge.textContent = target.lightcurve_available ? "REAL LC" : "MODEL";
+
       meta.textContent = [
         target.hostname || "Unknown Host",
         finite(target.st_teff) ? `${Math.round(target.st_teff)} K` : "T_eff —",
         finite(target.pl_orbper) ? `${fmt(target.pl_orbper, 2)} d` : "P —",
         target.discoverymethod || "Transit"
       ].join(" · ");
+
       depth.textContent = finite(target.pl_trandep) ? `${Math.round(target.pl_trandep)} ppm` : "— ppm";
 
-      main.append(title, meta);
+      titleRow.append(title, badge);
+      main.append(titleRow, meta);
       button.append(main, depth);
+
       button.addEventListener("click", () => {
         this.activeTarget = target;
         this.setActiveTarget(target);
-        if (this.callbacks.onTargetSelect) this.callbacks.onTargetSelect(target);
+
+        if (this.callbacks.onTargetSelect) {
+          this.callbacks.onTargetSelect(target);
+        }
       });
 
       fragment.appendChild(button);
@@ -373,11 +543,14 @@ export class PrimeHUD {
     setText(this.$("dossier-transit-probability"), finite(dossier.transitProbability) ? `${fmt(dossier.transitProbability, 2)} %` : "— %");
     setText(this.$("dossier-hz-index"), finite(dossier.hzIndex) ? `${fmt(dossier.hzIndex, 3)} ${hzLabel(dossier.hzIndex)}` : "—");
     setText(this.$("dossier-ingress"), finite(dossier.ingressMinutes) ? `${fmt(dossier.ingressMinutes, 1)} min` : "— min");
+
+    this.updateDiagnostics();
   }
 
   renderLightCurve(modelCurve = [], summary = {}, observedCurve = []) {
     this.cachedModelCurve = Array.isArray(modelCurve) ? modelCurve : [];
     this.cachedSummary = summary || {};
+
     const nextObserved = Array.isArray(observedCurve) ? observedCurve : [];
     const nextSignature = this.curveSignature(nextObserved);
 
@@ -389,6 +562,8 @@ export class PrimeHUD {
       this.cachedObservedCurve = nextObserved;
       this.drawPhotometryFrame(this.phaseMarker);
     }
+
+    this.updateDiagnostics();
   }
 
   startObservationFade() {
@@ -457,7 +632,13 @@ export class PrimeHUD {
     const yMap = flux => pad.top + (scale.yMax - flux) / Math.max(1e-9, scale.yMax - scale.yMin) * (h - pad.top - pad.bottom);
 
     this.drawTransitBand(ctx, w, h, pad, xMap, model);
-    this.drawObservedScatter(ctx, observed, xMap, yMap);
+
+    if (observed.length) {
+      this.drawObservedScatter(ctx, observed, xMap, yMap);
+    } else {
+      this.drawNoObservedDataNotice(ctx, w, h, pad);
+    }
+
     this.drawModelLine(ctx, model, xMap, yMap);
     this.drawAxesLabels(ctx, w, h, pad, scale);
 
@@ -488,12 +669,7 @@ export class PrimeHUD {
     const yMin = Math.min(0.999, minFluxRaw - fluxSpan * 0.18);
     const yMax = Math.max(1.0002, maxFluxRaw + fluxSpan * 0.15);
 
-    return {
-      minPhase,
-      maxPhase,
-      yMin,
-      yMax
-    };
+    return { minPhase, maxPhase, yMin, yMax };
   }
 
   drawGrid(ctx, w, h, pad) {
@@ -539,13 +715,34 @@ export class PrimeHUD {
 
     for (const point of observed) {
       if (!finite(point.phase) || !finite(point.flux)) continue;
+
       const x = xMap(point.phase);
       const y = yMap(point.flux);
+
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
       ctx.fill();
     }
 
+    ctx.restore();
+  }
+
+  drawNoObservedDataNotice(ctx, w, h, pad) {
+    const dpr = devicePixelRatioSafe();
+    const x = pad.left + 12 * dpr;
+    const y = pad.top + 16 * dpr;
+
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,.42)";
+    ctx.strokeStyle = "rgba(255,176,0,.25)";
+    ctx.lineWidth = 1 * dpr;
+    ctx.fillRect(x, y, 350 * dpr, 34 * dpr);
+    ctx.strokeRect(x, y, 350 * dpr, 34 * dpr);
+    ctx.fillStyle = "#ffb000";
+    ctx.font = `${10 * dpr}px JetBrains Mono, monospace`;
+    ctx.fillText("NO LOCAL REAL LIGHT CURVE FOR THIS TARGET", x + 10 * dpr, y + 14 * dpr);
+    ctx.fillStyle = "#7d8993";
+    ctx.fillText("Search “real lc” to select targets with MAST photometry.", x + 10 * dpr, y + 27 * dpr);
     ctx.restore();
   }
 
@@ -560,6 +757,7 @@ export class PrimeHUD {
     model.forEach((point, index) => {
       const x = xMap(point.phase);
       const y = yMap(point.flux);
+
       if (index === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     });
@@ -577,6 +775,7 @@ export class PrimeHUD {
     model.forEach((point, index) => {
       const x = xMap(point.phase);
       const y = yMap(point.flux);
+
       if (index === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     });
@@ -659,7 +858,7 @@ export class PrimeHUD {
     const x = pad.left + (phase - scale.minPhase) / Math.max(1e-9, scale.maxPhase - scale.minPhase) * (w - pad.left - pad.right);
 
     ctx.save();
-    ctx.strokeStyle = "#00f0ff";
+    ctx.strokeStyle = "rgba(0,240,255,.92)";
     ctx.lineWidth = 1.5 * dpr;
     ctx.shadowColor = "rgba(0,240,255,.65)";
     ctx.shadowBlur = 10 * dpr;
@@ -680,6 +879,7 @@ export class PrimeHUD {
     setText(this.$("model-depth-chip"), finite(summary.depthPpm) ? `MODEL ${Math.round(summary.depthPpm)} PPM` : "MODEL — PPM");
     setText(this.$("scene-depth-readout"), finite(summary.depthPpm) ? `${Math.round(summary.depthPpm)} ppm` : "— ppm");
     setText(this.$("ttv-chip"), this.controls.ttvEnabled?.checked ? "TTV ON" : "TTV OFF");
+    this.updateDiagnostics();
   }
 
   setSceneReadouts(readouts = {}) {
@@ -690,6 +890,43 @@ export class PrimeHUD {
     setText(this.$("fps-chip"), finite(readouts.fps) ? `${Math.round(readouts.fps)} FPS` : "-- FPS");
     setText(this.$("footer-fps"), finite(readouts.fps) ? `${Math.round(readouts.fps)}` : "--");
     setText(this.$("scene-state-chip"), "SCENE ONLINE");
+  }
+
+  updateDiagnostics() {
+    this.ensureDiagnosticsPanel();
+
+    if (!this.diagnosticNodes.period) return;
+
+    const target = this.activeTarget || {};
+    const model = this.cachedModelCurve || [];
+    const observed = this.cachedObservedCurve || [];
+    const controls = this.readControls();
+    const diagnostics = computeDiagnostics(target, model, observed, controls);
+
+    this.lastDiagnostics = diagnostics;
+
+    setText(this.diagnosticNodes.period, finite(diagnostics.periodDays) ? `${fmt(diagnostics.periodDays, 6)} d` : "—");
+    setText(this.diagnosticNodes.duration, finite(diagnostics.durationHours) ? `${fmt(diagnostics.durationHours, 3)} h` : "—");
+    setText(this.diagnosticNodes.durationPhase, finite(diagnostics.durationPhase) ? fmt(diagnostics.durationPhase, 5) : "—");
+    setText(this.diagnosticNodes.observedMin, finite(diagnostics.observedMinPhase) ? signed(diagnostics.observedMinPhase, 4) : "—");
+    setText(this.diagnosticNodes.modelMin, finite(diagnostics.modelMinPhase) ? signed(diagnostics.modelMinPhase, 4) : "—");
+    setText(this.diagnosticNodes.phaseOffset, finite(diagnostics.phaseOffset) ? signed(diagnostics.phaseOffset, 4) : "—");
+    setText(this.diagnosticNodes.ootScatter, finite(diagnostics.ootScatterPpm) ? `${Math.round(diagnostics.ootScatterPpm)} ppm` : "—");
+    setText(this.diagnosticNodes.residualScatter, finite(diagnostics.residualScatterPpm) ? `${Math.round(diagnostics.residualScatterPpm)} ppm` : "—");
+    setText(this.diagnosticNodes.secondary, diagnostics.secondaryLabel || "—");
+    setText(this.diagnosticNodes.secondaryPhase, finite(diagnostics.secondaryPhase) ? signed(diagnostics.secondaryPhase, 4) : "—");
+    setText(this.diagnosticNodes.starSystem, diagnostics.starSystemLabel || "—");
+    setText(this.diagnosticNodes.planetSystem, diagnostics.planetSystemLabel || "—");
+
+    const moonText = controls.moonEnabled
+      ? "simulation enabled · observed feature not confirmed moon"
+      : "simulation off · observed feature not confirmed moon";
+
+    setText(this.diagnosticNodes.exomoonStatus, moonText);
+
+    setDiagnosticClass(this.diagnosticNodes.phaseOffset, Math.abs(diagnostics.phaseOffset || 0) > 0.01 ? "warn" : "");
+    setDiagnosticClass(this.diagnosticNodes.secondary, diagnostics.secondaryRisk === "possible" ? "warn" : diagnostics.secondaryRisk === "strong" ? "bad" : "");
+    setDiagnosticClass(this.diagnosticNodes.residualScatter, diagnostics.residualScatterPpm > 3000 ? "warn" : "");
   }
 
   log(message, level = "info") {
@@ -755,6 +992,233 @@ export class PrimeHUD {
   }
 }
 
+function computeDiagnostics(target, model, observed, controls) {
+  const periodDays = finiteNumber(target.pl_orbper, controls.periodDays);
+  const durationHours = finiteNumber(target.pl_trandur, null);
+  const durationPhase = finite(periodDays) && finite(durationHours) && periodDays > 0
+    ? durationHours / 24 / periodDays
+    : null;
+
+  const modelMinPhase = getMinPhase(model);
+  const observedMinPhase = getRobustMinPhase(observed);
+  const phaseOffset = finite(observedMinPhase) && finite(modelMinPhase)
+    ? observedMinPhase - modelMinPhase
+    : null;
+
+  const transitHalfWidth = finite(durationPhase)
+    ? Math.max(0.006, 1.7 * durationPhase)
+    : 0.018;
+
+  const oot = observed.filter(point =>
+    finite(point.phase) &&
+    finite(point.flux) &&
+    Math.abs(point.phase) > transitHalfWidth
+  );
+
+  const ootFlux = oot.map(point => point.flux).filter(finite);
+  const ootMedian = median(ootFlux);
+  const ootScatter = robustSigma(ootFlux);
+  const ootScatterPpm = finite(ootScatter) ? ootScatter * 1e6 : null;
+
+  const residuals = [];
+
+  if (model.length && observed.length) {
+    for (const point of observed) {
+      if (!finite(point.phase) || !finite(point.flux)) continue;
+
+      const modelFlux = interpolateModelFlux(model, point.phase);
+      if (!finite(modelFlux)) continue;
+
+      residuals.push(point.flux - modelFlux);
+    }
+  }
+
+  const residualScatter = robustSigma(residuals);
+  const residualScatterPpm = finite(residualScatter) ? residualScatter * 1e6 : null;
+
+  const secondary = detectSecondaryFeature(observed, model, durationPhase, ootMedian, ootScatter);
+
+  const starCount = finiteNumber(target.sy_snum, null);
+  const planetCount = finiteNumber(target.sy_pnum, null);
+
+  const starSystemLabel = finite(starCount)
+    ? starCount > 1 ? `${Math.round(starCount)} stars · possible dilution` : "single-star catalog entry"
+    : "stellar count unknown";
+
+  const planetSystemLabel = finite(planetCount)
+    ? planetCount > 1 ? `${Math.round(planetCount)} known planets` : "one known planet"
+    : "planet count unknown";
+
+  return {
+    periodDays,
+    durationHours,
+    durationPhase,
+    modelMinPhase,
+    observedMinPhase,
+    phaseOffset,
+    ootScatterPpm,
+    residualScatterPpm,
+    secondaryLabel: secondary.label,
+    secondaryPhase: secondary.phase,
+    secondaryRisk: secondary.risk,
+    starSystemLabel,
+    planetSystemLabel
+  };
+}
+
+function detectSecondaryFeature(observed, model, durationPhase, ootMedian, ootScatter) {
+  if (!Array.isArray(observed) || observed.length < 80) {
+    return { label: "insufficient data", phase: null, risk: "none" };
+  }
+
+  const mainWidth = finite(durationPhase) ? Math.max(0.012, 2.4 * durationPhase) : 0.025;
+  const points = observed
+    .filter(point =>
+      finite(point.phase) &&
+      finite(point.flux) &&
+      Math.abs(point.phase) > mainWidth &&
+      Math.abs(point.phase) < 0.18
+    )
+    .sort((a, b) => a.phase - b.phase);
+
+  if (points.length < 25) {
+    return { label: "not enough OOT phase", phase: null, risk: "none" };
+  }
+
+  const baseline = finite(ootMedian) ? ootMedian : median(points.map(point => point.flux));
+  const scatter = finite(ootScatter) && ootScatter > 0 ? ootScatter : robustSigma(points.map(point => point.flux));
+
+  if (!finite(baseline) || !finite(scatter) || scatter <= 0) {
+    return { label: "baseline uncertain", phase: null, risk: "none" };
+  }
+
+  const window = Math.max(5, Math.round(points.length * 0.035));
+  let best = { depth: -Infinity, phase: null };
+
+  for (let i = 0; i < points.length; i++) {
+    const lo = Math.max(0, i - window);
+    const hi = Math.min(points.length, i + window + 1);
+    const slice = points.slice(lo, hi);
+    const phase = median(slice.map(point => point.phase));
+    const flux = median(slice.map(point => point.flux));
+    const depth = baseline - flux;
+
+    if (finite(depth) && depth > best.depth) {
+      best = { depth, phase };
+    }
+  }
+
+  const depthPpm = best.depth * 1e6;
+  const sigmaPpm = scatter * 1e6;
+
+  if (!finite(depthPpm) || depthPpm <= 0) {
+    return { label: "none detected", phase: null, risk: "none" };
+  }
+
+  if (depthPpm > Math.max(5 * sigmaPpm, 1200)) {
+    return {
+      label: `possible secondary dip · ${Math.round(depthPpm)} ppm`,
+      phase: best.phase,
+      risk: "strong"
+    };
+  }
+
+  if (depthPpm > Math.max(3 * sigmaPpm, 650)) {
+    return {
+      label: `weak candidate · ${Math.round(depthPpm)} ppm`,
+      phase: best.phase,
+      risk: "possible"
+    };
+  }
+
+  return { label: "none significant", phase: null, risk: "none" };
+}
+
+function getMinPhase(points) {
+  if (!Array.isArray(points) || !points.length) return null;
+
+  let best = null;
+
+  for (const point of points) {
+    if (!finite(point.phase) || !finite(point.flux)) continue;
+
+    if (!best || point.flux < best.flux) {
+      best = point;
+    }
+  }
+
+  return best ? best.phase : null;
+}
+
+function getRobustMinPhase(points) {
+  if (!Array.isArray(points) || points.length < 10) return null;
+
+  const clean = points
+    .filter(point => finite(point.phase) && finite(point.flux))
+    .sort((a, b) => a.flux - b.flux);
+
+  if (!clean.length) return null;
+
+  const n = Math.max(5, Math.ceil(clean.length * 0.035));
+  return median(clean.slice(0, n).map(point => point.phase));
+}
+
+function interpolateModelFlux(model, phase) {
+  if (!Array.isArray(model) || model.length < 2 || !finite(phase)) return null;
+
+  const sorted = model;
+
+  if (phase < sorted[0].phase || phase > sorted[sorted.length - 1].phase) {
+    return null;
+  }
+
+  for (let i = 1; i < sorted.length; i++) {
+    const a = sorted[i - 1];
+    const b = sorted[i];
+
+    if (phase >= a.phase && phase <= b.phase) {
+      const t = (phase - a.phase) / Math.max(1e-12, b.phase - a.phase);
+      return a.flux + t * (b.flux - a.flux);
+    }
+  }
+
+  return null;
+}
+
+function median(values) {
+  const clean = values.filter(finite).sort((a, b) => a - b);
+
+  if (!clean.length) return null;
+
+  const mid = Math.floor(clean.length / 2);
+
+  return clean.length % 2 ? clean[mid] : 0.5 * (clean[mid - 1] + clean[mid]);
+}
+
+function robustSigma(values) {
+  const clean = values.filter(finite);
+
+  if (clean.length < 5) return null;
+
+  const med = median(clean);
+  const deviations = clean.map(value => Math.abs(value - med));
+  const mad = median(deviations);
+
+  if (!finite(mad) || mad <= 0) return null;
+
+  return 1.4826 * mad;
+}
+
+function setDiagnosticClass(node, className) {
+  if (!node) return;
+
+  node.classList.remove("warn", "bad");
+
+  if (className) {
+    node.classList.add(className);
+  }
+}
+
 function setText(node, value) {
   if (node) node.textContent = String(value);
 }
@@ -771,7 +1235,9 @@ function setInput(input, value) {
 
 function num(input, fallback) {
   if (!input) return fallback;
+
   const value = Number(input.value);
+
   return Number.isFinite(value) ? value : fallback;
 }
 
@@ -783,8 +1249,20 @@ function finite(value) {
   return Number.isFinite(value);
 }
 
+function finiteNumber(value, fallback) {
+  const number = Number(value);
+
+  return Number.isFinite(number) ? number : fallback;
+}
+
 function fmt(value, digits) {
   return Number.isFinite(value) ? Number(value).toFixed(digits) : "—";
+}
+
+function signed(value, digits) {
+  if (!Number.isFinite(value)) return "—";
+  const sign = value >= 0 ? "+" : "";
+  return `${sign}${Number(value).toFixed(digits)}`;
 }
 
 function integer(value) {
@@ -793,6 +1271,7 @@ function integer(value) {
 
 function comma(value) {
   const number = Number(value);
+
   return Number.isFinite(number) ? number.toLocaleString("en-GB") : "—";
 }
 
@@ -802,14 +1281,16 @@ function sci(value, digits = 2) {
 
 function hzLabel(value) {
   if (!Number.isFinite(value)) return "";
+
   if (value >= 0.75) return "prime";
   if (value >= 0.45) return "near";
   if (value >= 0.20) return "marginal";
+
   return "remote";
 }
 
 function devicePixelRatioSafe() {
-  return Math.min(window.devicePixelRatio || 1, 2);
+  return Math.min(window.devicePixelRatio || 1, 1.5);
 }
 
 function clamp(value, min, max) {
@@ -818,5 +1299,6 @@ function clamp(value, min, max) {
 
 function easeOutCubic(t) {
   const x = clamp(t, 0, 1);
+
   return 1 - Math.pow(1 - x, 3);
 }
