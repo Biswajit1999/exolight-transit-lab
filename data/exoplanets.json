@@ -1,10 +1,9 @@
 {
-  "schema": "exointel-prime-gold-target-cache-v3",
-  "generated_utc": "2026-05-16T01:23:12+00:00",
-  "source": "NASA Exoplanet Archive TAP pscomppars",
-  "tap_url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync",
-  "adql": "SELECT TOP 200\n  pl_name,\n  hostname,\n  sy_snum,\n  sy_pnum,\n  ra,\n  dec,\n  pl_orbper,\n  pl_orbsmax,\n  pl_ratror,\n  pl_rade,\n  pl_bmasse,\n  pl_orbincl,\n  pl_orbeccen,\n  pl_trandep,\n  pl_trandur,\n  pl_tranmid,\n  st_teff,\n  st_rad,\n  st_mass,\n  st_logg,\n  st_met,\n  disc_year,\n  discoverymethod\nFROM pscomppars\nWHERE tran_flag = 1\n  AND pl_name IS NOT NULL\n  AND hostname IS NOT NULL\n  AND pl_orbper IS NOT NULL\n  AND pl_orbsmax IS NOT NULL\n  AND pl_ratror IS NOT NULL\n  AND pl_orbincl IS NOT NULL\n  AND pl_orbeccen IS NOT NULL\n  AND st_rad IS NOT NULL\n  AND st_teff IS NOT NULL\n  AND pl_trandep IS NOT NULL\nORDER BY pl_trandep DESC",
+  "schema": "exointel-prime-final-merged-cache-v2-cleaned",
+  "generated_utc": "2026-05-16T03:00:38+00:00",
+  "source": "Merged NASA Exoplanet Archive target cache plus post-processed local MAST lightcurve JSON files",
   "target_count": 200,
+  "lightcurve_count": 174,
   "lightcurve_directory": "data/lightcurves",
   "columns": [
     "pl_name",
@@ -761,7 +760,7 @@
       "disc_year": 2018,
       "discoverymethod": "Transit",
       "lightcurve_file": "k2-237-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "HAT-P-53 b",
@@ -789,7 +788,7 @@
       "disc_year": 2015,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-53-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "HAT-P-45 b",
@@ -817,7 +816,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-45-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "HATS-5 b",
@@ -845,7 +844,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "hats-5-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "OGLE-TR-10 b",
@@ -873,7 +872,7 @@
       "disc_year": 2004,
       "discoverymethod": "Transit",
       "lightcurve_file": "ogle-tr-10-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "CoRoT-13 b",
@@ -901,7 +900,7 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "corot-13-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "CoRoT-11 b",
@@ -929,7 +928,7 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "corot-11-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-41 b",
@@ -957,35 +956,7 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-41-b.json",
-      "lightcurve_available": false
-    },
-    {
-      "pl_name": "HAT-P-41 b",
-      "hostname": "HAT-P-41",
-      "sy_snum": 2,
-      "sy_pnum": 1,
-      "ra": 297.3226523,
-      "dec": 4.6724124,
-      "pl_orbper": 2.69405,
-      "pl_orbsmax": 0.04258,
-      "pl_ratror": 0.1049,
-      "pl_rade": 22.97845,
-      "pl_bmasse": 378.2177,
-      "pl_orbincl": 87.7,
-      "pl_orbeccen": 0.0,
-      "pl_trandep": 11000.0,
-      "pl_trandep_percent": 1.1,
-      "pl_trandur": 3.6552,
-      "pl_tranmid": 2458071.24389,
-      "st_teff": 6390.0,
-      "st_rad": 2.05,
-      "st_mass": 2.56,
-      "st_logg": 4.14,
-      "st_met": 0.21,
-      "disc_year": 2012,
-      "discoverymethod": "Transit",
-      "lightcurve_file": "hat-p-41-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "HAT-P-22 b",
@@ -1013,7 +984,35 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-22-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
+    },
+    {
+      "pl_name": "HAT-P-41 b",
+      "hostname": "HAT-P-41",
+      "sy_snum": 2,
+      "sy_pnum": 1,
+      "ra": 297.3226523,
+      "dec": 4.6724124,
+      "pl_orbper": 2.69405,
+      "pl_orbsmax": 0.04258,
+      "pl_ratror": 0.1049,
+      "pl_rade": 22.97845,
+      "pl_bmasse": 378.2177,
+      "pl_orbincl": 87.7,
+      "pl_orbeccen": 0.0,
+      "pl_trandep": 11000.0,
+      "pl_trandep_percent": 1.1,
+      "pl_trandur": 3.6552,
+      "pl_tranmid": 2458071.24389,
+      "st_teff": 6390.0,
+      "st_rad": 2.05,
+      "st_mass": 2.56,
+      "st_logg": 4.14,
+      "st_met": 0.21,
+      "disc_year": 2012,
+      "discoverymethod": "Transit",
+      "lightcurve_file": "hat-p-41-b.json",
+      "lightcurve_available": true
     },
     {
       "pl_name": "WASP-21 b",
@@ -1041,7 +1040,7 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "wasp-21-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-422 b",
@@ -1069,7 +1068,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-422-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-412 b",
@@ -1097,7 +1096,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-412-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "WASP-83 b",
@@ -1125,35 +1124,7 @@
       "disc_year": 2015,
       "discoverymethod": "Transit",
       "lightcurve_file": "wasp-83-b.json",
-      "lightcurve_available": false
-    },
-    {
-      "pl_name": "WASP-24 b",
-      "hostname": "WASP-24",
-      "sy_snum": 3,
-      "sy_pnum": 1,
-      "ra": 227.2154975,
-      "dec": 2.343286,
-      "pl_orbper": 2.34121,
-      "pl_orbsmax": 0.03651,
-      "pl_ratror": 0.1004,
-      "pl_rade": 15.46842,
-      "pl_bmasse": 394.1092,
-      "pl_orbincl": 83.64,
-      "pl_orbeccen": 0.0,
-      "pl_trandep": 10000.0,
-      "pl_trandep_percent": 1.0,
-      "pl_trandur": 2.6832,
-      "pl_tranmid": 2455402.12744,
-      "st_teff": 6075.0,
-      "st_rad": 1.42,
-      "st_mass": 1.43,
-      "st_logg": 4.26,
-      "st_met": 0.0,
-      "disc_year": 2010,
-      "discoverymethod": "Transit",
-      "lightcurve_file": "wasp-24-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "WASP-14 b",
@@ -1181,7 +1152,35 @@
       "disc_year": 2008,
       "discoverymethod": "Transit",
       "lightcurve_file": "wasp-14-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
+    },
+    {
+      "pl_name": "WASP-24 b",
+      "hostname": "WASP-24",
+      "sy_snum": 3,
+      "sy_pnum": 1,
+      "ra": 227.2154975,
+      "dec": 2.343286,
+      "pl_orbper": 2.34121,
+      "pl_orbsmax": 0.03651,
+      "pl_ratror": 0.1004,
+      "pl_rade": 15.46842,
+      "pl_bmasse": 394.1092,
+      "pl_orbincl": 83.64,
+      "pl_orbeccen": 0.0,
+      "pl_trandep": 10000.0,
+      "pl_trandep_percent": 1.0,
+      "pl_trandur": 2.6832,
+      "pl_tranmid": 2455402.12744,
+      "st_teff": 6075.0,
+      "st_rad": 1.42,
+      "st_mass": 1.43,
+      "st_logg": 4.26,
+      "st_met": 0.0,
+      "disc_year": 2010,
+      "discoverymethod": "Transit",
+      "lightcurve_file": "wasp-24-b.json",
+      "lightcurve_available": true
     },
     {
       "pl_name": "HAT-P-39 b",
@@ -1209,7 +1208,7 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-39-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-77 b",
@@ -1237,7 +1236,7 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-77-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "WASP-70 A b",
@@ -1265,7 +1264,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "wasp-70-a-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-74 b",
@@ -1293,7 +1292,7 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-74-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-418 b",
@@ -1321,7 +1320,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-418-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "HAT-P-42 b",
@@ -1349,7 +1348,7 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-42-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-46 b",
@@ -1377,7 +1376,7 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-46-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "HAT-P-13 b",
@@ -1405,7 +1404,7 @@
       "disc_year": 2009,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-13-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-44 b",
@@ -1433,35 +1432,7 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-44-b.json",
-      "lightcurve_available": false
-    },
-    {
-      "pl_name": "WASP-38 b",
-      "hostname": "WASP-38",
-      "sy_snum": 1,
-      "sy_pnum": 1,
-      "ra": 243.9597194,
-      "dec": 10.0324103,
-      "pl_orbper": 6.87188,
-      "pl_orbsmax": 0.07522,
-      "pl_ratror": 0.0796,
-      "pl_rade": 13.78707,
-      "pl_bmasse": 1093.3352,
-      "pl_orbincl": 89.5,
-      "pl_orbeccen": 0.03,
-      "pl_trandep": 6899.999999999999,
-      "pl_trandep_percent": 0.69,
-      "pl_trandur": 4.807,
-      "pl_tranmid": 2459005.51241,
-      "st_teff": 6180.0,
-      "st_rad": 1.52,
-      "st_mass": 1.76,
-      "st_logg": 4.25,
-      "st_met": -0.02,
-      "disc_year": 2010,
-      "discoverymethod": "Transit",
-      "lightcurve_file": "wasp-38-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "CoRoT-8 b",
@@ -1489,7 +1460,7 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "corot-8-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-817 b",
@@ -1517,7 +1488,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-817-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "HAT-P-2 b",
@@ -1545,7 +1516,7 @@
       "disc_year": 2007,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-2-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "KOI-94 d",
@@ -1573,7 +1544,7 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "koi-94-d.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-952 b",
@@ -1601,7 +1572,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-952-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-27 c",
@@ -1629,7 +1600,7 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-27-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-87 b",
@@ -1657,7 +1628,7 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-87-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "KOI-13 b",
@@ -1685,7 +1656,7 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "koi-13-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-419 b",
@@ -1713,7 +1684,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-419-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "CoRoT-3 b",
@@ -1741,7 +1712,7 @@
       "disc_year": 2008,
       "discoverymethod": "Transit",
       "lightcurve_file": "corot-3-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-297 c",
@@ -1769,7 +1740,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-297-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-63 b",
@@ -1797,7 +1768,7 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-63-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-603 c",
@@ -1825,7 +1796,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-603-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "TOI-237 b",
@@ -1853,7 +1824,7 @@
       "disc_year": 2020,
       "discoverymethod": "Transit",
       "lightcurve_file": "toi-237-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-18 d",
@@ -1881,7 +1852,7 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-18-d.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-27 b",
@@ -1909,7 +1880,7 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-27-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-560 b",
@@ -1937,7 +1908,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-560-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-396 c",
@@ -1965,7 +1936,7 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-396-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-1752 b",
@@ -1993,7 +1964,7 @@
       "disc_year": 2021,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1752-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "LTT 1445 A b",
@@ -2021,7 +1992,7 @@
       "disc_year": 2019,
       "discoverymethod": "Transit",
       "lightcurve_file": "ltt-1445-a-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-18 c",
@@ -2049,7 +2020,7 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-18-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-32 d",
@@ -2077,7 +2048,7 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-32-d.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-595 b",
@@ -2105,7 +2076,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-595-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "KOI-94 e",
@@ -2133,7 +2104,7 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "koi-94-e.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-31 b",
@@ -2161,7 +2132,7 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-31-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-210 b",
@@ -2189,7 +2160,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-210-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-31 c",
@@ -2217,7 +2188,7 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-31-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "K2-10 b",
@@ -2245,7 +2216,7 @@
       "disc_year": 2015,
       "discoverymethod": "Transit",
       "lightcurve_file": "k2-10-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-30 b",
@@ -2273,7 +2244,7 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-30-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-318 b",
@@ -2301,7 +2272,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-318-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "LTT 1445 A c",
@@ -2329,7 +2300,7 @@
       "disc_year": 2022,
       "discoverymethod": "Transit",
       "lightcurve_file": "ltt-1445-a-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-42 c",
@@ -2357,7 +2328,7 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-42-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-149 d",
@@ -2385,7 +2356,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-149-d.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-52 b",
@@ -2413,7 +2384,7 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-52-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-32 c",
@@ -2441,7 +2412,7 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-32-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-415 c",
@@ -2469,7 +2440,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit Timing Variations",
       "lightcurve_file": "kepler-415-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-290 c",
@@ -2497,7 +2468,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-290-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-81 c",
@@ -2525,7 +2496,7 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-81-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-199 c",
@@ -2553,7 +2524,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-199-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-52 c",
@@ -2581,7 +2552,7 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-52-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-221 d",
@@ -2609,7 +2580,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-221-d.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-152 c",
@@ -2637,7 +2608,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-152-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-1068 b",
@@ -2665,7 +2636,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1068-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "HD 18599 b",
@@ -2693,7 +2664,7 @@
       "disc_year": 2022,
       "discoverymethod": "Transit",
       "lightcurve_file": "hd-18599-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "HD 106315 c",
@@ -2721,7 +2692,7 @@
       "disc_year": 2017,
       "discoverymethod": "Transit",
       "lightcurve_file": "hd-106315-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-963 b",
@@ -2749,7 +2720,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-963-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-263 c",
@@ -2777,7 +2748,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-263-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-150 d",
@@ -2805,7 +2776,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-150-d.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-937 b",
@@ -2833,7 +2804,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-937-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-31 d",
@@ -2861,7 +2832,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-31-d.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-178 d",
@@ -2889,7 +2860,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-178-d.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-55 b",
@@ -2917,7 +2888,7 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-55-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-1458 b",
@@ -2945,7 +2916,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1458-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-53 b",
@@ -2973,7 +2944,7 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-53-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-11 d",
@@ -3001,7 +2972,7 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-11-d.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-186 d",
@@ -3029,7 +3000,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-186-d.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-4 b",
@@ -3057,7 +3028,7 @@
       "disc_year": 2009,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-4-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-1740 b",
@@ -3085,7 +3056,7 @@
       "disc_year": 2021,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1740-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-414 c",
@@ -3113,7 +3084,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit Timing Variations",
       "lightcurve_file": "kepler-414-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-158 b",
@@ -3141,7 +3112,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-158-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-33 d",
@@ -3169,7 +3140,7 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-33-d.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-290 b",
@@ -3197,7 +3168,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-290-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-314 c",
@@ -3225,7 +3196,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-314-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-571 b",
@@ -3253,7 +3224,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-571-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-158 c",
@@ -3281,7 +3252,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-158-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-498 b",
@@ -3309,7 +3280,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-498-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-284 b",
@@ -3337,7 +3308,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-284-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-1101 b",
@@ -3365,7 +3336,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1101-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-287 c",
@@ -3393,7 +3364,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-287-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-150 e",
@@ -3421,7 +3392,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-150-e.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-1208 b",
@@ -3449,7 +3420,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1208-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-1549 b",
@@ -3477,7 +3448,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1549-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-865 b",
@@ -3505,7 +3476,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-865-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-288 c",
@@ -3533,7 +3504,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-288-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-96 b",
@@ -3561,7 +3532,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-96-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-130 c",
@@ -3589,7 +3560,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-130-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-276 d",
@@ -3617,7 +3588,7 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-276-d.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-269 b",
@@ -3645,7 +3616,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-269-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-416 b",
@@ -3673,7 +3644,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit Timing Variations",
       "lightcurve_file": "kepler-416-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-69 b",
@@ -3701,7 +3672,7 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-69-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-114 c",
@@ -3729,7 +3700,7 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-114-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-33 f",
@@ -3757,7 +3728,7 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-33-f.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-300 c",
@@ -3785,7 +3756,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-300-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-879 b",
@@ -3813,7 +3784,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-879-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-139 c",
@@ -3841,7 +3812,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-139-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-58 d",
@@ -3869,7 +3840,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-58-d.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-415 b",
@@ -3897,7 +3868,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit Timing Variations",
       "lightcurve_file": "kepler-415-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-186 b",
@@ -3925,7 +3896,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-186-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-328 b",
@@ -3953,7 +3924,7 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-328-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-38 b",
@@ -3981,7 +3952,7 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-38-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-1167 b",
@@ -4009,7 +3980,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1167-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-115 c",
@@ -4037,7 +4008,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-115-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-58 c",
@@ -4065,7 +4036,7 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-58-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-33 e",
@@ -4093,7 +4064,7 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-33-e.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-626 b",
@@ -4121,7 +4092,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-626-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-280 c",
@@ -4149,7 +4120,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-280-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "HD 86226 c",
@@ -4177,7 +4148,7 @@
       "disc_year": 2020,
       "discoverymethod": "Transit",
       "lightcurve_file": "hd-86226-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-92 b",
@@ -4205,7 +4176,7 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-92-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-145 c",
@@ -4233,7 +4204,7 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-145-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-272 c",
@@ -4261,7 +4232,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-272-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-214 b",
@@ -4289,7 +4260,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-214-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "HIP 41378 b",
@@ -4317,7 +4288,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "hip-41378-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-1600 c",
@@ -4345,7 +4316,7 @@
       "disc_year": 2021,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1600-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-238 f",
@@ -4373,7 +4344,7 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-238-f.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-350 d",
@@ -4401,7 +4372,7 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-350-d.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "HD 106315 b",
@@ -4429,7 +4400,7 @@
       "disc_year": 2017,
       "discoverymethod": "Transit",
       "lightcurve_file": "hd-106315-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-122 f",
@@ -4457,7 +4428,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit Timing Variations",
       "lightcurve_file": "kepler-122-f.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-347 b",
@@ -4485,7 +4456,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-347-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-410 A b",
@@ -4513,7 +4484,7 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-410-a-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-1735 b",
@@ -4541,7 +4512,7 @@
       "disc_year": 2021,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1735-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-181 b",
@@ -4569,7 +4540,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-181-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-644 b",
@@ -4597,7 +4568,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-644-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-124 d",
@@ -4625,7 +4596,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-124-d.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-11 b",
@@ -4653,7 +4624,7 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-11-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-33 c",
@@ -4681,7 +4652,7 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-33-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-341 c",
@@ -4709,7 +4680,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-341-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "HIP 41378 c",
@@ -4737,7 +4708,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "hip-41378-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-654 b",
@@ -4765,7 +4736,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-654-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-347 c",
@@ -4793,7 +4764,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-347-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-1245 b",
@@ -4821,7 +4792,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1245-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-641 b",
@@ -4849,7 +4820,7 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-641-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-285 b",
@@ -4877,7 +4848,7 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-285-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-18 b",
@@ -4905,7 +4876,7 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-18-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": true
     },
     {
       "pl_name": "Kepler-450 c",
@@ -4933,6 +4904,34 @@
       "disc_year": 2015,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-450-c.json",
+      "lightcurve_available": true
+    },
+    {
+      "pl_name": "WASP-38 b",
+      "hostname": "WASP-38",
+      "sy_snum": 1,
+      "sy_pnum": 1,
+      "ra": 243.9597194,
+      "dec": 10.0324103,
+      "pl_orbper": 6.87188,
+      "pl_orbsmax": 0.07522,
+      "pl_ratror": 0.0796,
+      "pl_rade": 13.78707,
+      "pl_bmasse": 1093.3352,
+      "pl_orbincl": 89.5,
+      "pl_orbeccen": 0.03,
+      "pl_trandep": 6899.999999999999,
+      "pl_trandep_percent": 0.69,
+      "pl_trandur": 4.807,
+      "pl_tranmid": 2459005.51241,
+      "st_teff": 6180.0,
+      "st_rad": 1.52,
+      "st_mass": 1.76,
+      "st_logg": 4.25,
+      "st_met": -0.02,
+      "disc_year": 2010,
+      "discoverymethod": "Transit",
+      "lightcurve_file": "wasp-38-b.json",
       "lightcurve_available": false
     },
     {
