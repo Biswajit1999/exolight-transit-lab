@@ -3,9 +3,8 @@ import { TransitPhysicsEngine, createDefaultParams, deriveDossier, mergeTargetIn
 import { ObservatoryScene } from "./scene.js";
 import { PrimeHUD } from "./ui.js";
 
-const APP_VERSION = "ExoIntel-Prime Iteration III";
+const APP_VERSION = "ExoIntel-Prime Iteration III · Orbit Correction";
 const TARGET_CACHE_URL = "./data/exoplanets.json";
-const FRAME_BUDGET_MS = 1000 / 60;
 const CURVE_PHASE_MIN = -0.085;
 const CURVE_PHASE_MAX = 0.085;
 const CURVE_POINTS = 241;
@@ -17,7 +16,8 @@ class ExoIntelPrimeApp {
     this.targets = [];
     this.modelCurve = [];
     this.observedCurve = [];
-    this.phase = -0.075;
+    this.transitPhase = -0.075;
+    this.visualOrbitPhase = 0;
     this.epoch = 0;
     this.running = false;
     this.lastFrame = 0;
@@ -53,7 +53,7 @@ class ExoIntelPrimeApp {
       data: "CACHE LOAD",
       solver: "82×150 POLAR",
       render: "WEBGL INIT",
-      tap: "IDLE",
+      tap: "CACHE-FIRST",
       warning: false
     });
 
@@ -77,7 +77,7 @@ class ExoIntelPrimeApp {
     try {
       await this.scene.init();
       this.hud.setStatus({ render: "WEBGL ONLINE" });
-      this.hud.log("Native WebGL scene layer initialized with shader-driven stellar surface.", "info");
+      this.hud.log("WebGL scene online: full-orbit visual phase is now separated from transit-window photometry.", "info");
     } catch (error) {
       this.hud.setStatus({ render: "CANVAS SAFE MODE" });
       this.hud.log(`WebGL initialization degraded: ${error.message}`, "warn");
@@ -95,16 +95,13 @@ class ExoIntelPrimeApp {
 
     this.running = true;
     this.hud.setStatus({ runtime: "ONLINE" });
-    this.hud.setFooterStatus?.({
-      data: `DATA INGESTION STATUS: SECURE // TARGET CATALOG: ${Math.max(this.targets.length, 0)} NODES ACTIVE`
-    });
     requestAnimationFrame(time => this.loop(time));
   }
 
   async loadCache(force) {
     this.hud.setStatus({
       data: "CACHE LOAD",
-      tap: force ? "CACHE REQUEST" : "IDLE",
+      tap: force ? "CACHE REQUEST" : "CACHE-FIRST",
       warning: false
     });
 
@@ -113,7 +110,7 @@ class ExoIntelPrimeApp {
       this.targets = targets;
       this.hud.setStatus({
         data: "LOCAL CACHE",
-        tap: "IDLE",
+        tap: "CACHE MODE",
         warning: false
       });
       this.hud.setFooterStatus?.({
@@ -155,7 +152,7 @@ class ExoIntelPrimeApp {
     this.hud.setFooterStatus?.({
       data: "DATA INGESTION STATUS: LIVE TAP QUERY RUNNING // TARGET CATALOG: HOLDING"
     });
-    this.hud.log("NASA TAP synchronous query dispatched.", "info");
+    this.hud.log("Browser TAP query dispatched. If GitHub Pages hits a CORS wall, the app will return to local cache.", "info");
 
     try {
       const targets = await this.data.queryTap(adql);
@@ -172,9 +169,7 @@ class ExoIntelPrimeApp {
       this.renderTargetList("");
       this.hud.setSearchQuery("");
 
-      if (targets.length > 0) {
-        await this.selectTarget(targets[0]);
-      }
+      if (targets.length > 0) await this.selectTarget(targets[0]);
     } catch (error) {
       this.hud.setStatus({
         tap: "CORS WALL",
@@ -182,15 +177,13 @@ class ExoIntelPrimeApp {
         warning: true
       });
       this.hud.setFooterStatus?.({
-        data: "DATA INGESTION STATUS: TAP WALL DETECTED // FALLBACK CACHE ENGAGED"
+        data: "DATA INGESTION STATUS: TAP WALL DETECTED // LOCAL STATIC CACHE ENGAGED"
       });
       this.hud.flashTapWarning("TAP TIMEOUT / CORS WALL DETECTED");
-      this.hud.log(`TAP live query failed: ${error.message}`, "error");
+      this.hud.log(`Browser TAP failed: ${error.message}. Use tools/fetch_nasa_cache.py offline for the reliable NASA/MAST data path.`, "warn");
 
       const fallback = await this.loadCache(false);
-      if (fallback.length > 0) {
-        await this.selectTarget(fallback[0]);
-      }
+      if (fallback.length > 0) await this.selectTarget(fallback[0]);
     }
   }
 
@@ -203,7 +196,7 @@ class ExoIntelPrimeApp {
   async selectTarget(target) {
     this.target = target;
     this.params = mergeTargetIntoParams(this.params, target);
-    this.phase = -0.075;
+    this.transitPhase = -0.075;
     this.epoch = 0;
     this.observedCurve = [];
     this.lastObservationTargetId = target?.id || "";
@@ -212,7 +205,7 @@ class ExoIntelPrimeApp {
     this.hud.setControls(this.params);
     this.hud.renderDossier(deriveDossier(target, this.params));
     this.hud.setObservationState?.("LOADING REAL LC", 0);
-    this.hud.log(`Target lock: ${target.pl_name || target.name || "Unknown planet"} around ${target.hostname || target.host || "unknown host"}.`, "info");
+    this.hud.log(`Target lock: ${target.pl_name || "Unknown planet"} around ${target.hostname || "unknown host"}.`, "info");
 
     this.recompute(true);
 
@@ -245,17 +238,13 @@ class ExoIntelPrimeApp {
         spot: !!this.params.spotEnabled,
         observation: "MISSING"
       });
-      this.hud.log(`No local real light curve for ${target.pl_name}: ${error.message}`, "warn");
+      this.hud.log(`No real local light-curve file for ${target.pl_name}: ${error.message}`, "warn");
       this.renderPhotometry();
     }
   }
 
   updateParams(nextParams, recomputeCurve) {
-    this.params = {
-      ...this.params,
-      ...nextParams
-    };
-
+    this.params = { ...this.params, ...nextParams };
     this.hud.setKernel({
       rings: 82,
       azimuth: 150,
@@ -265,16 +254,13 @@ class ExoIntelPrimeApp {
       observation: this.observedCurve.length ? "ONLINE" : "MISSING"
     });
     this.hud.renderDossier(deriveDossier(this.target, this.params));
-
-    if (recomputeCurve) {
-      this.recompute(false);
-    }
+    if (recomputeCurve) this.recompute(false);
   }
 
   resetControls() {
     const base = createDefaultParams();
     this.params = this.target ? mergeTargetIntoParams(base, this.target) : base;
-    this.phase = -0.075;
+    this.transitPhase = -0.075;
     this.epoch = 0;
     this.hud.setControls(this.params);
     this.hud.renderDossier(deriveDossier(this.target, this.params));
@@ -284,7 +270,6 @@ class ExoIntelPrimeApp {
 
   recompute(force) {
     const hash = this.hashParams(this.params);
-
     if (!force && hash === this.lastCurveHash) {
       this.renderPhotometry();
       return;
@@ -299,9 +284,6 @@ class ExoIntelPrimeApp {
       epoch: this.epoch
     });
 
-    const summary = this.physics.summarizeCurve(this.modelCurve);
-    this.scene.setCurveSummary(summary);
-    this.hud.setFluxSummary(summary);
     this.renderPhotometry();
   }
 
@@ -318,40 +300,42 @@ class ExoIntelPrimeApp {
     const dt = Math.min(0.05, Math.max(0, (time - this.lastFrame) / 1000 || 0));
     this.lastFrame = time;
 
-    this.phase += dt * 0.012;
-    if (this.phase > 0.085) {
-      this.phase = -0.085;
+    this.transitPhase += dt * 0.012;
+    if (this.transitPhase > CURVE_PHASE_MAX) {
+      this.transitPhase = CURVE_PHASE_MIN;
       this.epoch += 1;
     }
 
-    const shiftedPhase = this.physics.applyTTV(this.phase, this.params, this.epoch);
-    const sample = this.physics.evaluateAtPhase(shiftedPhase, this.params, this.epoch);
-    const moonState = this.physics.computeMoonState(shiftedPhase, this.params);
+    this.visualOrbitPhase = (this.visualOrbitPhase + dt * 0.035) % 1;
+
+    const shiftedTransitPhase = this.physics.applyTTV(this.transitPhase, this.params, this.epoch);
+    const sample = this.physics.evaluateAtPhase(shiftedTransitPhase, this.params, this.epoch);
+    const moonState = this.physics.computeMoonState(shiftedTransitPhase, this.params);
     const impact = this.physics.computeImpactParameter(this.params);
     const fps = this.scene.getFPS();
 
     this.hud.setSceneReadouts({
-      phase: shiftedPhase,
+      phase: shiftedTransitPhase,
       impact,
       depthPpm: sample.depthPpm,
       moon: this.params.moonEnabled ? moonState.label : "DISABLED",
       fps
     });
-
     this.hud.setFooterStatus?.({ fps });
 
     this.scene.render({
       time: time * 0.001,
-      phase: shiftedPhase,
+      phase: shiftedTransitPhase,
+      visualPhase: this.visualOrbitPhase,
       params: this.params,
       sample,
       moonState,
       target: this.target
     });
 
-    if (time - this.lastRenderTick > FRAME_BUDGET_MS * 12) {
+    if (time - this.lastRenderTick > 240) {
       this.lastRenderTick = time;
-      this.hud.markCurvePhase(shiftedPhase);
+      this.hud.markCurvePhase(shiftedTransitPhase);
     }
 
     requestAnimationFrame(next => this.loop(next));
@@ -359,34 +343,17 @@ class ExoIntelPrimeApp {
 
   hashParams(p) {
     return [
-      p.rpRs,
-      p.aRs,
-      p.inclinationDeg,
-      p.periodDays,
-      p.eccentricity,
-      p.u1,
-      p.u2,
-      p.moonEnabled,
-      p.moonRadius,
-      p.moonDistance,
-      p.moonPhaseDeg,
-      p.moonInclinationDeg,
-      p.moonNodeDeg,
-      p.spotEnabled,
-      p.spotX,
-      p.spotY,
-      p.spotRadius,
-      p.spotContrast,
-      p.ttvEnabled,
-      p.ttvAmplitude,
-      p.ttvPeriodEpochs
+      p.rpRs, p.aRs, p.inclinationDeg, p.periodDays, p.eccentricity,
+      p.u1, p.u2, p.moonEnabled, p.moonRadius, p.moonDistance,
+      p.moonPhaseDeg, p.moonInclinationDeg, p.moonNodeDeg,
+      p.spotEnabled, p.spotX, p.spotY, p.spotRadius, p.spotContrast,
+      p.ttvEnabled, p.ttvAmplitude, p.ttvPeriodEpochs
     ].map(value => typeof value === "number" ? value.toFixed(6) : String(value)).join("|");
   }
 }
 
 const start = () => {
   const app = new ExoIntelPrimeApp();
-
   app.boot().catch(error => {
     const hud = new PrimeHUD();
     hud.log(`Fatal bootstrap failure: ${error.message}`, "error");
