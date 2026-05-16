@@ -1081,3 +1081,73 @@ textarea{
     font-size:8px;
   }
 }
+/* =========================================================
+   Scientific Kernel scroll fix
+   Keeps the observed-light-curve diagnostics usable inside
+   the left column without breaking the full dashboard layout.
+   ========================================================= */
+
+.left-stack{
+  grid-template-rows:minmax(190px, 30fr) minmax(230px, 30fr) minmax(260px, 40fr);
+}
+
+.compact-panel{
+  display:flex !important;
+  flex-direction:column !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+}
+
+.compact-panel > .panel-header{
+  flex:0 0 auto !important;
+}
+
+.compact-panel > .telemetry-table{
+  flex:0 0 auto !important;
+  max-height:none !important;
+  overflow:visible !important;
+}
+
+.compact-panel > .research-diagnostics{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  scrollbar-width:thin;
+  scrollbar-color:#00f0ff transparent;
+}
+
+.compact-panel > .research-diagnostics::-webkit-scrollbar{
+  width:7px;
+}
+
+.compact-panel > .research-diagnostics::-webkit-scrollbar-track{
+  background:rgba(255,255,255,.025);
+}
+
+.compact-panel > .research-diagnostics::-webkit-scrollbar-thumb{
+  background:rgba(0,240,255,.38);
+}
+
+.compact-panel > .research-diagnostics::-webkit-scrollbar-thumb:hover{
+  background:rgba(0,240,255,.65);
+}
+
+.diagnostics-grid{
+  padding-bottom:8px;
+}
+
+@media (max-width:1220px){
+  .left-stack{
+    grid-template-rows:auto;
+  }
+
+  .compact-panel{
+    max-height:none !important;
+    overflow:visible !important;
+  }
+
+  .compact-panel > .research-diagnostics{
+    max-height:420px;
+  }
+}
