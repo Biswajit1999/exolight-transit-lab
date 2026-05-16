@@ -108,26 +108,36 @@ export class DataOrchestrator {
   }
 
   async loadLocalCache(force = false) {
-    if (this.cache && !force) return this.cloneTargets(this.cache);
+    if (this.cache && !force) {
+      return this.cloneTargets(this.cache);
+    }
 
-    const bust = force ? `?t=${Date.now()}` : "";
+    const bust = force ? `?t=${Date.now()}` : `?v=${Date.now()}`;
+
     const response = await fetch(`${this.cacheUrl}${bust}`, {
       method: "GET",
-      cache: force ? "reload" : "default",
-      headers: { "Accept": "application/json" }
+      cache: "no-store",
+      headers: {
+        "Accept": "application/json"
+      }
     });
 
-    if (!response.ok) throw new Error(`Local cache HTTP ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`Local cache HTTP ${response.status}`);
+    }
 
     const payload = await response.json();
     const rows = Array.isArray(payload) ? payload : Array.isArray(payload.targets) ? payload.targets : [];
     const normalized = this.normalizeRows(rows, "cache");
 
-    if (!normalized.length) throw new Error("Local cache contained no valid target rows");
+    if (!normalized.length) {
+      throw new Error("Local cache contained no valid target rows");
+    }
 
     this.cache = normalized;
     this.lastSource = "local-cache";
     this.lastError = null;
+
     return this.cloneTargets(normalized);
   }
 
@@ -135,6 +145,7 @@ export class DataOrchestrator {
     const clean = this.validateAdql(adql);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
+
     const body = new URLSearchParams({
       request: "doQuery",
       lang: "ADQL",
@@ -154,21 +165,30 @@ export class DataOrchestrator {
         body
       });
 
-      if (!response.ok) throw new Error(`NASA TAP HTTP ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`NASA TAP HTTP ${response.status}`);
+      }
 
       const payload = await response.json();
       const rows = this.extractTapRows(payload);
       const normalized = this.normalizeRows(rows, "tap");
 
-      if (!normalized.length) throw new Error("NASA TAP returned no usable planet rows");
+      if (!normalized.length) {
+        throw new Error("NASA TAP returned no usable planet rows");
+      }
 
       this.lastSource = "nasa-tap";
       this.lastError = null;
+
       return normalized;
     } catch (error) {
       this.lastError = error;
       this.lastSource = "tap-failed";
-      if (error.name === "AbortError") throw new Error("NASA TAP request timed out before completion");
+
+      if (error.name === "AbortError") {
+        throw new Error("NASA TAP request timed out before completion");
+      }
+
       throw error;
     } finally {
       clearTimeout(timeout);
@@ -176,14 +196,16 @@ export class DataOrchestrator {
   }
 
   async loadLightCurve(target) {
-    if (!target) throw new Error("No target supplied for light-curve loading");
+    if (!target) {
+      throw new Error("No target supplied for light-curve loading");
+    }
 
     if (target.lightcurve_available === false) {
       throw new Error("Target is marked as having no local real light-curve file yet");
     }
 
     const file = this.getLightCurveFile(target);
-    const url = `${this.lightcurveBaseUrl}${encodeURIComponent(file).replace(/%2F/g, "/")}`;
+    const url = `${this.lightcurveBaseUrl}${encodeURIComponent(file).replace(/%2F/g, "/")}?v=${Date.now()}`;
     const cacheKey = `${target.id || target.pl_name || file}|${file}`;
 
     if (this.lightcurveCache.has(cacheKey)) {
@@ -192,18 +214,25 @@ export class DataOrchestrator {
 
     const response = await fetch(url, {
       method: "GET",
-      cache: "default",
-      headers: { "Accept": "application/json" }
+      cache: "no-store",
+      headers: {
+        "Accept": "application/json"
+      }
     });
 
-    if (!response.ok) throw new Error(`Light-curve file ${file} HTTP ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`Light-curve file ${file} HTTP ${response.status}`);
+    }
 
     const payload = await response.json();
     const curve = this.normalizeLightCurve(payload);
 
-    if (!curve.length) throw new Error(`Light-curve file ${file} contained no valid phase/flux rows`);
+    if (!curve.length) {
+      throw new Error(`Light-curve file ${file} contained no valid phase/flux rows`);
+    }
 
     this.lightcurveCache.set(cacheKey, curve);
+
     return this.cloneLightCurve(curve);
   }
 
@@ -216,8 +245,13 @@ export class DataOrchestrator {
       const flux = number(firstDefined(row.flux, row.Flux, row.normalized_flux, row.norm_flux, row.y, row.sap_flux_norm, row.pdcsap_flux_norm));
       const error = number(firstDefined(row.error, row.flux_err, row.err, row.sigma));
 
-      if (!Number.isFinite(phase) || !Number.isFinite(flux)) continue;
-      if (phase < -1.5 || phase > 1.5 || flux < 0.2 || flux > 1.8) continue;
+      if (!Number.isFinite(phase) || !Number.isFinite(flux)) {
+        continue;
+      }
+
+      if (phase < -1.5 || phase > 1.5 || flux < 0.2 || flux > 1.8) {
+        continue;
+      }
 
       clean.push({
         phase,
@@ -227,13 +261,22 @@ export class DataOrchestrator {
     }
 
     clean.sort((a, b) => a.phase - b.phase);
+
     return clean;
   }
 
   extractLightCurveRows(payload) {
-    if (Array.isArray(payload)) return payload;
-    if (!payload || typeof payload !== "object") return [];
-    if (Array.isArray(payload.points)) return payload.points;
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+
+    if (!payload || typeof payload !== "object") {
+      return [];
+    }
+
+    if (Array.isArray(payload.points)) {
+      return payload.points;
+    }
 
     if (Array.isArray(payload.data)) {
       if (payload.data.length && Array.isArray(payload.data[0])) {
@@ -243,6 +286,7 @@ export class DataOrchestrator {
           error: row[2]
         }));
       }
+
       return payload.data;
     }
 
@@ -250,18 +294,30 @@ export class DataOrchestrator {
       const n = Math.min(payload.phase.length, payload.flux.length);
       const err = Array.isArray(payload.error) ? payload.error : Array.isArray(payload.flux_err) ? payload.flux_err : [];
       const out = [];
+
       for (let i = 0; i < n; i++) {
-        out.push({ phase: payload.phase[i], flux: payload.flux[i], error: err[i] ?? null });
+        out.push({
+          phase: payload.phase[i],
+          flux: payload.flux[i],
+          error: err[i] ?? null
+        });
       }
+
       return out;
     }
 
     if (Array.isArray(payload.phases) && Array.isArray(payload.fluxes)) {
       const n = Math.min(payload.phases.length, payload.fluxes.length);
       const out = [];
+
       for (let i = 0; i < n; i++) {
-        out.push({ phase: payload.phases[i], flux: payload.fluxes[i], error: null });
+        out.push({
+          phase: payload.phases[i],
+          flux: payload.fluxes[i],
+          error: null
+        });
       }
+
       return out;
     }
 
@@ -270,44 +326,83 @@ export class DataOrchestrator {
 
   getLightCurveFile(target) {
     const explicit = text(firstDefined(target.lightcurve_file, target.lightcurveFile, target.lc_file, target.photometry_file));
-    if (explicit) return explicit;
+
+    if (explicit) {
+      return explicit;
+    }
+
     const name = text(firstDefined(target.pl_name, target.name, target.planet, "unknown-target"));
+
     return `${slugify(name)}.json`;
   }
 
   validateAdql(adql) {
     const clean = String(adql || "").trim();
-    if (!clean) throw new Error("ADQL query is empty");
+
+    if (!clean) {
+      throw new Error("ADQL query is empty");
+    }
 
     const compact = clean.replace(/\s+/g, " ").toLowerCase();
     const forbidden = [
-      "drop ", "delete ", "update ", "insert ", "alter ", "create ",
-      "truncate ", "grant ", "revoke ", "merge ", "call ", "exec "
+      "drop ",
+      "delete ",
+      "update ",
+      "insert ",
+      "alter ",
+      "create ",
+      "truncate ",
+      "grant ",
+      "revoke ",
+      "merge ",
+      "call ",
+      "exec "
     ];
 
-    if (!compact.startsWith("select ")) throw new Error("Only SELECT ADQL queries are permitted in the live console");
-    if (forbidden.some(token => compact.includes(token))) throw new Error("ADQL console rejected a non-read-only statement");
+    if (!compact.startsWith("select ")) {
+      throw new Error("Only SELECT ADQL queries are permitted in the live console");
+    }
+
+    if (forbidden.some(token => compact.includes(token))) {
+      throw new Error("ADQL console rejected a non-read-only statement");
+    }
 
     const semicolons = clean.match(/;/g);
-    if (semicolons && semicolons.length > 1) throw new Error("ADQL console accepts one read-only query at a time");
+
+    if (semicolons && semicolons.length > 1) {
+      throw new Error("ADQL console accepts one read-only query at a time");
+    }
 
     return clean.replace(/;+\s*$/, "");
   }
 
   extractTapRows(payload) {
-    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload)) {
+      return payload;
+    }
 
     if (payload && Array.isArray(payload.data) && Array.isArray(payload.metadata)) {
       const names = payload.metadata.map(col => col.name || col.label || col.ID || col.id);
+
       return payload.data.map(row => {
         const out = {};
-        names.forEach((name, index) => { out[name] = row[index]; });
+
+        names.forEach((name, index) => {
+          out[name] = row[index];
+        });
+
         return out;
       });
     }
 
-    if (payload && Array.isArray(payload.rows)) return payload.rows;
-    if (payload && Array.isArray(payload.targets)) return payload.targets;
+    if (payload && Array.isArray(payload.rows)) {
+      return payload.rows;
+    }
+
+    if (payload && Array.isArray(payload.targets)) {
+      return payload.targets;
+    }
+
     return [];
   }
 
@@ -318,7 +413,11 @@ export class DataOrchestrator {
       .map((row, index) => this.normalizeRow(row, source, index))
       .filter(row => {
         const key = `${row.pl_name}|${row.hostname}`;
-        if (!row.pl_name || !row.hostname || seen.has(key)) return false;
+
+        if (!row.pl_name || !row.hostname || seen.has(key)) {
+          return false;
+        }
+
         seen.add(key);
         return true;
       })
@@ -329,12 +428,14 @@ export class DataOrchestrator {
         const scoreB = finiteNumber(b.signal_score, 0);
         const depthA = finiteNumber(a.pl_trandep, 0);
         const depthB = finiteNumber(b.pl_trandep, 0);
+
         return (lcB - lcA) || ((scoreB || depthB) - (scoreA || depthA));
       });
   }
 
   normalizeRow(row, source, index) {
     const r = lowerKeyClone(row);
+
     const plName = text(firstDefined(r.pl_name, r.name, r.planet, r.planet_name, r.plname));
     const host = text(firstDefined(r.hostname, r.host, r.star, r.star_name, r.hostname_str));
 
@@ -362,7 +463,10 @@ export class DataOrchestrator {
 
     const inferredRpRs = finiteNumber(rpRs, null) ?? inferRpRs(rpEarth, stRad);
     const inferredARs = inferARs(semiMajor, stRad);
-    const inferredDepth = finiteNumber(depth, null) ?? (finiteNumber(inferredRpRs, null) !== null ? inferredRpRs * inferredRpRs * 1e6 : null);
+    const inferredDepth = finiteNumber(depth, null) ?? (
+      finiteNumber(inferredRpRs, null) !== null ? inferredRpRs * inferredRpRs * 1e6 : null
+    );
+
     const score = finiteNumber(snr, null) ?? finiteNumber(inferredDepth, 0);
     const id = stableId(plName || `planet-${index}`, host || "unknown-host");
 
@@ -402,11 +506,15 @@ export class DataOrchestrator {
 
   filterTargets(targets, query) {
     const q = String(query || "").trim().toLowerCase();
-    if (!q) return this.cloneTargets(targets);
+
+    if (!q) {
+      return this.cloneTargets(targets);
+    }
 
     const tokens = q.split(/\s+/).filter(Boolean);
+
     return this.cloneTargets(targets.filter(target => {
-      const lcText = target.lightcurve_available ? "real lc lightcurve photometry" : "model no lc";
+      const lcText = target.lightcurve_available ? "real lc lightcurve photometry telescope data" : "model no lc no photometry";
       const haystack = [
         target.pl_name,
         target.hostname,
@@ -415,6 +523,7 @@ export class DataOrchestrator {
         target.st_teff,
         target.pl_orbper,
         target.pl_trandep,
+        target.lightcurve_file,
         lcText
       ].join(" ").toLowerCase();
 
@@ -425,6 +534,7 @@ export class DataOrchestrator {
   getEmbeddedFallback() {
     const normalized = this.normalizeRows(EMBEDDED_FALLBACK, "embedded");
     this.lastSource = "embedded-fallback";
+
     return this.cloneTargets(normalized);
   }
 
@@ -451,35 +561,65 @@ export class DataOrchestrator {
 
 function firstDefined(...values) {
   for (const value of values) {
-    if (value !== undefined && value !== null && value !== "") return value;
+    if (value !== undefined && value !== null && value !== "") {
+      return value;
+    }
   }
+
   return null;
 }
 
 function text(value) {
-  if (value === undefined || value === null) return "";
+  if (value === undefined || value === null) {
+    return "";
+  }
+
   return String(value).trim();
 }
 
 function bool(value, fallback = false) {
-  if (value === undefined || value === null || value === "") return fallback;
-  if (typeof value === "boolean") return value;
-  if (typeof value === "number") return value !== 0;
+  if (value === undefined || value === null || value === "") {
+    return fallback;
+  }
+
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "number") {
+    return value !== 0;
+  }
+
   const v = String(value).trim().toLowerCase();
-  if (["true", "1", "yes", "y", "available", "online"].includes(v)) return true;
-  if (["false", "0", "no", "n", "missing", "offline"].includes(v)) return false;
+
+  if (["true", "1", "yes", "y", "available", "online"].includes(v)) {
+    return true;
+  }
+
+  if (["false", "0", "no", "n", "missing", "offline"].includes(v)) {
+    return false;
+  }
+
   return fallback;
 }
 
 function number(value) {
-  if (value === undefined || value === null || value === "") return null;
-  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (value === undefined || value === null || value === "") {
+    return null;
+  }
+
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+
   const n = Number(String(value).replace(/,/g, "").trim());
+
   return Number.isFinite(n) ? n : null;
 }
 
 function integer(value) {
   const n = number(value);
+
   return Number.isFinite(n) ? Math.trunc(n) : null;
 }
 
@@ -489,22 +629,35 @@ function finiteNumber(value, fallback) {
 
 function lowerKeyClone(row) {
   const out = {};
-  Object.entries(row || {}).forEach(([key, value]) => { out[String(key).toLowerCase()] = value; });
+
+  Object.entries(row || {}).forEach(([key, value]) => {
+    out[String(key).toLowerCase()] = value;
+  });
+
   return out;
 }
 
 function inferRpRs(rpEarth, stRadSolar) {
-  if (!Number.isFinite(rpEarth) || !Number.isFinite(stRadSolar) || stRadSolar <= 0) return null;
+  if (!Number.isFinite(rpEarth) || !Number.isFinite(stRadSolar) || stRadSolar <= 0) {
+    return null;
+  }
+
   return (rpEarth * R_EARTH_R_SUN) / stRadSolar;
 }
 
 function inferARs(aAu, stRadSolar) {
-  if (!Number.isFinite(aAu) || !Number.isFinite(stRadSolar) || stRadSolar <= 0) return null;
+  if (!Number.isFinite(aAu) || !Number.isFinite(stRadSolar) || stRadSolar <= 0) {
+    return null;
+  }
+
   return aAu / (stRadSolar * R_SUN_AU);
 }
 
 function stableId(planet, host) {
-  return `${host}::${planet}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return `${host}::${planet}`
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 function slugify(value) {

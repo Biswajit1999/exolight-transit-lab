@@ -1,8 +1,8 @@
 :root{
   --bg:#050505;
   --bg-soft:#080a0d;
-  --panel:rgba(13,16,20,.84);
-  --panel-strong:rgba(7,9,12,.94);
+  --panel:rgba(13,16,20,.86);
+  --panel-strong:rgba(7,9,12,.96);
   --panel-soft:rgba(20,24,30,.66);
   --line:#222;
   --line-bright:#303944;
@@ -15,7 +15,7 @@
   --amber-soft:#ffd078;
   --red:#ff3149;
   --green:#66ff99;
-  --shadow:0 0 24px rgba(0,240,255,.07),0 0 90px rgba(0,0,0,.75);
+  --shadow:0 0 24px rgba(0,240,255,.065),0 0 90px rgba(0,0,0,.78);
   --font:"JetBrains Mono","Cascadia Code","SFMono-Regular","Consolas","Liberation Mono",monospace;
 }
 
@@ -30,8 +30,8 @@ body{
   margin:0;
   overflow:hidden;
   background:
-    radial-gradient(circle at 50% 22%,rgba(0,240,255,.075),transparent 28%),
-    radial-gradient(circle at 80% 78%,rgba(255,176,0,.052),transparent 34%),
+    radial-gradient(circle at 48% 20%,rgba(0,240,255,.07),transparent 29%),
+    radial-gradient(circle at 82% 78%,rgba(255,176,0,.05),transparent 34%),
     linear-gradient(135deg,#000 0%,var(--bg) 48%,#020406 100%);
   color:var(--text);
   font-family:var(--font);
@@ -57,7 +57,7 @@ body::after{
   inset:0;
   z-index:0;
   pointer-events:none;
-  opacity:.16;
+  opacity:.14;
   mix-blend-mode:screen;
   background:repeating-linear-gradient(to bottom,rgba(255,255,255,.03) 0,rgba(255,255,255,.03) 1px,transparent 1px,transparent 4px);
 }
@@ -162,6 +162,12 @@ p{
   border-color:rgba(255,176,0,.5);
 }
 
+.ring-c{
+  width:28px;
+  height:28px;
+  border-color:rgba(255,255,255,.12);
+}
+
 .brand-copy{
   min-width:0;
 }
@@ -199,7 +205,9 @@ p{
   justify-content:center;
   overflow:hidden;
   border:1px solid rgba(255,255,255,.075);
-  background:linear-gradient(180deg,rgba(0,0,0,.38),rgba(0,0,0,.22));
+  background:
+    linear-gradient(90deg,rgba(0,240,255,.035),transparent),
+    linear-gradient(180deg,rgba(0,0,0,.38),rgba(0,0,0,.22));
 }
 
 .mission-tile span,
@@ -240,7 +248,7 @@ p{
 .prime-grid{
   min-height:0;
   display:grid;
-  grid-template-columns:minmax(300px,22vw) minmax(460px,1fr) minmax(350px,25vw);
+  grid-template-columns:minmax(300px,22vw) minmax(480px,1fr) minmax(350px,25vw);
   gap:8px;
 }
 
@@ -253,11 +261,11 @@ p{
 }
 
 .left-stack{
-  grid-template-rows:34fr 37fr 19fr;
+  grid-template-rows:36fr 38fr 20fr;
 }
 
 .central-stack{
-  grid-template-rows:minmax(0,1.2fr) minmax(212px,.58fr);
+  grid-template-rows:minmax(0,1.22fr) minmax(220px,.58fr);
 }
 
 .right-stack{
@@ -341,7 +349,7 @@ p{
 
 .target-panel{
   display:grid;
-  grid-template-rows:auto auto minmax(0,1fr);
+  grid-template-rows:auto auto auto minmax(0,1fr);
 }
 
 .search-band{
@@ -351,6 +359,36 @@ p{
   gap:6px;
   padding:8px;
   border-bottom:1px solid var(--line);
+}
+
+.vault-hint{
+  min-height:28px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:0 10px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+  background:rgba(0,240,255,.035);
+  color:var(--muted);
+  font-size:9px;
+  text-transform:uppercase;
+}
+
+.vault-hint span{
+  color:var(--amber);
+  font-weight:900;
+}
+
+.vault-hint strong{
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  font-weight:700;
+}
+
+.vault-hint em{
+  color:var(--cyan);
+  font-style:normal;
 }
 
 input[type="search"],
@@ -500,6 +538,10 @@ textarea::placeholder{
     rgba(0,0,0,.34);
 }
 
+.dossier-cell.wide{
+  grid-column:span 1;
+}
+
 .dossier-cell strong{
   overflow:hidden;
   color:var(--cyan);
@@ -614,6 +656,23 @@ canvas{
 .hud-sw{bottom:10px;left:10px}
 .hud-se{right:10px;bottom:10px;text-align:right}
 
+.orbit-note{
+  position:absolute;
+  z-index:3;
+  left:50%;
+  bottom:10px;
+  width:min(560px,55%);
+  transform:translateX(-50%);
+  padding:6px 10px;
+  border:1px solid rgba(255,176,0,.18);
+  background:rgba(0,0,0,.44);
+  color:var(--muted);
+  font-size:9px;
+  text-align:center;
+  text-transform:uppercase;
+  backdrop-filter:blur(10px);
+}
+
 .curve-legend{
   position:absolute;
   z-index:3;
@@ -652,6 +711,13 @@ canvas{
 .legend-line.model{
   background:var(--amber);
   box-shadow:0 0 10px rgba(255,176,0,.6);
+}
+
+.legend-line.marker{
+  width:2px;
+  height:14px;
+  background:var(--cyan);
+  box-shadow:0 0 10px rgba(0,240,255,.55);
 }
 
 .control-panel{
@@ -999,6 +1065,10 @@ textarea{
     min-width:0;
     max-width:46%;
     padding:6px 7px;
+  }
+
+  .orbit-note{
+    display:none;
   }
 
   .curve-legend{
