@@ -112,7 +112,7 @@ export class DataOrchestrator {
       return this.cloneTargets(this.cache);
     }
 
-    const bust = force ? `?t=${Date.now()}` : `?v=${Date.now()}`;
+    const bust = `?v=${Date.now()}`;
 
     const response = await fetch(`${this.cacheUrl}${bust}`, {
       method: "GET",
@@ -209,7 +209,9 @@ export class DataOrchestrator {
     const cacheKey = `${target.id || target.pl_name || file}|${file}`;
 
     if (this.lightcurveCache.has(cacheKey)) {
-      return this.cloneLightCurve(this.lightcurveCache.get(cacheKey));
+      const cached = this.cloneLightCurve(this.lightcurveCache.get(cacheKey));
+      this.attachLightCurveMetadataToTarget(target, cached.meta || {});
+      return cached;
     }
 
     const response = await fetch(url, {
@@ -225,15 +227,52 @@ export class DataOrchestrator {
     }
 
     const payload = await response.json();
+    const metadata = this.extractLightCurveMetadata(payload, file);
     const curve = this.normalizeLightCurve(payload);
 
     if (!curve.length) {
       throw new Error(`Light-curve file ${file} contained no valid phase/flux rows`);
     }
 
+    curve.meta = metadata;
+    this.attachLightCurveMetadataToTarget(target, metadata);
     this.lightcurveCache.set(cacheKey, curve);
 
     return this.cloneLightCurve(curve);
+  }
+
+  extractLightCurveMetadata(payload, file) {
+    const meta = {
+      file,
+      schema: text(payload?.schema),
+      generated_utc: text(payload?.generated_utc),
+      source: text(payload?.source),
+      planet: text(payload?.planet),
+      hostname: text(payload?.hostname),
+      period_days: number(payload?.period_days),
+      transit_midpoint: number(payload?.transit_midpoint),
+      phase_window_used: number(payload?.phase_window_used),
+      duration_phase: number(payload?.duration_phase),
+      phase_shift_applied: number(payload?.phase_shift_applied),
+      processing: text(payload?.processing),
+      points_count: integer(payload?.points_count)
+    };
+
+    return meta;
+  }
+
+  attachLightCurveMetadataToTarget(target, meta = {}) {
+    if (!target || typeof target !== "object") return;
+
+    target.lightcurve_metadata = { ...meta };
+    target.lc_schema = meta.schema || "";
+    target.lc_generated_utc = meta.generated_utc || "";
+    target.lc_source = meta.source || "";
+    target.lc_phase_window_used = finiteNumber(meta.phase_window_used, null);
+    target.lc_duration_phase = finiteNumber(meta.duration_phase, null);
+    target.lc_phase_shift_applied = finiteNumber(meta.phase_shift_applied, null);
+    target.lc_processing = meta.processing || "";
+    target.lc_points_count = finiteNumber(meta.points_count, null);
   }
 
   normalizeLightCurve(payload) {
@@ -500,7 +539,15 @@ export class DataOrchestrator {
       a_rs: finiteNumber(inferredARs, null),
       signal_score: finiteNumber(score, 0),
       lightcurve_file: explicitLightCurveFile || `${slugify(plName || id)}.json`,
-      lightcurve_available: lightcurveAvailable
+      lightcurve_available: lightcurveAvailable,
+      lc_schema: text(r.lc_schema),
+      lc_generated_utc: text(r.lc_generated_utc),
+      lc_source: text(r.lc_source),
+      lc_phase_window_used: finiteNumber(number(r.lc_phase_window_used), null),
+      lc_duration_phase: finiteNumber(number(r.lc_duration_phase), null),
+      lc_phase_shift_applied: finiteNumber(number(r.lc_phase_shift_applied), null),
+      lc_processing: text(r.lc_processing),
+      lc_points_count: finiteNumber(integer(r.lc_points_count), null)
     };
   }
 
@@ -514,7 +561,12 @@ export class DataOrchestrator {
     const tokens = q.split(/\s+/).filter(Boolean);
 
     return this.cloneTargets(targets.filter(target => {
-      const lcText = target.lightcurve_available ? "real lc lightcurve photometry telescope data" : "model no lc no photometry";
+      const lcText = target.lightcurve_available ? "real lc lightcurve photometry telescope data cleaned mast" : "model no lc no photometry";
+      const systemText = [
+        finiteNumber(target.sy_snum, 1) > 1 ? "binary multi star" : "single star",
+        finiteNumber(target.sy_pnum, 1) > 1 ? "multi planet" : "single planet"
+      ].join(" ");
+
       const haystack = [
         target.pl_name,
         target.hostname,
@@ -524,7 +576,9 @@ export class DataOrchestrator {
         target.pl_orbper,
         target.pl_trandep,
         target.lightcurve_file,
-        lcText
+        target.lc_processing,
+        lcText,
+        systemText
       ].join(" ").toLowerCase();
 
       return tokens.every(token => haystack.includes(token));
@@ -539,11 +593,16 @@ export class DataOrchestrator {
   }
 
   cloneTargets(targets) {
-    return (targets || []).map(target => ({ ...target }));
+    return (targets || []).map(target => ({
+      ...target,
+      lightcurve_metadata: target.lightcurve_metadata ? { ...target.lightcurve_metadata } : undefined
+    }));
   }
 
   cloneLightCurve(curve) {
-    return (curve || []).map(point => ({ ...point }));
+    const cloned = (curve || []).map(point => ({ ...point }));
+    cloned.meta = curve?.meta ? { ...curve.meta } : undefined;
+    return cloned;
   }
 
   getDefaultQuery() {
