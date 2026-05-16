@@ -156,13 +156,18 @@ export class PrimeHUD {
         <div><span>Duration Phase</span><strong id="diagnostic-duration-phase">—</strong></div>
         <div><span>Observed Min Phase</span><strong id="diagnostic-observed-min">—</strong></div>
         <div><span>Model Min Phase</span><strong id="diagnostic-model-min">—</strong></div>
-        <div><span>Phase Offset</span><strong id="diagnostic-phase-offset">—</strong></div>
+        <div><span>Observed Phase Offset</span><strong id="diagnostic-phase-offset">—</strong></div>
         <div><span>OOT Scatter</span><strong id="diagnostic-oot-scatter">—</strong></div>
         <div><span>Residual Scatter</span><strong id="diagnostic-residual-scatter">—</strong></div>
         <div><span>Secondary Feature</span><strong id="diagnostic-secondary">—</strong></div>
         <div><span>Secondary Phase</span><strong id="diagnostic-secondary-phase">—</strong></div>
         <div><span>Star System</span><strong id="diagnostic-star-system">—</strong></div>
         <div><span>Planet System</span><strong id="diagnostic-planet-system">—</strong></div>
+        <div><span>LC Points</span><strong id="diagnostic-lc-points">—</strong></div>
+        <div><span>Saved Phase Window</span><strong id="diagnostic-lc-phase-window">—</strong></div>
+        <div><span>Colab Phase Shift</span><strong id="diagnostic-lc-clean-shift">—</strong></div>
+        <div><span>LC Schema</span><strong id="diagnostic-lc-schema">—</strong></div>
+        <div class="diagnostic-wide"><span>Processing Provenance</span><strong id="diagnostic-lc-processing">—</strong></div>
         <div class="diagnostic-wide"><span>Exomoon Status</span><strong id="diagnostic-exomoon-status">simulation only unless externally confirmed</strong></div>
       </div>
     `;
@@ -252,6 +257,11 @@ export class PrimeHUD {
         color:#ff3149;
         text-shadow:0 0 8px rgba(255,49,73,.22);
       }
+
+      .diagnostics-grid strong.provenance{
+        color:#ffd078;
+        text-shadow:0 0 8px rgba(255,176,0,.18);
+      }
     `;
 
     document.head.appendChild(style);
@@ -269,6 +279,11 @@ export class PrimeHUD {
       secondaryPhase: this.$("diagnostic-secondary-phase"),
       starSystem: this.$("diagnostic-star-system"),
       planetSystem: this.$("diagnostic-planet-system"),
+      lcPoints: this.$("diagnostic-lc-points"),
+      lcPhaseWindow: this.$("diagnostic-lc-phase-window"),
+      lcCleanShift: this.$("diagnostic-lc-clean-shift"),
+      lcSchema: this.$("diagnostic-lc-schema"),
+      lcProcessing: this.$("diagnostic-lc-processing"),
       exomoonStatus: this.$("diagnostic-exomoon-status")
     };
   }
@@ -917,6 +932,11 @@ export class PrimeHUD {
     setText(this.diagnosticNodes.secondaryPhase, finite(diagnostics.secondaryPhase) ? signed(diagnostics.secondaryPhase, 4) : "—");
     setText(this.diagnosticNodes.starSystem, diagnostics.starSystemLabel || "—");
     setText(this.diagnosticNodes.planetSystem, diagnostics.planetSystemLabel || "—");
+    setText(this.diagnosticNodes.lcPoints, finite(diagnostics.lcPoints) ? comma(diagnostics.lcPoints) : observed.length ? comma(observed.length) : "—");
+    setText(this.diagnosticNodes.lcPhaseWindow, finite(diagnostics.lcPhaseWindow) ? `±${fmt(diagnostics.lcPhaseWindow, 5)}` : "—");
+    setText(this.diagnosticNodes.lcCleanShift, finite(diagnostics.lcCleanShift) ? signed(diagnostics.lcCleanShift, 5) : "—");
+    setText(this.diagnosticNodes.lcSchema, diagnostics.lcSchema || "—");
+    setText(this.diagnosticNodes.lcProcessing, diagnostics.lcProcessing || "—");
 
     const moonText = controls.moonEnabled
       ? "simulation enabled · observed feature not confirmed moon"
@@ -927,6 +947,8 @@ export class PrimeHUD {
     setDiagnosticClass(this.diagnosticNodes.phaseOffset, Math.abs(diagnostics.phaseOffset || 0) > 0.01 ? "warn" : "");
     setDiagnosticClass(this.diagnosticNodes.secondary, diagnostics.secondaryRisk === "possible" ? "warn" : diagnostics.secondaryRisk === "strong" ? "bad" : "");
     setDiagnosticClass(this.diagnosticNodes.residualScatter, diagnostics.residualScatterPpm > 3000 ? "warn" : "");
+    setDiagnosticClass(this.diagnosticNodes.lcCleanShift, Math.abs(diagnostics.lcCleanShift || 0) > 0.01 ? "warn" : "");
+    setDiagnosticClass(this.diagnosticNodes.lcProcessing, diagnostics.lcProcessing ? "provenance" : "");
   }
 
   log(message, level = "info") {
@@ -995,12 +1017,16 @@ export class PrimeHUD {
 function computeDiagnostics(target, model, observed, controls) {
   const periodDays = finiteNumber(target.pl_orbper, controls.periodDays);
   const durationHours = finiteNumber(target.pl_trandur, null);
-  const durationPhase = finite(periodDays) && finite(durationHours) && periodDays > 0
+
+  const durationPhaseFromCatalog = finite(periodDays) && finite(durationHours) && periodDays > 0
     ? durationHours / 24 / periodDays
     : null;
 
+  const durationPhase = finiteNumber(target.lc_duration_phase, durationPhaseFromCatalog);
+
   const modelMinPhase = getMinPhase(model);
   const observedMinPhase = getRobustMinPhase(observed);
+
   const phaseOffset = finite(observedMinPhase) && finite(modelMinPhase)
     ? observedMinPhase - modelMinPhase
     : null;
@@ -1049,6 +1075,21 @@ function computeDiagnostics(target, model, observed, controls) {
     ? planetCount > 1 ? `${Math.round(planetCount)} known planets` : "one known planet"
     : "planet count unknown";
 
+  const processingRaw = String(target.lc_processing || "").trim();
+  const schemaRaw = String(target.lc_schema || "").trim();
+
+  const lcProcessing = processingRaw
+    ? compactProcessingLabel(processingRaw)
+    : observed.length
+      ? "cleaned local JSON loaded"
+      : "no local light curve loaded";
+
+  const lcSchema = schemaRaw
+    ? schemaRaw.replace("exointel-prime-", "").replace("real-lightcurve-", "lc-")
+    : observed.length
+      ? "local-json"
+      : "";
+
   return {
     periodDays,
     durationHours,
@@ -1062,8 +1103,39 @@ function computeDiagnostics(target, model, observed, controls) {
     secondaryPhase: secondary.phase,
     secondaryRisk: secondary.risk,
     starSystemLabel,
-    planetSystemLabel
+    planetSystemLabel,
+    lcPoints: finiteNumber(target.lc_points_count, observed.length || null),
+    lcPhaseWindow: finiteNumber(target.lc_phase_window_used, null),
+    lcCleanShift: finiteNumber(target.lc_phase_shift_applied, null),
+    lcProcessing,
+    lcSchema
   };
+}
+
+function compactProcessingLabel(text) {
+  const value = String(text || "").trim();
+
+  if (!value) return "";
+
+  const lower = value.toLowerCase();
+
+  if (lower.includes("merged json cleaned")) {
+    return "merged JSON · OOT detrend · adaptive crop · median bin";
+  }
+
+  if (lower.includes("post-processed")) {
+    return "post-processed JSON · detrended · cropped";
+  }
+
+  if (lower.includes("flattened")) {
+    return "flattened MAST LC · phase-folded";
+  }
+
+  if (value.length > 72) {
+    return value.slice(0, 69) + "...";
+  }
+
+  return value;
 }
 
 function detectSecondaryFeature(observed, model, durationPhase, ootMedian, ootScatter) {
@@ -1212,7 +1284,7 @@ function robustSigma(values) {
 function setDiagnosticClass(node, className) {
   if (!node) return;
 
-  node.classList.remove("warn", "bad");
+  node.classList.remove("warn", "bad", "provenance");
 
   if (className) {
     node.classList.add(className);
