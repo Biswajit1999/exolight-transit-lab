@@ -240,7 +240,7 @@ export class ObservatoryScene {
     window.addEventListener("resize", () => this.resize(), { passive: true });
 
     this.ready = true;
-    this.onStatus("Native WebGL observatory ready: depth-aware orbit and moon occlusion enabled.");
+    this.onStatus("Native WebGL observatory ready: depth-aware orbit, moon occlusion, and irregular starspot rendering enabled.");
   }
 
   resize() {
@@ -291,7 +291,6 @@ export class ObservatoryScene {
     const gl = this.gl;
 
     this.resize();
-
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     const teff = Number.isFinite(target?.st_teff) ? target.st_teff : 5772;
@@ -506,29 +505,107 @@ export class ObservatoryScene {
   }
 
   drawStarspot(params) {
-    const x = clamp(params.spotX ?? 0.2, -0.95, 0.95);
-    const y = clamp(params.spotY ?? 0.1, -0.95, 0.95);
-    const z = Math.sqrt(Math.max(0, 1 - x * x - y * y));
+    const baseX = clamp(params.spotX ?? 0.2, -0.88, 0.88);
+    const baseY = clamp(params.spotY ?? 0.1, -0.88, 0.88);
+    const baseZ = Math.sqrt(Math.max(0, 1 - baseX * baseX - baseY * baseY));
 
-    if (z <= 0) return;
+    if (baseZ <= 0) return;
 
-    const r = clamp(params.spotRadius ?? 0.12, 0.02, 0.35);
+    const radius = clamp(params.spotRadius ?? 0.12, 0.025, 0.32);
+    const contrast = clamp(params.spotContrast ?? 0.55, 0.05, 0.95);
+    const seed = Math.floor((baseX + 1.3) * 1000 + (baseY + 1.7) * 1700 + radius * 9000);
 
-    const model = mat4Scale(
-      mat4Translate(mat4Identity(), [x, y, z + 0.012]),
-      [r, r, 0.006]
+    const drawSpotPatch = (dx, dy, rx, ry, darkness, color, rim, zLift = 0.014) => {
+      const x = clamp(baseX + dx, -0.96, 0.96);
+      const y = clamp(baseY + dy, -0.96, 0.96);
+      const z = Math.sqrt(Math.max(0, 1 - x * x - y * y));
+
+      if (z <= 0) return;
+
+      let model = mat4Translate(mat4Identity(), [x, y, z + zLift]);
+      model = mat4RotateZ(model, 0.45 + 2.1 * spotHash(seed + Math.floor(dx * 10000)));
+      model = mat4Scale(model, [rx, ry, 0.004]);
+
+      this.drawSphere({
+        program: this.programs.body,
+        mesh: this.meshes.sphere,
+        model,
+        uniforms: {
+          uColor: color,
+          uRimColor: rim,
+          uDarkness: darkness
+        }
+      });
+    };
+
+    const penumbraColor = [
+      0.105 * (1.0 - 0.55 * contrast),
+      0.045 * (1.0 - 0.45 * contrast),
+      0.018 * (1.0 - 0.35 * contrast)
+    ];
+
+    const umbraColor = [
+      0.020 * (1.0 - 0.25 * contrast),
+      0.010 * (1.0 - 0.20 * contrast),
+      0.006 * (1.0 - 0.15 * contrast)
+    ];
+
+    const warmRim = [
+      0.55 + 0.15 * contrast,
+      0.18 + 0.04 * contrast,
+      0.045
+    ];
+
+    drawSpotPatch(
+      0,
+      0,
+      radius * 1.18,
+      radius * 0.76,
+      0.04,
+      penumbraColor,
+      warmRim,
+      0.010
     );
 
-    this.drawSphere({
-      program: this.programs.body,
-      mesh: this.meshes.sphere,
-      model,
-      uniforms: {
-        uColor: [0.030, 0.010, 0.004],
-        uRimColor: [1.0, 0.32, 0.05],
-        uDarkness: 0.0
-      }
-    });
+    drawSpotPatch(
+      radius * 0.12,
+      -radius * 0.03,
+      radius * 0.72,
+      radius * 0.44,
+      0.10,
+      umbraColor,
+      [0.18, 0.06, 0.018],
+      0.016
+    );
+
+    for (let i = 0; i < 11; i++) {
+      const a = spotHash(seed + i * 31) * Math.PI * 2;
+      const d = radius * (0.16 + 0.66 * spotHash(seed + i * 47));
+      const dx = Math.cos(a) * d * 0.72;
+      const dy = Math.sin(a) * d * 0.50;
+      const rx = radius * (0.14 + 0.20 * spotHash(seed + i * 71));
+      const ry = radius * (0.07 + 0.18 * spotHash(seed + i * 89));
+      const dark = 0.05 + 0.10 * spotHash(seed + i * 113);
+
+      const mixedColor = i % 3 === 0
+        ? umbraColor
+        : [
+            penumbraColor[0] * (0.72 + 0.18 * spotHash(seed + i)),
+            penumbraColor[1] * (0.72 + 0.16 * spotHash(seed + i + 4)),
+            penumbraColor[2] * (0.72 + 0.14 * spotHash(seed + i + 8))
+          ];
+
+      drawSpotPatch(
+        dx,
+        dy,
+        rx,
+        ry,
+        dark,
+        mixedColor,
+        [0.24, 0.08, 0.018],
+        0.018 + 0.002 * i
+      );
+    }
   }
 
   drawOrbitGuide(params) {
@@ -750,7 +827,6 @@ function useProgram(gl, program) {
   if (program._cached) return program._locations;
 
   const loc = program._locations;
-
   const attribs = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
 
   for (let i = 0; i < attribs; i++) {
@@ -1078,6 +1154,11 @@ function normalize3(v) {
     v[1] / l,
     v[2] / l
   ];
+}
+
+function spotHash(value) {
+  const x = Math.sin(value * 12.9898) * 43758.5453123;
+  return x - Math.floor(x);
 }
 
 function clamp(value, min, max) {
