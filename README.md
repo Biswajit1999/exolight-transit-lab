@@ -9,6 +9,7 @@ ExoIntel-Prime is a browser-based exoplanet transit lab. It runs with plain HTML
 
 A transit happens when a planet passes in front of its star from our point of view. The star does not disappear, but its measured brightness drops by a tiny amount. That small dip tells us useful things: the planet’s size, orbit, inclination, and sometimes clues about moons, starspots, or timing changes.
 
+
 ## Project structure
 
 ```text
@@ -118,3 +119,20 @@ data/exoplanets.json
 ## Notes
 
 This is an interactive scientific lab, not a full professional fitting package. It is useful for learning and demonstrating how system geometry changes a transit light curve. Later versions can add noise models, exposure-time integration, uploaded observational light curves, and MAST/TESS data ingestion.
+
+## ⚠️ Hardware Advisory & Liability Disclaimer
+
+**High-Performance WebGL Environment:** ExoIntel-Prime utilizes rigorous, uncompressed mathematical integrators and complex volumetric 3D rendering (custom Three.js shaders, procedural granulation, and additive atmospheric blending). It is specifically engineered to maximize browser-based GPU acceleration.
+
+### 🖥️ Baseline Testing Configuration (Reference Benchmarks)
+This software is developed and benchmarked on the following intermediate-to-high-end mobile workstation architecture:
+* **Processor:** i9 11th gen (8 Cores, 16 Threads @ 3.20 GHz)
+* **Memory:** 16.0 GB RAM
+* **System Type:** 64-bit OS, x64-based processor (Windows 11)
+* **Graphics:** Dedicated Performance GPU architecture
+
+### 🔴 Critical Safety Warnings:
+* **Do not run this application on legacy devices, low-end hardware, or systems lacking an active dedicated graphics card.** * Running these mathematical routines and complex shaders on non-compliant systems can result in extreme frame-rate drops, browser tab termination, or severe **hardware heating/thermal throttling issues**.
+* **Liability Waiver:** The developer (**Biswajit Jana**) assumes absolutely zero responsibility or liability for any hardware stress, thermal overheating, or physical system degradation caused by executing this laboratory environment. Proceed entirely at your own risk.
+
+*Note: Once this flagship Phase III deployment undergoes stable continuous integration and thorough analytical testing, a lightweight "Lite/Safe Mode" build (featuring flat 2D viewport replacements and reduced grid integration matrices) will be released for standard commercial devices.*
