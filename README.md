@@ -1,5 +1,8 @@
 # ExoIntel-Prime
 
+🌐 **Live website:** [Open ExoIntel-Prime](https://biswajit1999.github.io/exolight-transit-lab/)
+
+![ExoIntel-Prime Dashboard](assets/exointel-prime-dashboard.png)
 ExoIntel-Prime is a browser-based exoplanet transit lab. It runs with plain HTML, CSS, and JavaScript ES modules, so it can be deployed directly to GitHub Pages without React, Vite, npm, or a build step.
 
 ## What is a transit?
