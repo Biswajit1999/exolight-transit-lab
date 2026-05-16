@@ -3,7 +3,7 @@ import { TransitPhysicsEngine, createDefaultParams, deriveDossier, mergeTargetIn
 import { ObservatoryScene } from "./scene.js";
 import { PrimeHUD } from "./ui.js";
 
-const APP_VERSION = "ExoIntel-Prime Iteration IV Research Frontend";
+const APP_VERSION = "ExoIntel-Prime Iteration V Transit-Synchronised Observatory";
 const TARGET_CACHE_URL = "./data/exoplanets.json";
 const CURVE_PHASE_MIN = -0.085;
 const CURVE_PHASE_MAX = 0.085;
@@ -24,6 +24,10 @@ class ExoIntelPrimeApp {
     this.lastCurveHash = "";
     this.lastRenderTick = 0;
     this.lastObservationTargetId = "";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    this.sceneMode = urlParams.get("orbit") === "full" ? "full-orbit" : "transit-sync";
+
     this.physics = new TransitPhysicsEngine({ rings: 82, azimuth: 150 });
     this.data = new DataOrchestrator({ cacheUrl: TARGET_CACHE_URL });
     this.hud = new PrimeHUD();
@@ -75,10 +79,16 @@ class ExoIntelPrimeApp {
     this.hud.setControls(this.params);
     this.hud.log(`${APP_VERSION} bootstrap sequence engaged.`, "info");
 
+    if (this.sceneMode === "transit-sync") {
+      this.hud.log("Scene timing mode: TRANSIT-SYNC. The 3D planet/moon transit now follows the same phase marker as the photometry panel.", "info");
+    } else {
+      this.hud.log("Scene timing mode: FULL ORBIT. The 3D scene shows the complete orbit independently from the transit-window light curve.", "warn");
+    }
+
     try {
       await this.scene.init();
       this.hud.setStatus({ render: "WEBGL ONLINE" });
-      this.hud.log("WebGL scene online with full-orbit visual phase and transit-window photometry separated.", "info");
+      this.hud.log("WebGL scene online with depth-aware orbit, front/back ordering, and realistic starspot rendering.", "info");
     } catch (error) {
       this.hud.setStatus({ render: "CANVAS SAFE MODE" });
       this.hud.log(`WebGL initialization degraded: ${error.message}`, "warn");
@@ -182,11 +192,13 @@ class ExoIntelPrimeApp {
         data: `DATA INGESTION STATUS: LIVE TAP SECURE // TARGET CATALOG: ${targets.length} NODES ACTIVE // REAL LC: ${realCount}`
       });
 
-      this.hud.log(`TAP query returned ${targets.length} normalized targets. Live TAP rows do not include local MAST light-curve flags unless the JSON cache is used.`, "info");
+      this.hud.log(`TAP query returned ${targets.length} normalized targets. Live TAP rows do not include local MAST light-curve flags unless the static JSON cache is used.`, "info");
       this.renderTargetList("");
       this.hud.setSearchQuery("");
 
-      if (targets.length > 0) await this.selectTarget(targets[0]);
+      if (targets.length > 0) {
+        await this.selectTarget(targets[0]);
+      }
     } catch (error) {
       this.hud.setStatus({
         tap: "CORS WALL",
@@ -204,7 +216,9 @@ class ExoIntelPrimeApp {
       const fallback = await this.loadCache(true);
       const firstRealTarget = fallback.find(target => target.lightcurve_available) || fallback[0];
 
-      if (firstRealTarget) await this.selectTarget(firstRealTarget);
+      if (firstRealTarget) {
+        await this.selectTarget(firstRealTarget);
+      }
     }
   }
 
@@ -248,7 +262,10 @@ class ExoIntelPrimeApp {
 
     try {
       const observed = await this.data.loadLightCurve(target);
-      if ((target?.id || "") !== this.lastObservationTargetId) return;
+
+      if ((target?.id || "") !== this.lastObservationTargetId) {
+        return;
+      }
 
       this.observedCurve = observed;
       this.hud.setObservationState?.("REAL LC ONLINE", observed.length);
@@ -263,7 +280,9 @@ class ExoIntelPrimeApp {
       this.hud.log(`Loaded ${observed.length} real photometric samples from ${target.lightcurve_file}.`, "info");
       this.renderPhotometry();
     } catch (error) {
-      if ((target?.id || "") !== this.lastObservationTargetId) return;
+      if ((target?.id || "") !== this.lastObservationTargetId) {
+        return;
+      }
 
       this.observedCurve = [];
       this.hud.setObservationState?.("LC 404/MISSING", 0);
@@ -294,7 +313,9 @@ class ExoIntelPrimeApp {
 
     this.hud.renderDossier(deriveDossier(this.target, this.params));
 
-    if (recomputeCurve) this.recompute(false);
+    if (recomputeCurve) {
+      this.recompute(false);
+    }
   }
 
   resetControls() {
@@ -337,7 +358,9 @@ class ExoIntelPrimeApp {
   }
 
   loop(time) {
-    if (!this.running) return;
+    if (!this.running) {
+      return;
+    }
 
     const dt = Math.min(0.05, Math.max(0, (time - this.lastFrame) / 1000 || 0));
     this.lastFrame = time;
@@ -352,6 +375,10 @@ class ExoIntelPrimeApp {
     this.visualOrbitPhase = (this.visualOrbitPhase + dt * 0.035) % 1;
 
     const shiftedTransitPhase = this.physics.applyTTV(this.transitPhase, this.params, this.epoch);
+    const visualPhaseForScene = this.sceneMode === "transit-sync"
+      ? shiftedTransitPhase
+      : this.visualOrbitPhase;
+
     const sample = this.physics.evaluateAtPhase(shiftedTransitPhase, this.params, this.epoch);
     const moonState = this.physics.computeMoonState(shiftedTransitPhase, this.params);
     const impact = this.physics.computeImpactParameter(this.params);
@@ -370,7 +397,7 @@ class ExoIntelPrimeApp {
     this.scene.render({
       time: time * 0.001,
       phase: shiftedTransitPhase,
-      visualPhase: this.visualOrbitPhase,
+      visualPhase: visualPhaseForScene,
       params: this.params,
       sample,
       moonState,
