@@ -1,6 +1,3 @@
-Replace your **entire `README.md`** with this:
-
-````markdown
 # ExoIntel-Prime  
 ### Interactive Exoplanet Transit Photometry Laboratory
 
