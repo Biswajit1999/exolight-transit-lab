@@ -1,9 +1,14 @@
 import { DataOrchestrator, DEFAULT_ADQL } from "./dataOrchestrator.js";
-import { TransitPhysicsEngine, createDefaultParams, deriveDossier, mergeTargetIntoParams } from "./physics.js";
+import {
+  TransitPhysicsEngine,
+  createDefaultParams,
+  deriveDossier,
+  mergeTargetIntoParams
+} from "./physics.js";
 import { ObservatoryScene } from "./scene.js";
 import { PrimeHUD } from "./ui.js";
 
-const APP_VERSION = "ExoIntel-Prime Iteration VI Orbit-Synchronised Observatory";
+const APP_VERSION = "ExoIntel-Prime Iteration VII Coupled Orbit Observatory";
 const TARGET_CACHE_URL = "./data/exoplanets.json";
 
 const CURVE_PHASE_MIN = -0.085;
@@ -21,21 +26,16 @@ class ExoIntelPrimeApp {
     this.modelCurve = [];
     this.observedCurve = [];
 
-    this.visualOrbitPhase = INITIAL_ORBIT_PHASE;
-    this.transitPhase = orbitPhaseToTransitPhase(this.visualOrbitPhase);
+    this.orbitPhase = INITIAL_ORBIT_PHASE;
+    this.transitPhase = 0;
     this.epoch = 0;
+    this.systemState = null;
 
     this.running = false;
     this.lastFrame = 0;
     this.lastCurveHash = "";
     this.lastRenderTick = 0;
     this.lastObservationTargetId = "";
-
-    const urlParams = new URLSearchParams(window.location.search);
-
-    this.sceneMode = urlParams.get("orbit") === "window"
-      ? "transit-window"
-      : "full-orbit-sync";
 
     this.physics = new TransitPhysicsEngine({ rings: 82, azimuth: 150 });
     this.data = new DataOrchestrator({ cacheUrl: TARGET_CACHE_URL });
@@ -65,7 +65,7 @@ class ExoIntelPrimeApp {
     this.hud.setStatus({
       runtime: "BOOTING",
       data: "CACHE LOAD",
-      solver: "82×150 POLAR",
+      solver: "COUPLED",
       render: "WEBGL INIT",
       tap: "CACHE-FIRST",
       warning: false
@@ -73,7 +73,7 @@ class ExoIntelPrimeApp {
 
     this.hud.setFooterStatus?.({
       fps: "--",
-      data: "DATA INGESTION STATUS: INITIALISING // TARGET CATALOG: AWAITING CACHE"
+      data: "DATA INGESTION STATUS: INITIALISING // COUPLED ORBIT + PHOTOMETRY"
     });
 
     this.hud.setAdql(DEFAULT_ADQL);
@@ -90,24 +90,21 @@ class ExoIntelPrimeApp {
     this.hud.setControls(this.params);
 
     this.hud.log(`${APP_VERSION} bootstrap sequence engaged.`, "info");
-
-    if (this.sceneMode === "full-orbit-sync") {
-      this.hud.log(
-        "Scene timing mode: FULL-ORBIT SYNC. The planet completes a full orbit; the light-curve phase is derived from the same orbital clock.",
-        "info"
-      );
-    } else {
-      this.hud.log(
-        "Scene timing mode: TRANSIT-WINDOW. The 3D scene is zoomed into the transit chord only.",
-        "warn"
-      );
-    }
+    this.hud.log(
+      "Architecture mode: physics.js is the state authority. Orbit, projected geometry, model flux, marker phase, and renderer input now come from one physical state vector.",
+      "info"
+    );
 
     try {
       await this.scene.init();
-      this.hud.setStatus({ render: "WEBGL ONLINE" });
+
+      this.hud.setStatus({
+        render: "WEBGL ONLINE",
+        solver: "82×150 COUPLED"
+      });
+
       this.hud.log(
-        "WebGL scene online with full-orbit phase, front/back ordering, and transit-synchronised photometry.",
+        "WebGL scene online. Current renderer still has a compatibility path; next rewrite will make scene.js consume systemState directly.",
         "info"
       );
     } catch (error) {
@@ -117,11 +114,21 @@ class ExoIntelPrimeApp {
 
     await this.loadCache(true);
 
-    const firstRealTarget = this.targets.find(target => target.lightcurve_available) || this.targets[0];
+    const firstRealTarget =
+      this.targets.find(target => target.lightcurve_available) ||
+      this.targets[0];
 
     if (firstRealTarget) {
       await this.selectTarget(firstRealTarget);
     } else {
+      this.systemState = this.physics.evaluateAtOrbitPhase(
+        this.orbitPhase,
+        this.params,
+        this.epoch,
+        { includeVisual: true }
+      );
+
+      this.transitPhase = this.systemState.transitPhase;
       this.recompute(true);
       this.hud.renderDossier(deriveDossier(null, this.params));
       this.hud.setObservationState?.("NO TARGET", 0);
@@ -133,7 +140,7 @@ class ExoIntelPrimeApp {
     requestAnimationFrame(time => this.loop(time));
   }
 
-  async loadCache(force) {
+  async loadCache(force = false) {
     this.hud.setStatus({
       data: "CACHE LOAD",
       tap: force ? "CACHE RELOAD" : "CACHE-FIRST",
@@ -153,11 +160,11 @@ class ExoIntelPrimeApp {
       });
 
       this.hud.setFooterStatus?.({
-        data: `DATA INGESTION STATUS: SECURE // TARGET CATALOG: ${targets.length} NODES ACTIVE // REAL LC: ${realCount}`
+        data: `DATA INGESTION STATUS: SECURE // TARGET CATALOG: ${targets.length} NODES ACTIVE // OBSERVED LC: ${realCount}`
       });
 
       this.hud.log(
-        `Loaded ${targets.length} local exoplanet targets; ${realCount} have real local light curves.`,
+        `Loaded ${targets.length} local exoplanet targets; ${realCount} have observed photometry overlays.`,
         "info"
       );
 
@@ -176,12 +183,11 @@ class ExoIntelPrimeApp {
       });
 
       this.hud.setFooterStatus?.({
-        data: `DATA INGESTION STATUS: DEGRADED // TARGET CATALOG: ${this.targets.length} EMBEDDED NODES ACTIVE // REAL LC: ${realCount}`
+        data: `DATA INGESTION STATUS: DEGRADED // TARGET CATALOG: ${this.targets.length} EMBEDDED NODES ACTIVE // OBSERVED LC: ${realCount}`
       });
 
       this.hud.flashTapWarning("LOCAL CACHE ERROR / EMBEDDED FALLBACK ACTIVE");
       this.hud.log(`Local cache load failed: ${error.message}`, "error");
-
       this.renderTargetList(this.hud.getSearchQuery());
 
       return this.targets;
@@ -207,7 +213,7 @@ class ExoIntelPrimeApp {
     });
 
     this.hud.log(
-      "Browser TAP query dispatched. On GitHub Pages, the static Colab-generated cache remains the reliable data path.",
+      "Browser TAP query dispatched. On GitHub Pages, the static Colab-generated cache remains the reliable observed-photometry path.",
       "info"
     );
 
@@ -224,11 +230,11 @@ class ExoIntelPrimeApp {
       });
 
       this.hud.setFooterStatus?.({
-        data: `DATA INGESTION STATUS: LIVE TAP SECURE // TARGET CATALOG: ${targets.length} NODES ACTIVE // REAL LC: ${realCount}`
+        data: `DATA INGESTION STATUS: LIVE TAP SECURE // TARGET CATALOG: ${targets.length} NODES ACTIVE // OBSERVED LC: ${realCount}`
       });
 
       this.hud.log(
-        `TAP query returned ${targets.length} normalized targets. Live TAP rows do not include local MAST light-curve flags unless the static JSON cache is used.`,
+        `TAP query returned ${targets.length} normalized targets. Live TAP rows do not automatically include local observed-light-curve flags.`,
         "info"
       );
 
@@ -257,7 +263,9 @@ class ExoIntelPrimeApp {
       );
 
       const fallback = await this.loadCache(true);
-      const firstRealTarget = fallback.find(target => target.lightcurve_available) || fallback[0];
+      const firstRealTarget =
+        fallback.find(target => target.lightcurve_available) ||
+        fallback[0];
 
       if (firstRealTarget) {
         await this.selectTarget(firstRealTarget);
@@ -275,9 +283,18 @@ class ExoIntelPrimeApp {
     this.target = target;
     this.params = mergeTargetIntoParams(this.params, target);
 
-    this.visualOrbitPhase = INITIAL_ORBIT_PHASE;
-    this.transitPhase = orbitPhaseToTransitPhase(this.visualOrbitPhase);
+    this.orbitPhase = INITIAL_ORBIT_PHASE;
+    this.transitPhase = 0;
     this.epoch = 0;
+
+    this.systemState = this.physics.evaluateAtOrbitPhase(
+      this.orbitPhase,
+      this.params,
+      this.epoch,
+      { includeVisual: true }
+    );
+
+    this.transitPhase = this.systemState.transitPhase;
 
     this.observedCurve = [];
     this.lastObservationTargetId = target?.id || "";
@@ -285,12 +302,23 @@ class ExoIntelPrimeApp {
     this.hud.setActiveTarget(target);
     this.hud.setControls(this.params);
     this.hud.renderDossier(deriveDossier(target, this.params));
-    this.hud.setObservationState?.(target.lightcurve_available ? "LOADING REAL LC" : "MODEL ONLY", 0);
+
+    this.hud.setObservationState?.(
+      target.lightcurve_available ? "LOADING OBSERVED LC" : "MODEL ONLY",
+      0
+    );
 
     this.hud.log(
       `Target lock: ${target.pl_name || "Unknown planet"} around ${target.hostname || "unknown host"}.`,
       "info"
     );
+
+    if (target?.lc_source || target?.lc_processing || finiteNumber(target?.lc_phase_shift_applied) !== null) {
+      this.hud.log(
+        `Observed LC provenance: ${target.lc_source || "local JSON"} | preprocessing shift ${signedMaybe(target.lc_phase_shift_applied)} | points ${finiteNumber(target.lc_points_count, null) ?? "—"}.`,
+        "info"
+      );
+    }
 
     this.recompute(true);
 
@@ -298,19 +326,14 @@ class ExoIntelPrimeApp {
       this.observedCurve = [];
 
       this.hud.setObservationState?.("NO LOCAL LC", 0);
+      this.syncKernelObservation("MISSING");
 
-      this.hud.setKernel({
-        rings: 82,
-        azimuth: 150,
-        samples: 12300,
-        moon: !!this.params.moonEnabled,
-        spot: !!this.params.spotEnabled,
-        observation: "MISSING"
-      });
+      this.hud.log(
+        `Target has no local observed light-curve JSON yet: ${target.lightcurve_file}.`,
+        "warn"
+      );
 
-      this.hud.log(`Target has no local real light-curve JSON yet: ${target.lightcurve_file}.`, "warn");
       this.renderPhotometry();
-
       return;
     }
 
@@ -323,18 +346,13 @@ class ExoIntelPrimeApp {
 
       this.observedCurve = observed;
 
-      this.hud.setObservationState?.("REAL LC ONLINE", observed.length);
+      this.hud.setObservationState?.("OBSERVED LC ONLINE", observed.length);
+      this.syncKernelObservation("ONLINE");
 
-      this.hud.setKernel({
-        rings: 82,
-        azimuth: 150,
-        samples: 12300,
-        moon: !!this.params.moonEnabled,
-        spot: !!this.params.spotEnabled,
-        observation: "ONLINE"
-      });
-
-      this.hud.log(`Loaded ${observed.length} real photometric samples from ${target.lightcurve_file}.`, "info");
+      this.hud.log(
+        `Loaded ${observed.length} observed photometric samples from ${target.lightcurve_file}.`,
+        "info"
+      );
 
       this.renderPhotometry();
     } catch (error) {
@@ -345,17 +363,12 @@ class ExoIntelPrimeApp {
       this.observedCurve = [];
 
       this.hud.setObservationState?.("LC 404/MISSING", 0);
+      this.syncKernelObservation("MISSING");
 
-      this.hud.setKernel({
-        rings: 82,
-        azimuth: 150,
-        samples: 12300,
-        moon: !!this.params.moonEnabled,
-        spot: !!this.params.spotEnabled,
-        observation: "MISSING"
-      });
-
-      this.hud.log(`Could not load ${target.lightcurve_file}: ${error.message}`, "error");
+      this.hud.log(
+        `Could not load ${target.lightcurve_file}: ${error.message}`,
+        "error"
+      );
 
       this.renderPhotometry();
     }
@@ -364,15 +377,16 @@ class ExoIntelPrimeApp {
   updateParams(nextParams, recomputeCurve) {
     this.params = { ...this.params, ...nextParams };
 
-    this.hud.setKernel({
-      rings: 82,
-      azimuth: 150,
-      samples: 12300,
-      moon: !!this.params.moonEnabled,
-      spot: !!this.params.spotEnabled,
-      observation: this.observedCurve.length ? "ONLINE" : "MISSING"
-    });
+    this.systemState = this.physics.evaluateAtOrbitPhase(
+      this.orbitPhase,
+      this.params,
+      this.epoch,
+      { includeVisual: true }
+    );
 
+    this.transitPhase = this.systemState.transitPhase;
+
+    this.syncKernelObservation(this.observedCurve.length ? "ONLINE" : "MISSING");
     this.hud.renderDossier(deriveDossier(this.target, this.params));
 
     if (recomputeCurve) {
@@ -387,9 +401,18 @@ class ExoIntelPrimeApp {
       ? mergeTargetIntoParams(base, this.target)
       : base;
 
-    this.visualOrbitPhase = INITIAL_ORBIT_PHASE;
-    this.transitPhase = orbitPhaseToTransitPhase(this.visualOrbitPhase);
+    this.orbitPhase = INITIAL_ORBIT_PHASE;
+    this.transitPhase = 0;
     this.epoch = 0;
+
+    this.systemState = this.physics.evaluateAtOrbitPhase(
+      this.orbitPhase,
+      this.params,
+      this.epoch,
+      { includeVisual: true }
+    );
+
+    this.transitPhase = this.systemState.transitPhase;
 
     this.hud.setControls(this.params);
     this.hud.renderDossier(deriveDossier(this.target, this.params));
@@ -421,9 +444,23 @@ class ExoIntelPrimeApp {
 
   renderPhotometry() {
     const summary = this.physics.summarizeCurve(this.modelCurve);
+
     this.hud.renderLightCurve(this.modelCurve, summary, this.observedCurve);
     this.hud.setFluxSummary(summary);
     this.scene.setCurveSummary(summary);
+
+    this.syncKernelObservation(this.observedCurve.length ? "ONLINE" : "MISSING");
+  }
+
+  syncKernelObservation(observation) {
+    this.hud.setKernel({
+      rings: 82,
+      azimuth: 150,
+      samples: 12300,
+      moon: !!this.params.moonEnabled,
+      spot: !!this.params.spotEnabled,
+      observation
+    });
   }
 
   loop(time) {
@@ -434,48 +471,34 @@ class ExoIntelPrimeApp {
     const dt = Math.min(0.05, Math.max(0, (time - this.lastFrame) / 1000 || 0));
     this.lastFrame = time;
 
-    const previousOrbitPhase = this.visualOrbitPhase;
+    const previousOrbitPhase = this.orbitPhase;
 
-    this.visualOrbitPhase = wrap01(
-      this.visualOrbitPhase + dt * ORBIT_RATE_REV_PER_SECOND
+    this.orbitPhase = wrap01(
+      this.orbitPhase + dt * ORBIT_RATE_REV_PER_SECOND
     );
 
-    if (this.visualOrbitPhase < previousOrbitPhase) {
+    if (this.orbitPhase < previousOrbitPhase) {
       this.epoch += 1;
+      this.recompute(true);
     }
 
-    const orbitDerivedTransitPhase = orbitPhaseToTransitPhase(this.visualOrbitPhase);
-    const shiftedTransitPhase = this.physics.applyTTV(
-      orbitDerivedTransitPhase,
+    const state = this.physics.evaluateAtOrbitPhase(
+      this.orbitPhase,
       this.params,
-      this.epoch
+      this.epoch,
+      { includeVisual: true }
     );
 
-    this.transitPhase = shiftedTransitPhase;
+    this.systemState = state;
+    this.transitPhase = state.transitPhase;
 
-    const visualPhaseForScene = this.sceneMode === "transit-window"
-      ? shiftedTransitPhase
-      : this.visualOrbitPhase;
-
-    const sample = this.physics.evaluateAtPhase(
-      shiftedTransitPhase,
-      this.params,
-      this.epoch
-    );
-
-    const moonState = this.physics.computeMoonState(
-      shiftedTransitPhase,
-      this.params
-    );
-
-    const impact = this.physics.computeImpactParameter(this.params);
     const fps = this.scene.getFPS();
 
     this.hud.setSceneReadouts({
-      phase: shiftedTransitPhase,
-      impact,
-      depthPpm: sample.depthPpm,
-      moon: this.params.moonEnabled ? moonState.label : "DISABLED",
+      phase: state.transitPhase,
+      impact: state.impact,
+      depthPpm: state.depthPpm,
+      moon: this.params.moonEnabled ? state.moon.label : "DISABLED",
       fps
     });
 
@@ -483,17 +506,18 @@ class ExoIntelPrimeApp {
 
     this.scene.render({
       time: time * 0.001,
-      phase: shiftedTransitPhase,
-      visualPhase: visualPhaseForScene,
+      phase: state.transitPhase,
+      visualPhase: state.rawOrbitPhase,
       params: this.params,
-      sample,
-      moonState,
-      target: this.target
+      sample: state,
+      moonState: state.moon,
+      target: this.target,
+      systemState: state
     });
 
     if (time - this.lastRenderTick > 240) {
       this.lastRenderTick = time;
-      this.hud.markCurvePhase(shiftedTransitPhase);
+      this.hud.markCurvePhase(state.transitPhase);
     }
 
     requestAnimationFrame(next => this.loop(next));
@@ -514,6 +538,7 @@ class ExoIntelPrimeApp {
       p.moonPhaseDeg,
       p.moonInclinationDeg,
       p.moonNodeDeg,
+      p.moonAngularRate,
       p.spotEnabled,
       p.spotX,
       p.spotY,
@@ -523,26 +548,38 @@ class ExoIntelPrimeApp {
       p.ttvAmplitude,
       p.ttvPeriodEpochs
     ]
-      .map(value => typeof value === "number" ? value.toFixed(6) : String(value))
+      .map(value => typeof value === "number" ? value.toFixed(7) : String(value))
       .join("|");
   }
 }
 
 function wrap01(value) {
-  return ((value % 1) + 1) % 1;
-}
+  let phase = Number(value) || 0;
+  phase %= 1;
 
-function orbitPhaseToTransitPhase(orbitPhase) {
-  const phase = wrap01(orbitPhase);
-
-  if (phase > 0.5) {
-    return phase - 1.0;
+  if (phase < 0) {
+    phase += 1;
   }
 
   return phase;
 }
 
-const start = () => {
+function finiteNumber(value, fallback = null) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function signedMaybe(value) {
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return "—";
+  }
+
+  return `${number >= 0 ? "+" : ""}${number.toFixed(5)}`;
+}
+
+function start() {
   const app = new ExoIntelPrimeApp();
 
   app.boot().catch(error => {
@@ -566,7 +603,11 @@ const start = () => {
 
     console.error(error);
   });
-};
+
+  if (new URLSearchParams(window.location.search).has("debug")) {
+    window.__EXOINTEL_DEBUG__ = app;
+  }
+}
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", start, { once: true });
