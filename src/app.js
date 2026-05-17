@@ -1,11 +1,11 @@
-import { ExoSceneRenderer } from "./scene.js?v=20260517-plot-clean-v14";
+import { ExoSceneRenderer } from "./scene.js?v=20260517-ultra-flagship-v15";
 
 /* ============================================================================
    ExoIntel-Prime Main Thread Orchestrator - Physics Visibility v11
    ============================================================================ */
 
 const APP_NAME = "ExoIntel-Prime";
-const WORKER_URL = new URL("./transitWorker.js?v=20260517-plot-clean-v14", import.meta.url);
+const WORKER_URL = new URL("./transitWorker.js?v=20260517-ultra-flagship-v15", import.meta.url);
 const TARGET_CACHE_URL = "./data/exoplanets.json";
 const LIGHTCURVE_BASE_URL = "./data/lightcurves/";
 const THEME_STORAGE_KEY = "exointel-prime-theme-v5";

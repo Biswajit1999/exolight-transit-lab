@@ -92,10 +92,10 @@ float noise(vec3 p) {
 float fbm(vec3 p) {
   float v = 0.0;
   float a = 0.56;
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < 8; i++) {
     v += a * noise(p);
-    p = p * 2.03 + vec3(4.17, 8.31, 2.73);
-    a *= 0.49;
+    p = p * 2.01 + vec3(4.17, 8.31, 2.73);
+    a *= 0.50;
   }
   return v;
 }
@@ -106,88 +106,108 @@ vec3 rotateY(vec3 p, float a) {
   return vec3(c * p.x + s * p.z, p.y, -s * p.x + c * p.z);
 }
 
+vec3 rotateX(vec3 p, float a) {
+  float c = cos(a);
+  float s = sin(a);
+  return vec3(p.x, c * p.y - s * p.z, s * p.y + c * p.z);
+}
+
+vec3 saturateColour(vec3 colour, float amount) {
+  float luma = dot(colour, vec3(0.2126, 0.7152, 0.0722));
+  return mix(vec3(luma), colour, amount);
+}
+
 float spotMask(vec3 n, vec3 centre, float radius, float contrast) {
   vec3 c = normalize(centre);
   float d = length(n - c);
-  float edgeNoise = fbm(n * 70.0 + vec3(2.1, 5.3, 7.4));
-  float smallNoise = fbm(n * 155.0 + vec3(9.3, 1.4, 5.6));
-  float ragged = radius * (0.76 + 0.30 * edgeNoise + 0.12 * smallNoise);
-  float penumbra = 1.0 - smoothstep(ragged, ragged + radius * 0.50, d);
-  float umbra = 1.0 - smoothstep(ragged * 0.30, ragged * 0.30 + radius * 0.18, d);
-  float pores = smoothstep(0.62, 0.92, fbm(n * 210.0 + vec3(4.7, 8.8, 2.2)));
-  return clamp((0.42 * penumbra + 0.72 * umbra + 0.08 * pores * penumbra) * contrast, 0.0, 0.96);
+  float edgeNoise = fbm(n * 82.0 + vec3(2.1, 5.3, 7.4));
+  float smallNoise = fbm(n * 190.0 + vec3(9.3, 1.4, 5.6));
+  float pores = smoothstep(0.58, 0.92, fbm(n * 260.0 + vec3(4.7, 8.8, 2.2)));
+  float ragged = radius * (0.72 + 0.36 * edgeNoise + 0.13 * smallNoise);
+  float penumbra = 1.0 - smoothstep(ragged, ragged + radius * 0.55, d);
+  float umbra = 1.0 - smoothstep(ragged * 0.33, ragged * 0.33 + radius * 0.17, d);
+  return clamp((0.42 * penumbra + 0.76 * umbra + 0.10 * pores * penumbra) * contrast, 0.0, 0.97);
 }
 
 void main() {
   vec3 n = normalize(vNormal);
+  float qLevel = clamp(uQuality, 0.0, 1.95);
 
-  // Use the actual spherical normal as a moving photospheric coordinate.
-  // Ultra quality exaggerates fine scales and time evolution for a solar-video feel.
-  float qLevel = clamp(uQuality, 0.0, 1.80);
-  vec3 rSlow = rotateY(n, uTime * (0.090 + 0.035 * qLevel));
-  vec3 rMid  = rotateY(n, -uTime * (0.145 + 0.050 * qLevel));
-  vec3 rFast = rotateY(n, uTime * (0.260 + 0.080 * qLevel));
+  vec3 rSlow = rotateX(rotateY(n, uTime * (0.070 + 0.032 * qLevel)), 0.12 * sin(uTime * 0.05));
+  vec3 rMid  = rotateY(n, -uTime * (0.135 + 0.060 * qLevel));
+  vec3 rFast = rotateX(rotateY(n, uTime * (0.300 + 0.115 * qLevel)), 0.35);
 
-  // Limb darkening in view space; this makes the disk read as a sphere.
   float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
   float oneMinusMu = 1.0 - mu;
-  float limb = clamp(1.0 - uU1 * oneMinusMu - uU2 * oneMinusMu * oneMinusMu, 0.03, 1.24);
 
-  // Solar-style nested cellular texture: broad convection, fine granules, and dark lanes.
-  float globalFlow = fbm(rSlow * 2.8 + vec3(uTime * 0.018, -uTime * 0.011, uTime * 0.014));
-  float superGran = fbm(rSlow * 6.5 + vec3(-uTime * 0.035, uTime * 0.022, -uTime * 0.018));
-  float granA = fbm(rMid * 24.0 + vec3(uTime * 0.125, -uTime * 0.082, uTime * 0.055));
-  float granB = fbm(rFast * 62.0 + vec3(-uTime * 0.260, uTime * 0.190, -uTime * 0.140));
-  float granC = fbm(rFast * 138.0 + vec3(uTime * 0.420, -uTime * 0.310, uTime * 0.220));
+  // Physically motivated limb darkening, with extra Ultra edge falloff so the star reads as a sphere.
+  float limb = clamp(1.0 - uU1 * oneMinusMu - uU2 * oneMinusMu * oneMinusMu, 0.025, 1.18);
+  float sphericalDepth = 0.72 + 0.34 * pow(mu, 0.62);
 
-  float cells = 0.22 * globalFlow + 0.24 * superGran + 0.30 * granA + 0.17 * granB + 0.07 * granC;
-  float brightCell = smoothstep(0.54, 0.76, cells);
-  float hotKernel = smoothstep(0.67, 0.90, cells);
-  float darkLane = smoothstep(0.34, 0.64, 1.0 - cells);
-  float filigree = (granC - 0.5) * 2.35;
+  // Layered convection: large cells + intergranular dark lanes + fine hot fragments.
+  float globalFlow = fbm(rSlow * 2.4 + vec3(uTime * 0.015, -uTime * 0.010, uTime * 0.012));
+  float superGran  = fbm(rSlow * 5.6 + vec3(-uTime * 0.032, uTime * 0.020, -uTime * 0.015));
+  float meso       = fbm(rMid  * 13.0 + vec3(uTime * 0.070, -uTime * 0.045, uTime * 0.034));
+  float granA      = fbm(rMid  * 34.0 + vec3(uTime * 0.160, -uTime * 0.105, uTime * 0.080));
+  float granB      = fbm(rFast * 86.0 + vec3(-uTime * 0.320, uTime * 0.235, -uTime * 0.160));
+  float granC      = fbm(rFast * 176.0 + vec3(uTime * 0.540, -uTime * 0.390, uTime * 0.270));
 
-  float tempFactor = clamp((uTeff - 3200.0) / 6200.0, 0.0, 1.0);
-  float granulationContrast = mix(0.30, 0.16, tempFactor) * mix(0.72, 1.60, qLevel);
+  float plasmaField = 0.18 * globalFlow + 0.22 * superGran + 0.20 * meso + 0.25 * granA + 0.11 * granB + 0.04 * granC;
+  float hotCell = smoothstep(0.54, 0.73, plasmaField);
+  float hotCore = smoothstep(0.66, 0.88, plasmaField);
+  float darkLane = smoothstep(0.43, 0.69, 1.0 - plasmaField);
+  float fineSpark = smoothstep(0.63, 0.91, granC) * smoothstep(0.20, 0.84, mu);
+
+  float tempFactor = clamp((uTeff - 3200.0) / 6400.0, 0.0, 1.0);
+  float baseContrast = mix(0.38, 0.20, tempFactor);
+  float contrast = baseContrast * mix(0.74, 1.72, qLevel);
 
   float textureTerm =
     1.0
-    + granulationContrast * (0.78 * brightCell + 0.34 * hotKernel - 0.85 * darkLane)
-    + granulationContrast * 0.16 * filigree;
+    + contrast * (0.78 * hotCell + 0.48 * hotCore - 0.82 * darkLane)
+    + contrast * 0.20 * ((granB - 0.5) + 0.55 * (granC - 0.5));
 
-  // Self-luminous volume. Directional term is subtle; the star must not look like a planet lit by a lamp.
-  vec3 virtualViewLight = normalize(vec3(-0.35, 0.18, 0.92));
-  float volume = 0.86 + 0.14 * max(dot(n, virtualViewLight), 0.0);
-  float centre = 0.84 + 0.18 * pow(mu, 0.58);
+  // Self-luminous centre/edge structure. Not a planet lit by a lamp.
+  float centreEmission = 0.78 + 0.30 * pow(mu, 0.52);
+  float innerGlow = smoothstep(0.18, 1.0, mu);
 
   vec3 photosphere = mix(uCoolColour, uBaseColour, limb);
-  photosphere = mix(photosphere, uHotColour, 0.18 * brightCell + 0.13 * hotKernel + 0.10 * pow(mu, 1.4));
+  photosphere = mix(photosphere, uHotColour, 0.20 * hotCell + 0.22 * hotCore + 0.12 * fineSpark + 0.10 * pow(mu, 1.25));
 
-  vec3 colour = photosphere * limb * textureTerm * volume * centre;
+  // Keep stellar temperature colour visible. Cooler stars stay orange/red; hotter stars keep white/blue-white.
+  vec3 colour = photosphere * limb * textureTerm * centreEmission * sphericalDepth;
 
-  // Chromatic limb: darker and slightly redder at the edge, like an optically thick stellar disk.
-  vec3 chromaLimb = mix(uBaseColour, vec3(1.00, 0.26, 0.055), 0.36);
-  colour = mix(colour, chromaLimb * 0.58, pow(oneMinusMu, 1.35) * 0.42);
+  // Thin bright facular fragments, especially toward the limb.
+  float facula = smoothstep(0.64, 0.91, fbm(rFast * 122.0 + vec3(7.1, uTime * 0.42, 3.2)));
+  colour += uHotColour * facula * pow(oneMinusMu, 1.06) * 0.044 * qLevel;
+  colour += uHotColour * fineSpark * innerGlow * 0.030 * qLevel;
 
-  // Faculae close to the limb and small bright magnetic fragments.
-  float facula = smoothstep(0.60, 0.90, fbm(rFast * 96.0 + vec3(7.1, uTime * 0.38, 3.2)));
-  colour += uHotColour * facula * pow(oneMinusMu, 1.15) * 0.028 * qLevel;
+  // Chromatic limb falloff: redder/darker at the edge, no chalky flat disk.
+  vec3 chromaLimb = mix(uCoolColour, vec3(1.15, 0.30, 0.070), 0.32);
+  colour = mix(colour, chromaLimb * 0.48, pow(oneMinusMu, 1.18) * 0.52);
 
+  // Irregular starspot: broken penumbra and darker umbral islands.
   if (uSpotEnabled > 0.5) {
     float s = spotMask(n, uSpotCentre, uSpotRadius, uSpotContrast);
-    vec3 penumbraColour = vec3(0.34, 0.17, 0.075);
-    vec3 umbraColour = vec3(0.055, 0.030, 0.018);
-    colour = mix(colour, penumbraColour * limb, s * 0.72);
-    colour = mix(colour, umbraColour, smoothstep(0.55, 0.95, s) * 0.86);
+    vec3 penumbraColour = mix(uCoolColour * 0.34, vec3(0.36, 0.16, 0.060), 0.55);
+    vec3 umbraColour = vec3(0.045, 0.023, 0.014);
+    colour = mix(colour, penumbraColour * limb, s * 0.70);
+    colour = mix(colour, umbraColour, smoothstep(0.58, 0.95, s) * 0.88);
   }
 
-  // Mild filmic compression: brighter, hotter, less muddy than the recovery renderer.
-  colour = max(colour, vec3(0.0));
-  colour *= 0.82;
-  colour = colour / (colour + vec3(0.46));
-  colour *= 1.34;
-  colour = pow(colour, vec3(0.96));
+  // Warm corona contribution only at the rim, not a flat disc over the star.
+  colour += uHotColour * pow(oneMinusMu, 3.0) * 0.035 * qLevel;
 
-  gl_FragColor = vec4(colour, 1.0);
+  // Filmic compression with saturation recovery. This avoids both chalk-white saturation and muddy brown.
+  vec3 preTone = max(colour, vec3(0.0));
+  preTone = saturateColour(preTone, 1.18 + 0.16 * qLevel);
+  preTone *= 0.92;
+  vec3 mapped = preTone / (preTone + vec3(0.34));
+  mapped = saturateColour(mapped, 1.10 + 0.12 * qLevel);
+  mapped *= 1.20;
+  mapped = pow(max(mapped, vec3(0.0)), vec3(0.92));
+
+  gl_FragColor = vec4(mapped, 1.0);
 }
 `;
 
@@ -200,18 +220,41 @@ uniform vec3 uGlowColour;
 uniform float uTime;
 uniform float uStrength;
 
+float hash(vec3 p) {
+  p = fract(p * 0.3183099 + vec3(0.1031, 0.11369, 0.13787));
+  p *= 17.0;
+  return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+}
+
+float noise(vec3 p) {
+  vec3 i = floor(p);
+  vec3 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float n000 = hash(i + vec3(0.0, 0.0, 0.0));
+  float n100 = hash(i + vec3(1.0, 0.0, 0.0));
+  float n010 = hash(i + vec3(0.0, 1.0, 0.0));
+  float n110 = hash(i + vec3(1.0, 1.0, 0.0));
+  float n001 = hash(i + vec3(0.0, 0.0, 1.0));
+  float n101 = hash(i + vec3(1.0, 0.0, 1.0));
+  float n011 = hash(i + vec3(0.0, 1.0, 1.0));
+  float n111 = hash(i + vec3(1.0, 1.0, 1.0));
+  float nx00 = mix(n000, n100, f.x);
+  float nx10 = mix(n010, n110, f.x);
+  float nx01 = mix(n001, n101, f.x);
+  float nx11 = mix(n011, n111, f.x);
+  return mix(mix(nx00, nx10, f.y), mix(nx01, nx11, f.y), f.z);
+}
+
 void main() {
   float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
   float edge = 1.0 - mu;
-
-  // No flat circular disk: emission is concentrated around the limb/corona.
-  float innerSuppression = smoothstep(0.10, 0.74, edge);
-  float corona = pow(edge, 2.0) * innerSuppression;
-  float outer = pow(edge, 5.0);
-  float pulse = 0.96 + 0.04 * sin(uTime * 0.45);
-
-  vec3 colour = uGlowColour * (0.36 * corona + 0.78 * outer) * uStrength * pulse;
-  float alpha = clamp((0.040 * corona + 0.16 * outer) * uStrength, 0.0, 0.26);
+  float rim = smoothstep(0.58, 0.98, edge);
+  float outer = pow(edge, 5.7);
+  float texture = noise(vec3(gl_FragCoord.xy * 0.010, uTime * 0.030));
+  float pulse = 0.96 + 0.04 * sin(uTime * 0.52);
+  float broken = 0.72 + 0.36 * texture;
+  vec3 colour = uGlowColour * (0.20 * rim + 0.92 * outer) * uStrength * pulse * broken;
+  float alpha = clamp((0.018 * rim + 0.115 * outer) * uStrength * broken, 0.0, 0.22);
   gl_FragColor = vec4(colour, alpha);
 }
 `;
@@ -433,21 +476,21 @@ export class ExoSceneRenderer {
     window.addEventListener("resize", () => this.resize(), { passive: true });
     this.resize();
     this.ready = true;
-    this.onStatus("Ultra WebGL photosphere online");
+    this.onStatus("Ultra flagship stellar renderer online");
     this.frameHandle = requestAnimationFrame(time => this.loop(time));
   }
 
   qualitySettings() {
     if (this.quality === "ultra") {
-      return { sphereSegments: 260, sphereRings: 148, starCount: 1650, quality: 1.72, glow: 1.62 };
+      return { sphereSegments: 320, sphereRings: 184, starCount: 2600, quality: 1.92, glow: 1.78 };
     }
     if (this.quality === "high") {
-      return { sphereSegments: 184, sphereRings: 106, starCount: 980, quality: 1.12, glow: 1.22 };
+      return { sphereSegments: 220, sphereRings: 126, starCount: 1450, quality: 1.28, glow: 1.30 };
     }
     if (this.quality === "low") {
-      return { sphereSegments: 72, sphereRings: 42, starCount: 260, quality: 0.42, glow: 0.72 };
+      return { sphereSegments: 72, sphereRings: 42, starCount: 320, quality: 0.42, glow: 0.70 };
     }
-    return { sphereSegments: 118, sphereRings: 70, starCount: 520, quality: 0.72, glow: 0.92 };
+    return { sphereSegments: 132, sphereRings: 78, starCount: 760, quality: 0.78, glow: 0.96 };
   }
 
   rebuildMeshes() {
@@ -599,7 +642,7 @@ export class ExoSceneRenderer {
     const p = this.params;
     const gl = this.gl;
     const spot = spotCentreFromProjected(p.spotX, p.spotY);
-    const model = mat4Scale(mat4RotateY(mat4Identity(), time * (this.quality === "ultra" ? 0.070 : 0.035)), [this.quality === "ultra" ? 1.58 : 1.50, this.quality === "ultra" ? 1.58 : 1.50, this.quality === "ultra" ? 1.58 : 1.50]);
+    const model = mat4Scale(mat4RotateY(mat4Identity(), time * (this.quality === "ultra" ? 0.105 : 0.045)), [this.quality === "ultra" ? 1.56 : 1.50, this.quality === "ultra" ? 1.56 : 1.50, this.quality === "ultra" ? 1.56 : 1.50]);
 
     this.drawSphere({
       program: this.programs.star,
@@ -633,7 +676,7 @@ export class ExoSceneRenderer {
     this.drawSphere({
       program: this.programs.glow,
       mesh: this.meshes.glowSphere,
-      model: mat4Scale(mat4Identity(), [this.quality === "ultra" ? 1.92 : 1.76, this.quality === "ultra" ? 1.92 : 1.76, this.quality === "ultra" ? 1.92 : 1.76]),
+      model: mat4Scale(mat4Identity(), [this.quality === "ultra" ? 1.82 : 1.72, this.quality === "ultra" ? 1.82 : 1.72, this.quality === "ultra" ? 1.82 : 1.72]),
       uniforms: {
         uGlowColour: glowColour,
         uTime: time,
@@ -750,16 +793,55 @@ function projectedVisualGeometry(phase01, params, time) {
 }
 
 function stellarColours(teff) {
-  const c = kelvinToRgb01(clamp(numberOr(teff, 5772), 2500, 12000));
-  const warm = [1.0, 0.46, 0.13];
-  const hot = [1.0, 0.80, 0.42];
-  const blueHot = [0.72, 0.84, 1.0];
-  const t = clamp((teff - 3600) / 4200, 0, 1);
-  const base = mix3(warm, c, 0.58);
-  const hotColour = teff > 7200 ? mix3(c, blueHot, 0.35) : mix3(c, hot, 0.40);
-  const cool = mul3(base, 0.42);
-  const glow = teff > 7200 ? [0.40, 0.62, 1.0] : [1.0, 0.42, 0.10];
-  return { base, hot: hotColour, cool, glow };
+  const t = clamp(numberOr(teff, 5772), 2500, 12000);
+
+  // Physically inspired but visually tuned palette. Values may exceed 1.0 because
+  // the shader applies its own filmic compression; this gives Ultra mode an emissive look.
+  if (t < 3600) {
+    return {
+      base: [1.18, 0.33, 0.105],
+      hot: [1.55, 0.64, 0.22],
+      cool: [0.40, 0.075, 0.030],
+      glow: [1.00, 0.22, 0.055]
+    };
+  }
+
+  if (t < 5000) {
+    const k = (t - 3600) / 1400;
+    return {
+      base: mix3([1.18, 0.36, 0.12], [1.12, 0.55, 0.20], k),
+      hot: mix3([1.55, 0.66, 0.23], [1.48, 0.84, 0.34], k),
+      cool: mix3([0.42, 0.085, 0.035], [0.46, 0.16, 0.055], k),
+      glow: mix3([1.00, 0.24, 0.060], [1.00, 0.40, 0.10], k)
+    };
+  }
+
+  if (t < 6500) {
+    const k = (t - 5000) / 1500;
+    return {
+      base: mix3([1.12, 0.58, 0.22], [1.12, 0.78, 0.38], k),
+      hot: mix3([1.50, 0.88, 0.36], [1.44, 1.08, 0.62], k),
+      cool: mix3([0.46, 0.17, 0.060], [0.45, 0.27, 0.12], k),
+      glow: mix3([1.00, 0.42, 0.10], [1.00, 0.64, 0.22], k)
+    };
+  }
+
+  if (t < 8500) {
+    const k = (t - 6500) / 2000;
+    return {
+      base: mix3([1.10, 0.82, 0.46], [0.82, 0.92, 1.18], k),
+      hot: mix3([1.42, 1.16, 0.72], [1.02, 1.24, 1.58], k),
+      cool: mix3([0.42, 0.30, 0.15], [0.20, 0.30, 0.55], k),
+      glow: mix3([1.00, 0.70, 0.30], [0.48, 0.68, 1.25], k)
+    };
+  }
+
+  return {
+    base: [0.70, 0.88, 1.28],
+    hot: [0.96, 1.18, 1.72],
+    cool: [0.16, 0.24, 0.58],
+    glow: [0.36, 0.58, 1.35]
+  };
 }
 
 function spotCentreFromProjected(x, y) {
