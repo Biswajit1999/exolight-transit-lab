@@ -82,9 +82,9 @@ float fbm(vec3 p){
 
 void main(){
   vec3 n = normalize(vNormal);
+
   float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
   float q = 1.0 - mu;
-
   float limb = max(0.0, 1.0 - uU1 * q - uU2 * q * q);
 
   float granLarge = fbm(n * 13.0 + vec3(uTime * 0.018, -uTime * 0.012, uTime * 0.010));
@@ -256,7 +256,7 @@ export class ObservatoryScene {
     });
 
     this.ready = true;
-    this.onStatus("Native WebGL observatory ready: renderer now consumes the shared physics state vector.");
+    this.onStatus("Native WebGL observatory ready: renderer consumes the shared physics state vector.");
   }
 
   resize() {
@@ -327,14 +327,12 @@ export class ObservatoryScene {
     const moonDisplay = this.projectMoonToDisplay(state.moon, planetDisplay, params);
 
     this.drawBackgroundFrame(params, state);
-    this.drawRearBodies(planetDisplay, moonDisplay, params);
-
+    this.drawRearBodies(planetDisplay, moonDisplay);
     this.drawStarSolid(time, params, teff, colors);
     this.drawSpotComponents(state.spotComponents || []);
     this.drawStarGlow(time, colors);
-
     this.drawDepthAwareGuides(planetDisplay, moonDisplay, params, state);
-    this.drawFrontBodies(planetDisplay, moonDisplay, params);
+    this.drawFrontBodies(planetDisplay, moonDisplay);
   }
 
   makeFallbackSystemState(visualPhase, phase, params, sample, moonState) {
@@ -382,35 +380,46 @@ export class ObservatoryScene {
     const orbitPhase = wrap01(planet.orbitPhase ?? 0);
     const theta = Number.isFinite(planet.theta) ? planet.theta : TWO_PI * orbitPhase;
     const inc = (params.inclinationDeg ?? 88.5) * Math.PI / 180;
-    const orbitRadius = 1.56;
-    const visualFlatten = Math.max(0.13, Math.abs(Math.cos(inc)) * 3.2);
-    const schematic = [
-      orbitRadius * Math.sin(theta),
-      -orbitRadius * Math.cos(theta) * visualFlatten,
-      0.95 * Math.cos(theta) * Math.sin(inc)
-    ];
 
     const radius = clamp(planet.radius ?? params.rpRs ?? 0.1, 0.005, 0.30);
-    const physical = [
-      finite(planet.x) ? planet.x : schematic[0],
-      finite(planet.y) ? planet.y : schematic[1],
-      schematic[2]
-    ];
 
-    const proximity = Math.max(
-      Math.abs(physical[0]) / Math.max(1e-6, 1.16 + radius),
-      Math.abs(physical[1]) / Math.max(1e-6, 1.10 + radius)
-    );
+    /*
+      Important:
+      The previous version blended between physical projected coordinates
+      and a decorative schematic orbit. That caused visible snapping/bouncing
+      near ingress and egress. This version uses one continuous visual orbit.
+      The physics state still drives phase, depth, and front/back ordering.
+    */
 
-    const blend = smoothstep(0.95, 1.55, proximity);
-    const position = mix3(physical, schematic, blend);
+    const orbitRadius = 1.58;
+    const orbitFlatten = Math.max(0.14, Math.abs(Math.cos(inc)) * 3.4);
+
+    const x = orbitRadius * Math.sin(theta);
+    const y = -orbitRadius * Math.cos(theta) * orbitFlatten;
+    const z = 0.95 * Math.cos(theta) * Math.sin(inc);
+
+    /*
+      During the actual transit chord, gently lock the displayed y-position
+      to the true impact parameter from physics.js. This keeps the crossing
+      physically meaningful without switching the whole coordinate system.
+    */
+
+    const physicalY = finite(planet.y) ? clamp(planet.y, -1.0, 1.0) : y;
+    const transitProximity = Math.abs(Math.sin(theta));
+    const frontWeight = z > 0 ? 1 : 0;
+    const transitLock = frontWeight * (1.0 - smoothstep(0.78, 1.18, transitProximity));
+    const lockedY = y + (physicalY - y) * transitLock;
 
     return {
-      position,
-      physicalPosition: physical,
-      schematicPosition: schematic,
+      position: [x, lockedY, z],
+      physicalPosition: [
+        finite(planet.x) ? planet.x : x,
+        finite(planet.y) ? planet.y : physicalY,
+        finite(planet.z) ? planet.z : z
+      ],
+      schematicPosition: [x, y, z],
       radius,
-      front: planet.front !== undefined ? !!planet.front : schematic[2] >= 0,
+      front: planet.front !== undefined ? !!planet.front : z >= 0,
       theta,
       orbitPhase,
       source: planet
@@ -432,37 +441,29 @@ export class ObservatoryScene {
     }
 
     const vector = Array.isArray(moon.vector) ? moon.vector : [0, 0, 0];
-    const scaledVector = [
-      vector[0] * 0.34,
-      vector[1] * 0.34,
-      vector[2] * 0.34
+
+    /*
+      Keep the moon visually tied to the planet without using a second
+      independent display orbit. The vector still comes from physics.js.
+    */
+
+    const scale = 0.34;
+
+    const position = [
+      planetDisplay.position[0] + vector[0] * scale,
+      planetDisplay.position[1] + vector[1] * scale,
+      planetDisplay.position[2] + vector[2] * scale
     ];
-
-    const schematic = [
-      planetDisplay.position[0] + scaledVector[0],
-      planetDisplay.position[1] + scaledVector[1],
-      planetDisplay.position[2] + scaledVector[2]
-    ];
-
-    const physical = [
-      finite(moon.x) ? moon.x : schematic[0],
-      finite(moon.y) ? moon.y : schematic[1],
-      finite(moon.z) ? clamp(moon.z / Math.max(1.0, params.aRs || 12), -1.1, 1.1) : schematic[2]
-    ];
-
-    const proximity = Math.max(
-      Math.abs(physical[0]) / Math.max(1e-6, 1.20 + radius),
-      Math.abs(physical[1]) / Math.max(1e-6, 1.15 + radius)
-    );
-
-    const blend = smoothstep(0.98, 1.62, proximity);
-    const position = mix3(physical, schematic, blend);
 
     return {
       enabled: true,
       position,
-      physicalPosition: physical,
-      schematicPosition: schematic,
+      physicalPosition: [
+        finite(moon.x) ? moon.x : position[0],
+        finite(moon.y) ? moon.y : position[1],
+        finite(moon.z) ? moon.z : position[2]
+      ],
+      schematicPosition: position,
       radius,
       front: moon.front !== undefined ? !!moon.front : position[2] >= 0,
       source: moon
@@ -493,7 +494,7 @@ export class ObservatoryScene {
     return clamp(-aRs * Math.cos(inc), -1.0, 1.0);
   }
 
-  drawRearBodies(planet, moon, params) {
+  drawRearBodies(planet, moon) {
     const rear = [];
 
     if (!planet.front) {
@@ -523,7 +524,7 @@ export class ObservatoryScene {
       .forEach(body => this.drawBody(body));
   }
 
-  drawFrontBodies(planet, moon, params) {
+  drawFrontBodies(planet, moon) {
     const front = [];
 
     if (planet.front) {
@@ -617,6 +618,7 @@ export class ObservatoryScene {
       const kind = String(component.kind || "");
       const opacity = clamp(component.opacity ?? 0.35, 0.04, 0.92);
       const isUmbra = kind.includes("umbra");
+
       const color = isUmbra
         ? [0.018, 0.008, 0.004]
         : [0.070, 0.030, 0.012];
@@ -691,8 +693,8 @@ export class ObservatoryScene {
 
   drawOrbitGuide(params) {
     const inc = (params.inclinationDeg ?? 88.5) * Math.PI / 180;
-    const orbitRadius = 1.56;
-    const visualFlatten = Math.max(0.13, Math.abs(Math.cos(inc)) * 3.2);
+    const orbitRadius = 1.58;
+    const visualFlatten = Math.max(0.14, Math.abs(Math.cos(inc)) * 3.4);
 
     let model = mat4RotateX(mat4Identity(), Math.PI / 2);
     model = mat4Scale(model, [orbitRadius, orbitRadius, visualFlatten]);
@@ -1201,14 +1203,6 @@ function normalize3(v) {
     v[0] / l,
     v[1] / l,
     v[2] / l
-  ];
-}
-
-function mix3(a, b, t) {
-  return [
-    a[0] + (b[0] - a[0]) * t,
-    a[1] + (b[1] - a[1]) * t,
-    a[2] + (b[2] - a[2]) * t
   ];
 }
 
