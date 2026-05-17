@@ -1,14 +1,6 @@
 /* ==========================================================================
    ExoIntel-Prime
    Global Entry + Boot Styles
-   --------------------------------------------------------------------------
-   The full application UI is injected by src/app.js.
-   This file styles:
-   - first-load boot screen
-   - no-script fallback
-   - global browser defaults
-   - scrollbars
-   - accessibility focus
    ========================================================================== */
 
 :root {
@@ -108,9 +100,9 @@ a:hover {
   overflow: hidden;
   position: relative;
   background:
-    radial-gradient(circle at 50% 38%, rgba(255, 181, 71, 0.12), transparent 26%),
-    radial-gradient(circle at 25% 15%, rgba(99, 167, 255, 0.14), transparent 32%),
-    radial-gradient(circle at 75% 22%, rgba(80, 198, 223, 0.08), transparent 28%),
+    radial-gradient(circle at 50% 38%, rgba(255, 181, 71, 0.13), transparent 26%),
+    radial-gradient(circle at 25% 15%, rgba(99, 167, 255, 0.15), transparent 32%),
+    radial-gradient(circle at 75% 22%, rgba(80, 198, 223, 0.09), transparent 28%),
     linear-gradient(180deg, #060b13 0%, #0b1220 100%);
 }
 
@@ -133,59 +125,48 @@ a:hover {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 50% 50%, transparent 0%, transparent 52%, rgba(0, 0, 0, 0.28) 100%);
+    radial-gradient(circle at 50% 50%, transparent 0%, transparent 52%, rgba(0, 0, 0, 0.30) 100%);
 }
 
 .boot-card {
   position: relative;
   z-index: 2;
-  width: min(620px, calc(100vw - 32px));
+  width: min(720px, calc(100vw - 32px));
   display: grid;
-  grid-template-columns: 82px minmax(0, 1fr);
-  gap: 22px;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 24px;
   align-items: center;
-  padding: 28px;
+  padding: 30px;
   border: 1px solid rgba(64, 81, 107, 0.92);
-  border-radius: 26px;
+  border-radius: 28px;
   background:
-    linear-gradient(180deg, rgba(16, 24, 39, 0.92), rgba(13, 21, 36, 0.84));
+    linear-gradient(180deg, rgba(16, 24, 39, 0.94), rgba(13, 21, 36, 0.86));
   box-shadow: var(--shadow);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(22px);
 }
 
 .boot-logo {
-  width: 72px;
-  height: 72px;
+  width: 88px;
+  height: 88px;
   display: grid;
   place-items: center;
-  border-radius: 22px;
-  border: 1px solid rgba(99, 167, 255, 0.38);
+  border-radius: 26px;
+  border: 1px solid rgba(99, 167, 255, 0.36);
   background:
     radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.20), transparent 30%),
-    radial-gradient(circle at 50% 50%, rgba(99, 167, 255, 0.34), transparent 44%),
-    radial-gradient(circle at 50% 50%, rgba(255, 181, 71, 0.28), transparent 72%),
+    radial-gradient(circle at 50% 50%, rgba(99, 167, 255, 0.30), transparent 44%),
+    radial-gradient(circle at 50% 50%, rgba(255, 181, 71, 0.24), transparent 72%),
     linear-gradient(135deg, #142033, #0d1524);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.10),
-    0 0 42px rgba(99, 167, 255, 0.18),
+    0 0 46px rgba(99, 167, 255, 0.18),
     0 18px 44px rgba(0, 0, 0, 0.34);
 }
 
-.boot-logo span {
-  width: 44px;
-  height: 44px;
-  display: inline-grid;
-  place-items: center;
-  border-radius: 999px;
-  background:
-    linear-gradient(180deg, rgba(255, 211, 139, 0.98), rgba(255, 181, 71, 0.96) 44%, rgba(196, 122, 0, 0.98));
-  color: #111111;
-  font-size: 15px;
-  font-weight: 950;
-  letter-spacing: 0.04em;
-  box-shadow:
-    0 0 0 2px rgba(255, 255, 255, 0.08),
-    0 10px 24px rgba(0, 0, 0, 0.28);
+.boot-logo svg {
+  width: 76px;
+  height: 76px;
+  display: block;
 }
 
 .boot-copy {
@@ -205,16 +186,39 @@ a:hover {
 .boot-card h1 {
   margin: 0;
   color: var(--text);
-  font-size: clamp(24px, 3vw, 34px);
+  font-size: clamp(26px, 3.2vw, 38px);
   font-weight: 950;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 
 .boot-description {
+  max-width: 560px;
   margin: 10px 0 0;
   color: var(--muted);
   font-size: 14px;
   line-height: 1.55;
+}
+
+.boot-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 16px;
+}
+
+.boot-metrics span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 9px;
+  border: 1px solid rgba(64, 81, 107, 0.86);
+  border-radius: 999px;
+  background: rgba(16, 24, 39, 0.62);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.02em;
 }
 
 .boot-progress {
@@ -341,20 +345,24 @@ noscript strong {
    Small screens
    -------------------------------------------------------------------------- */
 
-@media (max-width: 620px) {
+@media (max-width: 680px) {
   .boot-card {
     grid-template-columns: 1fr;
     text-align: left;
   }
 
   .boot-logo {
-    width: 64px;
-    height: 64px;
+    width: 76px;
+    height: 76px;
   }
 
-  .boot-logo span {
-    width: 40px;
-    height: 40px;
+  .boot-logo svg {
+    width: 66px;
+    height: 66px;
+  }
+
+  .boot-metrics {
+    gap: 6px;
   }
 }
 
