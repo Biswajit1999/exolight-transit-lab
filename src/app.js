@@ -1,15 +1,25 @@
-import { ExoSceneRenderer } from "./scene.js?v=20260517-full-orbit-01";
+import { ExoSceneRenderer } from "./scene.js?v=20260517-ultra-scene-01";
 
 /* ============================================================================
    ExoIntel-Prime
-   Main Thread Orchestrator
+   Premium Main Thread Orchestrator
+   ---------------------------------------------------------------------------
+   Purpose:
+   - Own the user interface and data display.
+   - Keep all heavy transit calculations inside transitWorker.js.
+   - Keep slider interactions responsive using latest-state requestAnimationFrame
+     batching.
+   - Send only the newest model state to the worker.
+   - Reject stale worker results by revision number.
+   - Render archival photometry against the worker-computed theoretical model.
+   - Provide high-end research dashboard styling without compromising physics.
    ============================================================================ */
 
 const APP_NAME = "ExoIntel-Prime";
-const WORKER_URL = new URL("./transitWorker.js?v=20260517-worker-01", import.meta.url);
+const WORKER_URL = new URL("./transitWorker.js?v=20260517-worker-02", import.meta.url);
 const TARGET_CACHE_URL = "./data/exoplanets.json";
 const LIGHTCURVE_BASE_URL = "./data/lightcurves/";
-const THEME_STORAGE_KEY = "exointel-prime-theme-v2";
+const THEME_STORAGE_KEY = "exointel-prime-theme-v3";
 
 const DEFAULT_PARAMS = Object.freeze({
   rpRs: 0.1,
@@ -31,6 +41,7 @@ const DEFAULT_PARAMS = Object.freeze({
   moonPhaseDeg: 45,
 
   phaseShift: 0.0,
+  visualQuality: "balanced",
   modelResolution: 720,
   fidelity: "preview"
 });
@@ -65,7 +76,7 @@ const HELP_TEXT = Object.freeze({
     "OOT RMS means out-of-transit RMS. It estimates the scatter in the light curve when the planet is not passing in front of the star.",
 
   snr:
-    "Signal-to-noise ratio. It compares the model transit depth with the out-of-transit scatter. A larger value means the transit is easier to detect.",
+    "Signal-to-noise ratio. It compares the model transit depth with the out-of-transit scatter. A larger value means the transit signal is easier to detect.",
 
   modelDepth:
     "Model depth is the brightness dip predicted by the current theoretical transit model.",
@@ -77,7 +88,10 @@ const HELP_TEXT = Object.freeze({
     "Spot boost is a starspot-crossing anomaly. If a planet crosses a darker stellar region, the observed flux can temporarily rise relative to a normal transit model.",
 
   highAccuracy:
-    "High-accuracy model uses a denser numerical quadrature in the Web Worker. It is slower, but the interface should remain responsive.",
+    "High-accuracy model uses a denser numerical quadrature in the Web Worker. It can take longer, but the interface remains responsive.",
+
+  visualQuality:
+    "Visual quality changes only the WebGL scene resolution and starfield detail. It does not change the physical transit calculation. Use Balanced for normal use and Ultra for screenshots.",
 
   jsonContribution:
     "To investigate your own light curve, fork the GitHub repository, add your JSON file under data/lightcurves/, update data/exoplanets.json, and use your own fork or open a pull request. Visitors cannot directly edit Biswajit's production website."
@@ -219,7 +233,7 @@ class ExoIntelPrimeApp {
         --surface:#ffffff;
         --surface-2:#f8fafc;
         --surface-3:#f1f6ff;
-        --surface-glass:rgba(255,255,255,.88);
+        --surface-glass:rgba(255,255,255,.90);
         --line:#d9e0ea;
         --line-strong:#b8c3d2;
         --text:#17202a;
@@ -241,7 +255,7 @@ class ExoIntelPrimeApp {
         width:100vw;
         height:100vh;
         display:grid;
-        grid-template-rows:64px minmax(0,1fr) 34px;
+        grid-template-rows:66px minmax(0,1fr) 34px;
         color:var(--text);
         background:
           radial-gradient(circle at 18% 0%,rgba(27,100,216,.075),transparent 34%),
@@ -255,7 +269,7 @@ class ExoIntelPrimeApp {
         --surface:#101827;
         --surface-2:#0d1524;
         --surface-3:#142033;
-        --surface-glass:rgba(13,21,36,.88);
+        --surface-glass:rgba(13,21,36,.90);
         --line:#243247;
         --line-strong:#40516b;
         --text:#edf4ff;
@@ -283,10 +297,10 @@ class ExoIntelPrimeApp {
 
       .app-header{
         display:grid;
-        grid-template-columns:minmax(265px,1fr) minmax(430px,1.25fr) minmax(380px,.95fr);
+        grid-template-columns:minmax(310px,1fr) minmax(440px,1.15fr) minmax(410px,.95fr);
         align-items:center;
         gap:14px;
-        padding:10px 16px;
+        padding:9px 16px;
         border-bottom:1px solid var(--line);
         background:var(--surface-glass);
         backdrop-filter:blur(18px);
@@ -296,27 +310,49 @@ class ExoIntelPrimeApp {
       .brand{
         display:flex;
         align-items:center;
-        gap:12px;
+        gap:13px;
         min-width:0;
       }
 
       .brand-mark{
-        width:38px;
-        height:38px;
+        width:48px;
+        height:48px;
         flex:0 0 auto;
-        border-radius:13px;
+        display:grid;
+        place-items:center;
+        border-radius:15px;
         border:1px solid var(--line-strong);
         background:
-          radial-gradient(circle at 50% 50%,rgba(99,167,255,.42),transparent 32%),
-          radial-gradient(circle at 50% 50%,rgba(255,181,71,.32),transparent 58%),
-          linear-gradient(135deg,var(--surface),var(--surface-3));
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 10px 26px rgba(0,0,0,.12);
+          radial-gradient(circle at 32% 28%, rgba(255,255,255,.18), transparent 28%),
+          radial-gradient(circle at 50% 50%, rgba(99,167,255,.30), transparent 42%),
+          radial-gradient(circle at 50% 50%, rgba(255,181,71,.22), transparent 70%),
+          linear-gradient(135deg, var(--surface-3), var(--surface));
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.10),
+          0 10px 28px rgba(0,0,0,.16);
+      }
+
+      .brand-mark span{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        width:30px;
+        height:30px;
+        border-radius:999px;
+        background:linear-gradient(180deg, rgba(255,181,71,.95), rgba(196,122,0,.98));
+        color:#101010;
+        font-size:12px;
+        font-weight:950;
+        letter-spacing:.04em;
+        box-shadow:
+          0 0 0 2px rgba(255,255,255,.08),
+          0 8px 18px rgba(0,0,0,.20);
       }
 
       .brand h1{
         margin:0;
-        font-size:15px;
-        font-weight:900;
+        font-size:16px;
+        font-weight:950;
         letter-spacing:.01em;
       }
 
@@ -368,6 +404,7 @@ class ExoIntelPrimeApp {
         justify-content:flex-end;
         align-items:center;
         gap:8px;
+        min-width:0;
       }
 
       .button{
@@ -379,6 +416,7 @@ class ExoIntelPrimeApp {
         color:var(--text);
         font-weight:820;
         font-size:12px;
+        white-space:nowrap;
         transition:background .15s ease,border-color .15s ease,transform .15s ease;
       }
 
@@ -395,6 +433,7 @@ class ExoIntelPrimeApp {
         color:#160d00;
         border-color:var(--model);
         background:linear-gradient(180deg,#ffd38b,var(--model));
+        box-shadow:0 8px 18px rgba(0,0,0,.14);
       }
 
       .theme-switch{
@@ -409,6 +448,7 @@ class ExoIntelPrimeApp {
         color:var(--text);
         user-select:none;
         cursor:pointer;
+        white-space:nowrap;
       }
 
       .theme-switch input{
@@ -459,7 +499,7 @@ class ExoIntelPrimeApp {
       .workspace{
         min-height:0;
         display:grid;
-        grid-template-columns:330px minmax(0,1fr) 370px;
+        grid-template-columns:330px minmax(0,1fr) 380px;
         gap:14px;
         padding:14px;
         overflow:hidden;
@@ -474,7 +514,7 @@ class ExoIntelPrimeApp {
       }
 
       .left-panel{
-        grid-template-rows:270px minmax(0,1fr);
+        grid-template-rows:250px minmax(0,1fr);
       }
 
       .right-panel{
@@ -484,7 +524,7 @@ class ExoIntelPrimeApp {
       .main-panel{
         min-height:0;
         display:grid;
-        grid-template-rows:minmax(360px,1fr) 255px;
+        grid-template-rows:minmax(365px,1fr) 260px;
         gap:12px;
         overflow:hidden;
       }
@@ -512,7 +552,7 @@ class ExoIntelPrimeApp {
       .card-header h2{
         margin:0;
         font-size:13px;
-        font-weight:900;
+        font-weight:950;
         letter-spacing:.01em;
       }
 
@@ -523,6 +563,12 @@ class ExoIntelPrimeApp {
         font-weight:700;
         white-space:nowrap;
         text-overflow:ellipsis;
+      }
+
+      .header-inline{
+        display:flex;
+        align-items:center;
+        gap:8px;
       }
 
       .card-body{
@@ -538,7 +584,7 @@ class ExoIntelPrimeApp {
       .target-body{
         min-height:0;
         display:grid;
-        grid-template-rows:auto minmax(0,1fr) auto;
+        grid-template-rows:auto minmax(0,1fr);
       }
 
       .target-search{
@@ -614,21 +660,6 @@ class ExoIntelPrimeApp {
         text-overflow:ellipsis;
       }
 
-      .repo-note{
-        margin-top:10px;
-        padding:9px 10px;
-        border:1px dashed var(--line-strong);
-        border-radius:12px;
-        color:var(--muted);
-        background:var(--surface-2);
-        font-size:11px;
-        line-height:1.35;
-      }
-
-      .repo-note strong{
-        color:var(--text);
-      }
-
       .pill{
         display:inline-flex;
         align-items:center;
@@ -653,6 +684,11 @@ class ExoIntelPrimeApp {
       .pill.warn{
         color:var(--warn);
         border-color:var(--warn);
+      }
+
+      .pill.danger{
+        color:var(--danger);
+        border-color:var(--danger);
       }
 
       .readout-grid{
@@ -685,7 +721,7 @@ class ExoIntelPrimeApp {
         margin-top:8px;
         font-family:var(--mono);
         font-size:17px;
-        font-weight:900;
+        font-weight:950;
       }
 
       .readout small{
@@ -711,14 +747,15 @@ class ExoIntelPrimeApp {
         cursor:help;
         text-transform:none;
         letter-spacing:0;
+        flex:0 0 auto;
       }
 
       .help-content{
         position:absolute;
         left:50%;
         bottom:calc(100% + 9px);
-        z-index:50;
-        width:260px;
+        z-index:100;
+        width:280px;
         transform:translateX(-50%) translateY(4px);
         opacity:0;
         pointer-events:none;
@@ -809,25 +846,32 @@ class ExoIntelPrimeApp {
         margin:0 0 10px;
         color:var(--text);
         font-size:12px;
-        font-weight:900;
+        font-weight:950;
       }
 
       .control-row,
-      .toggle-row{
+      .toggle-row,
+      .select-row{
         display:grid;
-        grid-template-columns:126px minmax(0,1fr) 72px;
+        grid-template-columns:132px minmax(0,1fr) 78px;
         gap:10px;
         align-items:center;
         min-height:34px;
       }
 
+      .select-row{
+        grid-template-columns:132px minmax(0,1fr) 22px;
+      }
+
       .control-row + .control-row,
-      .toggle-row + .toggle-row{
+      .toggle-row + .toggle-row,
+      .select-row + .select-row{
         margin-top:8px;
       }
 
       .control-row label,
-      .toggle-row label{
+      .toggle-row label,
+      .select-row label{
         color:var(--muted);
         font-size:12px;
       }
@@ -851,6 +895,22 @@ class ExoIntelPrimeApp {
         accent-color:var(--accent);
       }
 
+      select{
+        width:100%;
+        min-height:34px;
+        border:1px solid var(--line-strong);
+        border-radius:10px;
+        padding:0 10px;
+        background:var(--surface-2);
+        color:var(--text);
+        outline:none;
+      }
+
+      select:focus{
+        border-color:var(--accent);
+        box-shadow:0 0 0 3px rgba(99,167,255,.16);
+      }
+
       .app-footer{
         display:flex;
         align-items:center;
@@ -865,7 +925,7 @@ class ExoIntelPrimeApp {
 
       .app-footer strong{
         color:var(--text);
-        font-weight:900;
+        font-weight:950;
       }
 
       .footer-credit{
@@ -879,18 +939,44 @@ class ExoIntelPrimeApp {
         text-align:right;
       }
 
-      @media (max-width:1350px){
+      *{
+        scrollbar-width:thin;
+        scrollbar-color:var(--line-strong) transparent;
+      }
+
+      *::-webkit-scrollbar{
+        width:10px;
+        height:10px;
+      }
+
+      *::-webkit-scrollbar-track{
+        background:transparent;
+      }
+
+      *::-webkit-scrollbar-thumb{
+        border:3px solid transparent;
+        border-radius:999px;
+        background:var(--line-strong);
+        background-clip:padding-box;
+      }
+
+      @media (max-width:1420px){
         .workspace{
-          grid-template-columns:320px minmax(0,1fr) 340px;
+          grid-template-columns:310px minmax(0,1fr) 350px;
         }
 
         .control-row,
-        .toggle-row{
-          grid-template-columns:116px minmax(0,1fr) 62px;
+        .toggle-row,
+        .select-row{
+          grid-template-columns:120px minmax(0,1fr) 62px;
+        }
+
+        .select-row{
+          grid-template-columns:120px minmax(0,1fr) 22px;
         }
       }
 
-      @media (max-width:1100px){
+      @media (max-width:1180px){
         html,
         body{
           overflow:auto;
@@ -929,6 +1015,11 @@ class ExoIntelPrimeApp {
           grid-template-columns:repeat(2,minmax(0,1fr));
         }
 
+        .header-actions{
+          justify-content:flex-start;
+          flex-wrap:wrap;
+        }
+
         .app-footer{
           flex-direction:column;
           align-items:flex-start;
@@ -949,10 +1040,10 @@ class ExoIntelPrimeApp {
     this.root.innerHTML = `
       <header class="app-header">
         <section class="brand">
-          <div class="brand-mark" aria-hidden="true"></div>
+          <div class="brand-mark" aria-hidden="true"><span>EP</span></div>
           <div>
             <h1>ExoIntel-Prime</h1>
-            <p>Research-grade exoplanet transit modelling with archival photometry overlays</p>
+            <p>Interactive exoplanet transit modelling with archival photometry overlays</p>
           </div>
         </section>
 
@@ -1001,17 +1092,14 @@ class ExoIntelPrimeApp {
           <section class="card target-card">
             <div class="card-header">
               <h2>Target archive</h2>
-              <span id="target-count">loading</span>
+              <div class="header-inline">
+                <span id="target-count">loading</span>
+                ${help("jsonContribution")}
+              </div>
             </div>
             <div class="card-body target-body">
               <input id="target-search" class="target-search" type="search" placeholder="Search planet, host star, observed data..." />
               <div id="target-list" class="target-list"></div>
-              <div class="repo-note">
-                <strong>Custom data:</strong>
-                fork the GitHub repository to add your own JSON light curves.
-                Visitors cannot directly change the production archive.
-                ${help("jsonContribution")}
-              </div>
             </div>
           </section>
 
@@ -1087,6 +1175,15 @@ class ExoIntelPrimeApp {
 
             <div class="control-list" id="control-list">
               <div class="control-group">
+                <h3>Rendering</h3>
+                ${selectControl("visualQuality", "Visual quality", [
+                  ["low", "Low"],
+                  ["balanced", "Balanced"],
+                  ["ultra", "Ultra"]
+                ], this.latestParams.visualQuality, "visualQuality")}
+              </div>
+
+              <div class="control-group">
                 <h3>Planet and orbit</h3>
                 ${rangeControl("rpRs", "Radius ratio Rp/R★", 0.01, 0.25, 0.001, this.latestParams.rpRs, 3)}
                 ${rangeControl("aRs", "Scaled distance a/R★", 2, 60, 0.1, this.latestParams.aRs, 1)}
@@ -1128,7 +1225,7 @@ class ExoIntelPrimeApp {
 
       <footer class="app-footer">
         <span class="footer-credit">
-          <strong>SYSTEM OPERATOR: BISWAJIT JANA</strong> // MISSION OPTICAL OPERATIONS DIVISION // © 2026
+          <strong>Author: Biswajit Jana</strong> // © 2026
         </span>
         <span id="footer-message" class="footer-status">
           Initialising physics engine...
@@ -1180,7 +1277,10 @@ class ExoIntelPrimeApp {
 
   bindUi() {
     for (const [key, input] of this.controlMap) {
-      const eventName = input.type === "checkbox" ? "change" : "input";
+      const eventName =
+        input.type === "checkbox" || input.tagName === "SELECT"
+          ? "change"
+          : "input";
 
       input.addEventListener(eventName, () => {
         this.syncParamsFromControls();
@@ -1195,7 +1295,12 @@ class ExoIntelPrimeApp {
     });
 
     this.dom.resetButton.addEventListener("click", () => {
-      this.latestParams = { ...DEFAULT_PARAMS };
+      const previousQuality = this.latestParams.visualQuality || "balanced";
+      this.latestParams = {
+        ...DEFAULT_PARAMS,
+        visualQuality: previousQuality
+      };
+
       this.syncControlsFromParams();
       this.syncControlOutputs();
       this.updateScene();
@@ -1488,6 +1593,8 @@ class ExoIntelPrimeApp {
     for (const [key, input] of this.controlMap) {
       if (input.type === "checkbox") {
         next[key] = input.checked;
+      } else if (input.tagName === "SELECT") {
+        next[key] = input.value;
       } else {
         next[key] = Number(input.value);
       }
@@ -1505,6 +1612,8 @@ class ExoIntelPrimeApp {
 
       if (input.type === "checkbox") {
         input.checked = Boolean(value);
+      } else if (input.tagName === "SELECT") {
+        input.value = String(value);
       } else if (value !== undefined) {
         input.value = String(value);
       }
@@ -1641,7 +1750,12 @@ class ExoIntelPrimeApp {
     this.setText(this.dom.activeTargetLabel, `${target.pl_name} · ${target.hostname}`);
     this.renderTargetList(this.dom.targetSearch.value);
 
-    this.latestParams = targetToParams(target, this.latestParams);
+    const previousQuality = this.latestParams.visualQuality || "balanced";
+    this.latestParams = {
+      ...targetToParams(target, this.latestParams),
+      visualQuality: previousQuality
+    };
+
     this.syncControlsFromParams();
     this.syncControlOutputs();
     this.updateScene();
@@ -1707,6 +1821,8 @@ class ExoIntelPrimeApp {
         pill.classList.add("ok");
       } else if (lower.includes("low s/n") || lower.includes("moon") || lower.includes("spot")) {
         pill.classList.add("warn");
+      } else if (lower.includes("poor") || lower.includes("noisy")) {
+        pill.classList.add("danger");
       }
 
       pill.textContent = flag;
@@ -1802,6 +1918,10 @@ class ExoIntelPrimeApp {
   }
 }
 
+/* ============================================================================
+   TEMPLATE HELPERS
+   ============================================================================ */
+
 function help(key) {
   const text = HELP_TEXT[key] || "Scientific term explanation unavailable.";
 
@@ -1847,6 +1967,29 @@ function toggleControl(key, label, checked) {
     </div>
   `;
 }
+
+function selectControl(key, label, options, value, helpKey = null) {
+  const optionMarkup = options
+    .map(([optionValue, optionLabel]) => {
+      const selected = String(optionValue) === String(value) ? "selected" : "";
+      return `<option value="${escapeHtml(optionValue)}" ${selected}>${escapeHtml(optionLabel)}</option>`;
+    })
+    .join("");
+
+  return `
+    <div class="select-row">
+      <label for="${key}">${label}</label>
+      <select id="${key}" data-param="${key}">
+        ${optionMarkup}
+      </select>
+      ${helpKey ? help(helpKey) : "<span></span>"}
+    </div>
+  `;
+}
+
+/* ============================================================================
+   DATA NORMALISATION
+   ============================================================================ */
 
 function normaliseTarget(row) {
   if (!row || typeof row !== "object") return null;
@@ -1977,6 +2120,10 @@ function generateSyntheticArchive(target, params) {
     points: n
   };
 }
+
+/* ============================================================================
+   PLOT UTILITIES
+   ============================================================================ */
 
 function collectPlotValues(archive, model) {
   const phaseValues = [];
@@ -2159,6 +2306,10 @@ function drawLegend(ctx, width, pad, dpr, colours) {
   ctx.restore();
 }
 
+/* ============================================================================
+   GENERAL HELPERS
+   ============================================================================ */
+
 function serialiseTarget(target) {
   return {
     pl_name: target.pl_name,
@@ -2239,6 +2390,10 @@ function alphaColour(colour, alpha) {
 
   return value || `rgba(23,107,135,${alpha})`;
 }
+
+/* ============================================================================
+   START
+   ============================================================================ */
 
 const app = new ExoIntelPrimeApp();
 
