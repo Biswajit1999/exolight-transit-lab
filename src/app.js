@@ -1,6 +1,5 @@
 import { ExoSceneRenderer } from "./scene.js?v=20260517-scene-worker-sync-03";
 
-
 /* ============================================================================
    ExoIntel-Prime
    Research-grade Main Thread Orchestrator
@@ -34,10 +33,11 @@ const DEFAULT_PARAMS = Object.freeze({
   moonPhaseDeg: 45,
 
   phaseShift: 0.0,
+
   exposureIntegration: true,
   exposureSamples: 5,
   exposurePhaseWidth: 0,
-   
+
   visualQuality: "balanced",
   modelResolution: 720,
   fidelity: "preview"
@@ -111,7 +111,7 @@ const HELP_TEXT = Object.freeze({
     "To test your own light curve, fork the GitHub repository, add your JSON file under data/lightcurves/, update data/exoplanets.json, and deploy your own fork or open a pull request.",
 
   eccentricity:
-    "The catalogue eccentricity is shown for scientific context. In the current worker version, eccentric projected geometry is not yet fully active, so the default solver should be interpreted as circular unless stated otherwise."
+    "The eccentricity and argument of periastron are catalogue values. They are passed into the worker model when available, but kept read-only in this public interface to avoid unphysical manual combinations."
 });
 
 class ExoIntelPrimeApp {
@@ -1179,7 +1179,7 @@ class ExoIntelPrimeApp {
                 ${rangeControl("aRs", "Scaled distance a/R★", 2, 60, 0.1, this.latestParams.aRs, 1)}
                 ${rangeControl("inclinationDeg", "Inclination", 75, 90, 0.01, this.latestParams.inclinationDeg, 2, "°")}
                 ${readonlyControl("eccentricity-display", "Catalogue eccentricity", "—", "eccentricity")}
-                <div class="disabled-note">Eccentricity is shown from the catalogue but the active browser solver currently uses circular projected geometry.</div>
+                <div class="disabled-note">Eccentricity and ω are read from the catalogue and passed to the worker model when available. They are kept read-only here to avoid unphysical manual combinations.</div>
               </div>
 
               <div class="control-group">
@@ -1343,6 +1343,7 @@ class ExoIntelPrimeApp {
 
   updateScene() {
     if (!this.scene) return;
+
     this.scene.updateState({
       params: this.latestParams,
       target: this.latestTarget,
@@ -1486,6 +1487,7 @@ class ExoIntelPrimeApp {
 
     if (!this.pendingFrame) {
       this.pendingFrame = true;
+
       requestAnimationFrame(() => {
         this.pendingFrame = false;
         this.flushLatestSnapshotToWorker();
@@ -1529,6 +1531,7 @@ class ExoIntelPrimeApp {
     next.modelResolution = 720;
     next.eccentricity = clamp(numberValue(this.latestTarget.pl_orbeccen, 0), 0, 0.95);
     next.omegaDeg = normaliseDegrees(numberValue(this.latestTarget.pl_orblper, 90));
+
     this.latestParams = next;
   }
 
@@ -1645,7 +1648,11 @@ class ExoIntelPrimeApp {
   }
 
   async selectInitialTarget() {
-    const preferred = this.targets.find(target => target.lightcurve_available) || this.targets[0] || normaliseTarget(DEFAULT_TARGET);
+    const preferred =
+      this.targets.find(target => target.lightcurve_available) ||
+      this.targets[0] ||
+      normaliseTarget(DEFAULT_TARGET);
+
     await this.selectTarget(preferred);
   }
 
@@ -1779,60 +1786,60 @@ class ExoIntelPrimeApp {
   }
 
   updateAssumptionStrip() {
-   if (!this.dom.assumptionStrip) return;
+    if (!this.dom.assumptionStrip) return;
 
-   const workerFlags = this.metrics.morphologyFlags.length
-    ? this.metrics.morphologyFlags
-    : ["baseline transit model"];
+    const workerFlags = this.metrics.morphologyFlags.length
+      ? this.metrics.morphologyFlags
+      : ["baseline transit model"];
 
-   const extraFlags = [
-    this.timings.surfaceSamples
-      ? `${Number(this.timings.surfaceSamples).toLocaleString("en-GB")} surface samples`
-      : null,
-    "ppm + percent depth"
-  ];
+    const extraFlags = [
+      this.timings.surfaceSamples
+        ? `${Number(this.timings.surfaceSamples).toLocaleString("en-GB")} surface samples`
+        : null,
+      "ppm + percent depth"
+    ];
 
-   const flags = [
-    ...workerFlags,
-    ...extraFlags
-  ].filter(Boolean);
+    const flags = [
+      ...workerFlags,
+      ...extraFlags
+    ].filter(Boolean);
 
-   const fragment = document.createDocumentFragment();
+    const fragment = document.createDocumentFragment();
 
-   for (const flag of flags.slice(0, 9)) {
-    const pill = document.createElement("span");
-    const lower = String(flag).toLowerCase();
+    for (const flag of flags.slice(0, 9)) {
+      const pill = document.createElement("span");
+      const lower = String(flag).toLowerCase();
 
-    pill.className = "pill";
+      pill.className = "pill";
 
-    if (
-      lower.includes("high") ||
-      lower.includes("loaded") ||
-      lower.includes("quadrature") ||
-      lower.includes("residuals near")
-    ) {
-      pill.classList.add("ok");
-    } else if (
-      lower.includes("moon") ||
-      lower.includes("spot") ||
-      lower.includes("eccentric") ||
-      lower.includes("circular") ||
-      lower.includes("exposure")
-    ) {
-      pill.classList.add("warn");
-    } else if (
-      lower.includes("mismatch") ||
-      lower.includes("low")
-    ) {
-      pill.classList.add("danger");
+      if (
+        lower.includes("high") ||
+        lower.includes("loaded") ||
+        lower.includes("quadrature") ||
+        lower.includes("residuals near")
+      ) {
+        pill.classList.add("ok");
+      } else if (
+        lower.includes("moon") ||
+        lower.includes("spot") ||
+        lower.includes("eccentric") ||
+        lower.includes("circular") ||
+        lower.includes("exposure")
+      ) {
+        pill.classList.add("warn");
+      } else if (
+        lower.includes("mismatch") ||
+        lower.includes("low")
+      ) {
+        pill.classList.add("danger");
+      }
+
+      pill.textContent = flag;
+      fragment.appendChild(pill);
     }
 
-    pill.textContent = flag;
-    fragment.appendChild(pill);
+    this.dom.assumptionStrip.replaceChildren(fragment);
   }
-
-  this.dom.assumptionStrip.replaceChildren(fragment);
-}
 
   draw() {
     const canvas = this.dom.canvas;
@@ -1921,6 +1928,79 @@ class ExoIntelPrimeApp {
 }
 
 /* ============================================================================
+   CINEMATIC BOOT SEQUENCE
+   ============================================================================ */
+
+async function playCinematicBootSequence() {
+  const bootScreen = document.querySelector(".boot-screen");
+  const statusEl = document.getElementById("boot-status");
+  const percentEl = document.getElementById("boot-percent");
+  const barEl = document.getElementById("boot-progress-bar");
+
+  if (!bootScreen || !statusEl || !percentEl || !barEl) {
+    return;
+  }
+
+  const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+
+  const steps = [
+    { target: 8, text: "Initialising observatory systems..." },
+    { target: 18, text: "Loading the exoplanet target archive..." },
+    { target: 30, text: "Reading stellar and planetary parameters..." },
+    { target: 42, text: "Loading archived photometry..." },
+    { target: 56, text: "Preparing the transit physics engine..." },
+    { target: 70, text: "Rendering the stellar photosphere..." },
+    { target: 82, text: "Synchronising orbit geometry and flux model..." },
+    { target: 91, text: "Tighten your seatbelt — we are travelling to another star system..." },
+    { target: 97, text: "Finalising the scientific interface..." },
+    { target: 100, text: "ExoIntel-Prime is ready." }
+  ];
+
+  let current = 0;
+
+  const update = (value, text) => {
+    current = Math.max(current, Math.min(100, value));
+    percentEl.textContent = `${Math.round(current)}%`;
+    barEl.style.width = `${current}%`;
+    if (text) statusEl.textContent = text;
+  };
+
+  update(0, "Initialising observatory systems...");
+
+  if (reducedMotion) {
+    update(100, "ExoIntel-Prime is ready.");
+    await wait(350);
+    bootScreen.classList.add("is-fading");
+    await wait(250);
+    bootScreen.remove();
+    return;
+  }
+
+  for (const step of steps) {
+    const start = current;
+    const end = step.target;
+    const frames = Math.max(8, Math.round((end - start) * 1.35));
+
+    for (let i = 1; i <= frames; i++) {
+      const t = i / frames;
+      const eased = 1 - Math.pow(1 - t, 2);
+      const value = start + (end - start) * eased;
+      update(value, step.text);
+      await wait(34);
+    }
+  }
+
+  await wait(250);
+  bootScreen.classList.add("is-fading");
+  await wait(550);
+  bootScreen.remove();
+}
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/* ============================================================================
    TEMPLATE HELPERS
    ============================================================================ */
 
@@ -1951,6 +2031,7 @@ function transitLogoSvg() {
 
 function help(key) {
   const text = HELP_TEXT[key] || "Scientific term explanation unavailable.";
+
   return `
     <span class="help" tabindex="0" aria-label="${escapeHtml(text)}">
       ?
@@ -1961,6 +2042,7 @@ function help(key) {
 
 function rangeControl(key, label, min, max, step, value, digits = 2, suffix = "") {
   const safeValue = Number.isFinite(Number(value)) ? Number(value) : Number(min);
+
   return `
     <div class="control-row">
       <label for="${key}">${label}</label>
@@ -2070,7 +2152,11 @@ function targetToParams(target, previous) {
 function inferARs(target, fallback) {
   const aAu = numberValue(target.pl_orbsmax, null);
   const rStar = numberValue(target.st_rad, null);
-  if (!Number.isFinite(aAu) || !Number.isFinite(rStar) || rStar <= 0) return fallback;
+
+  if (!Number.isFinite(aAu) || !Number.isFinite(rStar) || rStar <= 0) {
+    return fallback;
+  }
+
   return aAu / (rStar * 0.00465047);
 }
 
@@ -2086,7 +2172,11 @@ function normaliseLightCurvePayload(payload) {
     if (!Number.isFinite(phase) || !Number.isFinite(flux)) continue;
     if (phase < -1.5 || phase > 1.5 || flux < 0.2 || flux > 1.8) continue;
 
-    points.push({ phase, flux, error: Number.isFinite(error) ? error : 0 });
+    points.push({
+      phase,
+      flux,
+      error: Number.isFinite(error) ? error : 0
+    });
   }
 
   points.sort((a, b) => a.phase - b.phase);
@@ -2124,7 +2214,11 @@ function generateSyntheticArchive(target, params) {
   const error = new Float32Array(n);
 
   const depth = clamp(numberValue(target.pl_trandep, params.rpRs * params.rpRs * 1e6) / 1e6, 0.0001, 0.08);
-  const width = clamp(numberValue(target.pl_trandur, 2.5) / 24 / Math.max(0.2, numberValue(target.pl_orbper, 3)), 0.008, 0.08);
+  const width = clamp(
+    numberValue(target.pl_trandur, 2.5) / 24 / Math.max(0.2, numberValue(target.pl_orbper, 3)),
+    0.008,
+    0.08
+  );
 
   for (let i = 0; i < n; i++) {
     const x = -0.12 + 0.24 * i / (n - 1);
@@ -2341,6 +2435,8 @@ function serialiseTarget(target) {
     pl_orbper: numberValue(target.pl_orbper, 3),
     pl_trandur: numberValue(target.pl_trandur, 2.5),
     pl_trandep: numberValue(target.pl_trandep, 10000),
+    pl_orbeccen: numberValue(target.pl_orbeccen, 0),
+    pl_orblper: numberValue(target.pl_orblper, 90),
     st_teff: numberValue(target.st_teff, 5772),
     st_rad: numberValue(target.st_rad, 1),
     st_mass: numberValue(target.st_mass, 1)
@@ -2408,6 +2504,7 @@ function firstFiniteUnit(values, units, digits) {
     const n = Number(values[i]);
     if (Number.isFinite(n)) return `${n.toFixed(digits[i])} ${units[i]}`;
   }
+
   return "—";
 }
 
@@ -2454,10 +2551,29 @@ function alphaColour(colour, alpha) {
    START
    ============================================================================ */
 
-const app = new ExoIntelPrimeApp();
+async function bootstrapApplication() {
+  await playCinematicBootSequence();
+
+  const app = new ExoIntelPrimeApp();
+  await app.boot();
+}
+
+function startWhenReady() {
+  bootstrapApplication().catch(error => {
+    console.error("Application bootstrap failed:", error);
+
+    const statusEl = document.getElementById("boot-status");
+    const percentEl = document.getElementById("boot-percent");
+    const barEl = document.getElementById("boot-progress-bar");
+
+    if (statusEl) statusEl.textContent = "Startup failed. Please reload the page.";
+    if (percentEl) percentEl.textContent = "Error";
+    if (barEl) barEl.style.width = "100%";
+  });
+}
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => app.boot(), { once: true });
+  document.addEventListener("DOMContentLoaded", startWhenReady, { once: true });
 } else {
-  app.boot();
+  startWhenReady();
 }
