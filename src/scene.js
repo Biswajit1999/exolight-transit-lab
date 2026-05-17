@@ -1,17 +1,23 @@
 /* ============================================================================
    ExoIntel-Prime
-   Native WebGL Scientific Scene Renderer
+   Professional WebGL Scientific Scene Renderer
    ---------------------------------------------------------------------------
    Purpose:
-   - Render a cinematic star/planet/exomoon/starspot scene without blocking UI.
-   - Keep rendering lightweight and independent from the heavy worker solver.
-   - Use the same parameter snapshot that is sent to the worker.
-   - Avoid decorative physics lies: starspots, planet size, moon state, and
-     limb darkening visually represent the current theoretical hypothesis.
+   - Render a clean, cinematic, physically interpretable transit model.
+   - Avoid fake jittery synchronisation with the archival light curve.
+   - Visualise the current theoretical parameter state from app.js.
+   - Keep rendering lightweight so sliders remain responsive.
+   - Keep all heavy photometric modelling inside transitWorker.js.
 
-   This module deliberately does not compute the transit light curve. That is
-   the worker's responsibility. The scene is a visual companion to the current
-   model parameters.
+   This scene is a visual hypothesis viewport:
+   - Star radius is normalised to 1.
+   - Planet radius follows Rp/R★.
+   - Inclination controls apparent transit chord.
+   - Limb darkening sliders affect the rendered stellar disk.
+   - Starspot sliders affect the rendered spot position/size/contrast.
+   - Exomoon controls affect the rendered moon around the planet.
+
+   The archival data are not animated. The CGI model is explanatory.
    ============================================================================ */
 
 const TWO_PI = Math.PI * 2;
@@ -57,7 +63,7 @@ uniform float uSpotRadius;
 uniform float uSpotContrast;
 
 float hash(vec3 p){
-  p = fract(p * 0.3183099 + vec3(0.11, 0.17, 0.13));
+  p = fract(p * 0.3183099 + vec3(0.1031, 0.11369, 0.13787));
   p *= 17.0;
   return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
 }
@@ -88,16 +94,16 @@ float noise(vec3 p){
 }
 
 float fbm(vec3 p){
-  float v = 0.0;
-  float a = 0.52;
+  float value = 0.0;
+  float amp = 0.54;
 
   for(int i = 0; i < 5; i++){
-    v += a * noise(p);
-    p = p * 2.03 + vec3(7.1, 3.9, 5.4);
-    a *= 0.48;
+    value += amp * noise(p);
+    p = p * 2.04 + vec3(5.31, 7.17, 3.83);
+    amp *= 0.48;
   }
 
-  return v;
+  return value;
 }
 
 float spotMask(vec3 n, vec3 centre, float radius, float softness){
@@ -108,14 +114,18 @@ float spotMask(vec3 n, vec3 centre, float radius, float softness){
 vec3 stellarColour(float teff){
   float t = clamp((teff - 2800.0) / 7200.0, 0.0, 1.0);
 
-  vec3 cool = vec3(1.0, 0.39, 0.13);
-  vec3 solar = vec3(1.0, 0.72, 0.34);
-  vec3 hot = vec3(0.60, 0.77, 1.0);
+  vec3 mStar = vec3(1.00, 0.38, 0.14);
+  vec3 kStar = vec3(1.00, 0.57, 0.22);
+  vec3 gStar = vec3(1.00, 0.74, 0.36);
+  vec3 fStar = vec3(0.92, 0.91, 1.00);
+  vec3 aStar = vec3(0.58, 0.74, 1.00);
 
-  vec3 c1 = mix(cool, solar, smoothstep(0.0, 0.52, t));
-  vec3 c2 = mix(solar, hot, smoothstep(0.48, 1.0, t));
+  vec3 c = mix(mStar, kStar, smoothstep(0.00, 0.25, t));
+  c = mix(c, gStar, smoothstep(0.23, 0.52, t));
+  c = mix(c, fStar, smoothstep(0.50, 0.72, t));
+  c = mix(c, aStar, smoothstep(0.70, 1.00, t));
 
-  return mix(c1, c2, smoothstep(0.46, 0.60, t));
+  return c;
 }
 
 void main(){
@@ -123,51 +133,52 @@ void main(){
 
   float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
   float q = 1.0 - mu;
-  float limb = clamp(1.0 - uU1 * q - uU2 * q * q, 0.0, 1.2);
+  float limb = clamp(1.0 - uU1 * q - uU2 * q * q, 0.0, 1.25);
 
-  vec3 pSlow = n * 8.0 + vec3(uTime * 0.018, -uTime * 0.012, uTime * 0.010);
-  vec3 pCell = n * 28.0 + vec3(-uTime * 0.032, uTime * 0.019, -uTime * 0.014);
-  vec3 pFine = n * 72.0 + vec3(uTime * 0.050, uTime * 0.041, -uTime * 0.026);
+  vec3 slowCoord = n * 8.5 + vec3(uTime * 0.014, -uTime * 0.011, uTime * 0.009);
+  vec3 cellCoord = n * 31.0 + vec3(-uTime * 0.028, uTime * 0.020, -uTime * 0.015);
+  vec3 fineCoord = n * 82.0 + vec3(uTime * 0.047, uTime * 0.036, -uTime * 0.025);
 
-  float convection = fbm(pSlow);
-  float cells = fbm(pCell);
-  float fine = fbm(pFine);
+  float convection = fbm(slowCoord);
+  float cells = fbm(cellCoord);
+  float fine = fbm(fineCoord);
 
-  float lanes = smoothstep(0.36, 0.58, cells);
-  float grain = 0.88 + 0.19 * convection + 0.11 * fine - 0.07 * lanes;
+  float brightCell = smoothstep(0.42, 0.68, cells);
+  float darkLane = smoothstep(0.28, 0.48, 1.0 - cells);
+  float grain = 0.86 + 0.18 * convection + 0.13 * fine + 0.08 * brightCell - 0.10 * darkLane;
 
   vec3 base = stellarColour(uTeff);
   vec3 photosphere = base * limb * grain;
 
-  float edgeWarmth = pow(1.0 - mu, 1.75);
-  photosphere = mix(photosphere, vec3(1.0, 0.28, 0.06) * limb, edgeWarmth * 0.25);
+  float edge = pow(1.0 - mu, 1.85);
+  photosphere = mix(photosphere, vec3(1.0, 0.30, 0.06) * limb, edge * 0.24);
 
-  float spot = 0.0;
+  float spotDark = 0.0;
 
   if(uSpotEnabled > 0.5){
-    float umbraA = spotMask(n, normalize(uSpotA), uSpotRadius * 0.50, uSpotRadius * 0.18);
-    float penA = spotMask(n, normalize(uSpotA), uSpotRadius * 1.00, uSpotRadius * 0.28);
+    float ragA = 0.88 + 0.22 * fbm(n * 105.0 + vec3(2.1, 5.3, 1.7));
+    float ragB = 0.86 + 0.24 * fbm(n * 93.0 + vec3(7.4, 2.8, 6.2));
+    float ragC = 0.84 + 0.25 * fbm(n * 117.0 + vec3(3.7, 9.1, 4.4));
 
-    float umbraB = spotMask(n, normalize(uSpotB), uSpotRadius * 0.30, uSpotRadius * 0.18);
-    float penB = spotMask(n, normalize(uSpotB), uSpotRadius * 0.74, uSpotRadius * 0.25);
+    float penA = spotMask(n, normalize(uSpotA), uSpotRadius * 0.98 * ragA, uSpotRadius * 0.30);
+    float umbA = spotMask(n, normalize(uSpotA), uSpotRadius * 0.43 * ragA, uSpotRadius * 0.18);
 
-    float umbraC = spotMask(n, normalize(uSpotC), uSpotRadius * 0.22, uSpotRadius * 0.16);
-    float penC = spotMask(n, normalize(uSpotC), uSpotRadius * 0.58, uSpotRadius * 0.23);
+    float penB = spotMask(n, normalize(uSpotB), uSpotRadius * 0.70 * ragB, uSpotRadius * 0.28);
+    float umbB = spotMask(n, normalize(uSpotB), uSpotRadius * 0.28 * ragB, uSpotRadius * 0.16);
 
-    float penumbra = max(max(penA, penB), penC);
-    float umbra = max(max(umbraA, umbraB), umbraC);
+    float penC = spotMask(n, normalize(uSpotC), uSpotRadius * 0.58 * ragC, uSpotRadius * 0.25);
+    float umbC = spotMask(n, normalize(uSpotC), uSpotRadius * 0.22 * ragC, uSpotRadius * 0.15);
 
-    float ragged = fbm(n * 95.0 + vec3(1.7, 3.1, 0.4));
-    penumbra *= 0.78 + 0.28 * ragged;
-    umbra *= 0.82 + 0.22 * ragged;
+    float penumbra = max(max(penA, penB * 0.78), penC * 0.65);
+    float umbra = max(max(umbA, umbB * 0.86), umbC * 0.70);
 
-    spot = clamp(penumbra * 0.55 + umbra * 0.90, 0.0, 1.0);
+    spotDark = clamp(penumbra * 0.52 + umbra * 0.88, 0.0, 1.0);
   }
 
-  float darkening = 1.0 - spot * clamp(uSpotContrast, 0.0, 0.98);
-  vec3 colour = photosphere * darkening;
+  float spotFactor = 1.0 - spotDark * clamp(uSpotContrast, 0.0, 0.98);
+  vec3 colour = photosphere * spotFactor;
 
-  colour += vec3(1.0, 0.42, 0.10) * pow(1.0 - mu, 2.8) * 0.10;
+  colour += vec3(1.0, 0.42, 0.10) * pow(1.0 - mu, 2.85) * 0.10;
 
   gl_FragColor = vec4(max(colour, vec3(0.0)), 1.0);
 }
@@ -185,12 +196,12 @@ uniform vec3 uGlowColour;
 
 void main(){
   float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
-  float rim = pow(1.0 - mu, 1.20);
-  float outer = pow(1.0 - mu, 3.40);
-  float pulse = 0.92 + 0.08 * sin(uTime * 0.65);
+  float rim = pow(1.0 - mu, 1.12);
+  float halo = pow(1.0 - mu, 3.25);
+  float pulse = 0.92 + 0.08 * sin(uTime * 0.58);
 
-  vec3 colour = uGlowColour * (0.42 * rim + 0.58 * outer) * pulse;
-  float alpha = clamp(0.24 * rim + 0.30 * outer, 0.0, 0.62);
+  vec3 colour = uGlowColour * (0.44 * rim + 0.62 * halo) * pulse;
+  float alpha = clamp(0.20 * rim + 0.30 * halo, 0.0, 0.60);
 
   gl_FragColor = vec4(colour, alpha);
 }
@@ -210,13 +221,13 @@ uniform float uAlpha;
 
 void main(){
   vec3 n = normalize(vNormal);
-  vec3 light = normalize(vec3(-0.55, 0.42, 0.86));
+  vec3 light = normalize(vec3(-0.58, 0.38, 0.86));
 
   float lambert = max(dot(n, light), 0.0);
   float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
-  float rim = pow(1.0 - mu, 2.3);
+  float rim = pow(1.0 - mu, 2.35);
 
-  vec3 colour = uColour * (0.10 + 0.90 * lambert) + uRimColour * rim * 0.35;
+  vec3 colour = uColour * (0.09 + 0.91 * lambert) + uRimColour * rim * 0.33;
 
   gl_FragColor = vec4(colour, uAlpha);
 }
@@ -246,16 +257,13 @@ void main(){
 `;
 
 export class ExoSceneRenderer {
-  constructor({
-    container,
-    onStatus = () => {},
-    onWarning = () => {}
-  } = {}) {
+  constructor({ container, onStatus = () => {}, onWarning = () => {} } = {}) {
     this.container = container;
     this.onStatus = onStatus;
     this.onWarning = onWarning;
 
     this.canvas = null;
+    this.overlay = null;
     this.gl = null;
     this.ready = false;
     this.programs = {};
@@ -280,17 +288,25 @@ export class ExoSceneRenderer {
     };
 
     this.target = {
+      pl_name: "Synthetic Hot Jupiter",
+      hostname: "Demonstration Host",
       st_teff: 5772
     };
 
-    this.phase = 0;
+    this.model = {
+      phase: new Float32Array(0),
+      flux: new Float32Array(0),
+      revision: 0
+    };
+
+    this.phase = -0.13;
     this.lastFrame = 0;
     this.frameHandle = null;
     this.view = mat4Identity();
     this.projection = mat4Identity();
 
     this.camera = {
-      eye: [0, 0, 5.3],
+      eye: [0, 0, 5.25],
       target: [0, 0, 0],
       up: [0, 1, 0],
       fov: 38 * Math.PI / 180,
@@ -308,6 +324,7 @@ export class ExoSceneRenderer {
     this.container.innerHTML = "";
     this.container.style.position = "relative";
     this.container.style.overflow = "hidden";
+    this.container.style.background = "linear-gradient(180deg,#f9fbfe,#edf2f8)";
 
     this.canvas = document.createElement("canvas");
     this.canvas.setAttribute("aria-label", "Theoretical exoplanet transit CGI model viewport");
@@ -315,23 +332,22 @@ export class ExoSceneRenderer {
     this.canvas.style.height = "100%";
     this.canvas.style.display = "block";
 
-    this.container.appendChild(this.canvas);
+    this.overlay = document.createElement("div");
+    this.overlay.style.position = "absolute";
+    this.overlay.style.left = "16px";
+    this.overlay.style.bottom = "16px";
+    this.overlay.style.maxWidth = "680px";
+    this.overlay.style.padding = "10px 12px";
+    this.overlay.style.border = "1px solid rgba(217,224,234,.92)";
+    this.overlay.style.borderRadius = "14px";
+    this.overlay.style.background = "rgba(255,255,255,.82)";
+    this.overlay.style.color = "#637083";
+    this.overlay.style.font = "12px Inter, system-ui, sans-serif";
+    this.overlay.style.backdropFilter = "blur(10px)";
+    this.overlay.style.boxShadow = "0 12px 32px rgba(22,34,51,.08)";
+    this.overlay.textContent = "Theoretical CGI model · archival photometry remains static in the plot below";
 
-    const label = document.createElement("div");
-    label.textContent = "Theoretical CGI model · archival data remain fixed below";
-    label.style.position = "absolute";
-    label.style.left = "16px";
-    label.style.bottom = "16px";
-    label.style.padding = "9px 11px";
-    label.style.border = "1px solid rgba(217,224,234,.9)";
-    label.style.borderRadius = "12px";
-    label.style.background = "rgba(255,255,255,.82)";
-    label.style.color = "#637083";
-    label.style.font = "12px Inter, system-ui, sans-serif";
-    label.style.backdropFilter = "blur(10px)";
-
-    this.container.appendChild(label);
-
+    this.container.append(this.canvas, this.overlay);
     this.initWebGL();
   }
 
@@ -347,6 +363,7 @@ export class ExoSceneRenderer {
 
     if (!this.gl) {
       this.onWarning("WebGL unavailable. Scene renderer is disabled.");
+      this.ready = false;
       return;
     }
 
@@ -360,6 +377,7 @@ export class ExoSceneRenderer {
     this.meshes.sphere = createSphereMesh(gl, 96, 56);
     this.meshes.glowSphere = createSphereMesh(gl, 80, 48);
     this.meshes.orbit = createUnitCircleMesh(gl, 360);
+    this.meshes.moonOrbit = createUnitCircleMesh(gl, 180);
     this.meshes.chord = createLineMesh(gl, [
       -1.08, 0, 0.026,
        1.08, 0, 0.026
@@ -371,11 +389,17 @@ export class ExoSceneRenderer {
     gl.cullFace(gl.BACK);
     gl.clearColor(0, 0, 0, 0);
 
+    this.canvas.addEventListener("webglcontextlost", event => {
+      event.preventDefault();
+      this.ready = false;
+      this.onWarning("WebGL context lost. Reload the page to reinitialise the scene.");
+    });
+
     window.addEventListener("resize", () => this.resize(), { passive: true });
     this.resize();
 
     this.ready = true;
-    this.onStatus("CGI WebGL scene mounted.");
+    this.onStatus("CGI WebGL scene online");
 
     this.frameHandle = requestAnimationFrame(time => this.loop(time));
   }
@@ -404,12 +428,22 @@ export class ExoSceneRenderer {
       };
     }
 
-    if (model && model.phase && model.phase.length) {
-      const minIndex = indexOfMinimum(model.flux);
-      if (minIndex >= 0 && Number.isFinite(model.phase[minIndex])) {
-        this.phase = model.phase[minIndex];
-      }
+    if (model?.phase?.length && model?.flux?.length) {
+      this.model = model;
     }
+
+    this.updateOverlayText();
+  }
+
+  updateOverlayText() {
+    if (!this.overlay) return;
+
+    const name = this.target?.pl_name || "selected target";
+    const host = this.target?.hostname || "host star";
+    const spot = this.params.spotEnabled ? "spot hypothesis on" : "spot off";
+    const moon = this.params.moonEnabled ? "moon hypothesis on" : "moon off";
+
+    this.overlay.textContent = `${name} around ${host} · theoretical CGI model · ${spot} · ${moon}`;
   }
 
   resize() {
@@ -439,7 +473,10 @@ export class ExoSceneRenderer {
     this.lastFrame = time;
 
     this.phase += dt * 0.035;
-    if (this.phase > 0.14) this.phase = -0.14;
+
+    if (this.phase > 0.145) {
+      this.phase = -0.145;
+    }
 
     this.render(seconds);
     this.frameHandle = requestAnimationFrame(next => this.loop(next));
@@ -450,19 +487,14 @@ export class ExoSceneRenderer {
     if (!gl) return;
 
     this.resize();
-
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     const teff = numberOr(this.target.st_teff, 5772);
-    const starColour = stellarColour(teff);
     const glowColour = stellarGlowColour(teff);
-
-    const starModel = mat4RotateY(mat4Identity(), time * 0.018);
+    const bodies = this.computeBodyPositions();
 
     this.drawOrbitGuides();
     this.drawTransitChord();
-
-    const bodies = this.computeBodyPositions();
 
     if (!bodies.planet.front) {
       this.drawPlanet(bodies.planet);
@@ -472,7 +504,7 @@ export class ExoSceneRenderer {
       this.drawMoon(bodies.moon);
     }
 
-    this.drawStar(time, starModel, teff, starColour);
+    this.drawStar(time, teff);
     this.drawStarGlow(time, glowColour);
 
     if (bodies.planet.front) {
@@ -482,6 +514,10 @@ export class ExoSceneRenderer {
     if (bodies.moon.enabled && bodies.moon.front) {
       this.drawMoon(bodies.moon);
     }
+
+    if (bodies.moon.enabled) {
+      this.drawMoonOrbitGuide(bodies.planet);
+    }
   }
 
   computeBodyPositions() {
@@ -489,7 +525,7 @@ export class ExoSceneRenderer {
     const radius = clamp(numberOr(p.rpRs, 0.1), 0.01, 0.28);
     const inclination = numberOr(p.inclinationDeg, 88.5) * Math.PI / 180;
 
-    const visualPhase = clamp(this.phase, -0.14, 0.14);
+    const visualPhase = clamp(this.phase, -0.145, 0.145);
     const theta = visualPhase * TWO_PI + Math.PI / 2;
 
     const orbitRadius = 1.55;
@@ -506,7 +542,7 @@ export class ExoSceneRenderer {
     };
 
     const moonEnabled = Boolean(p.moonEnabled);
-    const moonPhase = numberOr(p.moonPhaseDeg, 45) * Math.PI / 180 + timeFreeOscillation(this.phase);
+    const moonPhase = numberOr(p.moonPhaseDeg, 45) * Math.PI / 180 + visualPhase * TWO_PI * 5.0;
     const moonDistance = clamp(numberOr(p.moonDistance, 0.55), 0.05, 2.5) * 0.35;
     const moonRadius = clamp(numberOr(p.moonRadius, 0.025), 0.004, 0.08);
 
@@ -524,9 +560,11 @@ export class ExoSceneRenderer {
     return { planet, moon };
   }
 
-  drawStar(time, model, teff, colour) {
+  drawStar(time, teff) {
     const p = this.params;
     const spotBasis = computeSpotBasis(p);
+
+    const model = mat4RotateY(mat4Identity(), time * 0.018);
 
     this.drawSphere({
       program: this.programs.star,
@@ -541,7 +579,7 @@ export class ExoSceneRenderer {
         uSpotA: spotBasis.a,
         uSpotB: spotBasis.b,
         uSpotC: spotBasis.c,
-        uSpotRadius: clamp(numberOr(p.spotRadius, 0.12), 0.01, 0.6),
+        uSpotRadius: clamp(numberOr(p.spotRadius, 0.12), 0.01, 0.60),
         uSpotContrast: clamp(numberOr(p.spotContrast, 0.55), 0, 1)
       }
     });
@@ -572,12 +610,12 @@ export class ExoSceneRenderer {
   }
 
   drawPlanet(body) {
-    this.drawBody(body, [0.045, 0.062, 0.078], [0.20, 0.47, 0.62], 1);
+    this.drawBody(body, [0.040, 0.054, 0.070], [0.20, 0.46, 0.58], 1);
   }
 
   drawMoon(body) {
     if (!body.enabled) return;
-    this.drawBody(body, [0.42, 0.42, 0.40], [0.88, 0.82, 0.70], 1);
+    this.drawBody(body, [0.42, 0.42, 0.40], [0.86, 0.82, 0.70], 1);
   }
 
   drawBody(body, colour, rim, alpha) {
@@ -613,7 +651,7 @@ export class ExoSceneRenderer {
     let model = mat4RotateX(mat4Identity(), Math.PI / 2);
     model = mat4Scale(model, [orbitRadius, orbitRadius, flatten]);
 
-    this.drawLineMesh(this.meshes.orbit, model, [0.10, 0.42, 0.58], 0.26);
+    this.drawLineMesh(this.meshes.orbit, model, [0.10, 0.42, 0.58], 0.22);
 
     gl.depthMask(true);
     gl.disable(gl.BLEND);
@@ -626,7 +664,26 @@ export class ExoSceneRenderer {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     gl.depthMask(false);
 
-    this.drawLineMesh(this.meshes.chord, mat4Identity(), [0.15, 0.40, 0.55], 0.22);
+    this.drawLineMesh(this.meshes.chord, mat4Identity(), [0.15, 0.40, 0.55], 0.20);
+
+    gl.depthMask(true);
+    gl.disable(gl.BLEND);
+  }
+
+  drawMoonOrbitGuide(planet) {
+    const p = this.params;
+    const distance = clamp(numberOr(p.moonDistance, 0.55), 0.05, 2.5) * 0.35;
+
+    const gl = this.gl;
+
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+    gl.depthMask(false);
+
+    let model = mat4Translate(mat4Identity(), planet.position);
+    model = mat4Scale(model, [distance, distance * 0.50, distance * 0.55]);
+
+    this.drawLineMesh(this.meshes.moonOrbit, model, [0.72, 0.44, 0.10], 0.20);
 
     gl.depthMask(true);
     gl.disable(gl.BLEND);
@@ -677,23 +734,15 @@ export class ExoSceneRenderer {
 }
 
 function computeSpotBasis(params) {
-  const x = clamp(numberOr(params.spotX, 0.2), -0.9, 0.9);
-  const y = clamp(numberOr(params.spotY, 0.1), -0.9, 0.9);
-  const z = Math.sqrt(Math.max(0.01, 1 - x * x - y * y));
+  const x = clamp(numberOr(params.spotX, 0.2), -0.88, 0.88);
+  const y = clamp(numberOr(params.spotY, 0.1), -0.88, 0.88);
+  const z = Math.sqrt(Math.max(0.03, 1 - x * x - y * y));
 
   const a = normalize3([x, y, z]);
   const b = normalize3([x + 0.08, y - 0.035, z]);
   const c = normalize3([x - 0.055, y + 0.060, z]);
 
   return { a, b, c };
-}
-
-function stellarColour(teff) {
-  if (teff < 3600) return [1.00, 0.43, 0.18];
-  if (teff < 5200) return [1.00, 0.60, 0.25];
-  if (teff < 6500) return [1.00, 0.75, 0.36];
-  if (teff < 8500) return [0.85, 0.90, 1.00];
-  return [0.62, 0.76, 1.00];
 }
 
 function stellarGlowColour(teff) {
@@ -1049,24 +1098,4 @@ function numberOr(value, fallback) {
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
-}
-
-function indexOfMinimum(array) {
-  if (!array || !array.length) return -1;
-
-  let index = 0;
-  let value = array[0];
-
-  for (let i = 1; i < array.length; i++) {
-    if (array[i] < value) {
-      value = array[i];
-      index = i;
-    }
-  }
-
-  return index;
-}
-
-function timeFreeOscillation(phase) {
-  return phase * TWO_PI * 5.0;
 }
