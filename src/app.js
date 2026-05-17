@@ -4,13 +4,13 @@ import { ExoSceneRenderer } from "./scene.js";
    ExoIntel-Prime
    Main Thread Orchestrator
    ---------------------------------------------------------------------------
-   Responsibilities:
-   - Build a clean scientific interface.
-   - Keep slider interaction responsive.
-   - Send only the latest parameter snapshot to the worker.
-   - Discard stale worker replies by revision number.
-   - Render static archival data + latest theoretical model.
-   - Mount and update the lightweight WebGL CGI scene.
+   Role:
+   - Owns the user interface.
+   - Keeps sliders responsive using requestAnimationFrame batching.
+   - Sends only the newest parameter state to transitWorker.js.
+   - Rejects stale worker results by revision number.
+   - Renders static archival photometry against the latest theoretical model.
+   - Updates the CGI viewport without performing heavy photometric maths.
    ============================================================================ */
 
 const APP_NAME = "ExoIntel-Prime";
@@ -43,11 +43,17 @@ const DEFAULT_PARAMS = Object.freeze({
 });
 
 const DEFAULT_TARGET = Object.freeze({
+  id: "synthetic-hot-jupiter",
   pl_name: "Synthetic Hot Jupiter",
   hostname: "Demonstration Host",
+  discoverymethod: "Transit",
   pl_orbper: 3.0,
   pl_trandur: 2.4,
   pl_trandep: 10000,
+  pl_ratror: 0.1,
+  pl_orbsmax: null,
+  pl_orbincl: 88.5,
+  pl_orbeccen: 0.0,
   st_teff: 5772,
   st_rad: 1.0,
   st_mass: 1.0,
@@ -63,15 +69,14 @@ class ExoIntelPrimeApp {
 
     this.currentRevision = 0;
     this.lastSentRevision = 0;
-    this.latestParams = { ...DEFAULT_PARAMS };
-    this.latestTarget = { ...DEFAULT_TARGET };
-
     this.pendingFrame = false;
     this.workerReady = false;
     this.workerBusy = false;
 
     this.targets = [];
     this.activeTarget = null;
+    this.latestTarget = { ...DEFAULT_TARGET };
+    this.latestParams = { ...DEFAULT_PARAMS };
 
     this.archivalCurve = {
       phase: new Float32Array(0),
@@ -93,7 +98,18 @@ class ExoIntelPrimeApp {
       snr: null,
       phaseShift: null,
       modelDepthPpm: null,
+      maxPlanetDepthPpm: null,
+      maxMoonDepthPpm: null,
+      maxSpotBoostPpm: null,
       morphologyFlags: ["waiting for worker"]
+    };
+
+    this.timings = {
+      elapsedMs: null,
+      samples: null,
+      rings: null,
+      azimuth: null,
+      surfaceSamples: null
     };
 
     this.dom = {};
@@ -128,7 +144,8 @@ class ExoIntelPrimeApp {
       :root{
         --bg:#f5f7fb;
         --surface:#ffffff;
-        --surface-2:#f0f3f8;
+        --surface-soft:#f8fafc;
+        --surface-blue:#f1f6ff;
         --line:#d9e0ea;
         --line-strong:#b8c3d2;
         --text:#17202a;
@@ -163,8 +180,8 @@ class ExoIntelPrimeApp {
 
       button,
       input,
-      select,
-      textarea{
+      textarea,
+      select{
         font:inherit;
       }
 
@@ -176,20 +193,21 @@ class ExoIntelPrimeApp {
         width:100vw;
         height:100vh;
         display:grid;
-        grid-template-rows:56px minmax(0,1fr) 28px;
+        grid-template-rows:58px minmax(0,1fr) 30px;
         background:
-          radial-gradient(circle at 20% 0%,rgba(27,100,216,.07),transparent 32%),
+          radial-gradient(circle at 18% 0%,rgba(27,100,216,.075),transparent 34%),
+          radial-gradient(circle at 82% 5%,rgba(196,122,0,.055),transparent 30%),
           linear-gradient(180deg,#fbfcfe 0%,#eef3f9 100%);
       }
 
       .app-header{
         display:grid;
-        grid-template-columns:minmax(260px,1fr) minmax(420px,1.4fr) minmax(280px,1fr);
+        grid-template-columns:minmax(260px,1fr) minmax(460px,1.45fr) minmax(300px,1fr);
         align-items:center;
         gap:16px;
         padding:10px 16px;
         border-bottom:1px solid var(--line);
-        background:rgba(255,255,255,.86);
+        background:rgba(255,255,255,.88);
         backdrop-filter:blur(18px);
       }
 
@@ -201,12 +219,13 @@ class ExoIntelPrimeApp {
       }
 
       .brand-mark{
-        width:34px;
-        height:34px;
-        border-radius:10px;
+        width:36px;
+        height:36px;
+        flex:0 0 auto;
+        border-radius:11px;
         border:1px solid var(--line-strong);
         background:
-          radial-gradient(circle at 50% 50%,rgba(27,100,216,.35),transparent 34%),
+          radial-gradient(circle at 50% 50%,rgba(27,100,216,.34),transparent 34%),
           linear-gradient(135deg,#fff,#dbe6f6);
         box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 8px 22px rgba(27,100,216,.12);
       }
@@ -214,8 +233,8 @@ class ExoIntelPrimeApp {
       .brand h1{
         margin:0;
         font-size:15px;
-        font-weight:800;
-        letter-spacing:.02em;
+        font-weight:850;
+        letter-spacing:.01em;
       }
 
       .brand p{
@@ -237,17 +256,17 @@ class ExoIntelPrimeApp {
         min-width:0;
         padding:6px 9px;
         border:1px solid var(--line);
-        border-radius:10px;
-        background:rgba(255,255,255,.70);
+        border-radius:11px;
+        background:rgba(255,255,255,.75);
       }
 
       .status-tile span{
         display:block;
         color:var(--muted);
         font-size:10px;
-        font-weight:700;
+        font-weight:800;
         text-transform:uppercase;
-        letter-spacing:.08em;
+        letter-spacing:.075em;
       }
 
       .status-tile strong{
@@ -256,7 +275,7 @@ class ExoIntelPrimeApp {
         overflow:hidden;
         color:var(--text);
         font-size:12px;
-        font-weight:800;
+        font-weight:850;
         white-space:nowrap;
         text-overflow:ellipsis;
       }
@@ -275,7 +294,7 @@ class ExoIntelPrimeApp {
         border-radius:10px;
         background:#fff;
         color:var(--text);
-        font-weight:750;
+        font-weight:780;
         font-size:12px;
         transition:background .15s ease,border-color .15s ease,transform .15s ease;
       }
@@ -302,7 +321,7 @@ class ExoIntelPrimeApp {
       .workspace{
         min-height:0;
         display:grid;
-        grid-template-columns:340px minmax(0,1fr);
+        grid-template-columns:360px minmax(0,1fr);
         gap:14px;
         padding:14px;
         overflow:hidden;
@@ -319,7 +338,7 @@ class ExoIntelPrimeApp {
       .main-panel{
         min-height:0;
         display:grid;
-        grid-template-rows:minmax(320px,1fr) 220px;
+        grid-template-rows:minmax(330px,1fr) 235px;
         gap:12px;
         overflow:hidden;
       }
@@ -328,13 +347,13 @@ class ExoIntelPrimeApp {
         min-height:0;
         border:1px solid var(--line);
         border-radius:18px;
-        background:rgba(255,255,255,.86);
+        background:rgba(255,255,255,.88);
         box-shadow:var(--shadow);
         overflow:hidden;
       }
 
       .card-header{
-        min-height:42px;
+        min-height:43px;
         display:flex;
         align-items:center;
         justify-content:space-between;
@@ -352,9 +371,12 @@ class ExoIntelPrimeApp {
       }
 
       .card-header span{
+        overflow:hidden;
         color:var(--muted);
         font-size:11px;
         font-weight:650;
+        white-space:nowrap;
+        text-overflow:ellipsis;
       }
 
       .card-body{
@@ -378,7 +400,7 @@ class ExoIntelPrimeApp {
       }
 
       .target-list{
-        max-height:170px;
+        max-height:172px;
         overflow:auto;
         margin-top:10px;
         display:flex;
@@ -401,7 +423,7 @@ class ExoIntelPrimeApp {
 
       .target-row.active{
         border-color:var(--accent);
-        background:#f1f6ff;
+        background:var(--surface-blue);
       }
 
       .target-row strong{
@@ -433,8 +455,8 @@ class ExoIntelPrimeApp {
         color:var(--muted);
         background:#fff;
         font-size:10px;
-        font-weight:800;
-        letter-spacing:.03em;
+        font-weight:850;
+        letter-spacing:.025em;
         text-transform:uppercase;
       }
 
@@ -450,6 +472,12 @@ class ExoIntelPrimeApp {
         border-color:#f3d28a;
       }
 
+      .pill.danger{
+        color:var(--danger);
+        background:#fff1f0;
+        border-color:#f0b8b4;
+      }
+
       .readout-grid{
         display:grid;
         grid-template-columns:repeat(2,minmax(0,1fr));
@@ -457,7 +485,7 @@ class ExoIntelPrimeApp {
       }
 
       .readout{
-        min-height:72px;
+        min-height:74px;
         padding:11px;
         border:1px solid var(--line);
         border-radius:14px;
@@ -468,8 +496,8 @@ class ExoIntelPrimeApp {
         display:block;
         color:var(--muted);
         font-size:10px;
-        font-weight:800;
-        letter-spacing:.08em;
+        font-weight:850;
+        letter-spacing:.075em;
         text-transform:uppercase;
       }
 
@@ -477,7 +505,7 @@ class ExoIntelPrimeApp {
         display:block;
         margin-top:8px;
         font-family:var(--mono);
-        font-size:18px;
+        font-size:17px;
         font-weight:850;
       }
 
@@ -518,7 +546,7 @@ class ExoIntelPrimeApp {
 
       .control-row{
         display:grid;
-        grid-template-columns:120px minmax(0,1fr) 64px;
+        grid-template-columns:122px minmax(0,1fr) 68px;
         gap:10px;
         align-items:center;
         min-height:34px;
@@ -554,7 +582,7 @@ class ExoIntelPrimeApp {
       .plot-card{
         position:relative;
         display:grid;
-        grid-template-rows:42px minmax(0,1fr);
+        grid-template-rows:43px minmax(0,1fr);
       }
 
       .plot-wrap{
@@ -573,7 +601,7 @@ class ExoIntelPrimeApp {
       .scene-panel{
         min-height:0;
         display:grid;
-        grid-template-rows:42px minmax(0,1fr);
+        grid-template-rows:43px minmax(0,1fr);
       }
 
       .scene-stage{
@@ -591,9 +619,13 @@ class ExoIntelPrimeApp {
         gap:12px;
         padding:0 16px;
         border-top:1px solid var(--line);
-        background:rgba(255,255,255,.84);
+        background:rgba(255,255,255,.88);
         color:var(--muted);
         font-size:11px;
+      }
+
+      .app-footer strong{
+        color:var(--text);
       }
 
       @media (max-width:1100px){
@@ -614,11 +646,15 @@ class ExoIntelPrimeApp {
         }
 
         .main-panel{
-          grid-template-rows:420px 260px;
+          grid-template-rows:420px 280px;
         }
 
         .status-strip{
           grid-template-columns:repeat(2,minmax(0,1fr));
+        }
+
+        .left-panel{
+          grid-template-rows:auto auto auto;
         }
       }
     `;
@@ -632,7 +668,7 @@ class ExoIntelPrimeApp {
           <div class="brand-mark" aria-hidden="true"></div>
           <div>
             <h1>ExoIntel-Prime</h1>
-            <p>Publication-grade transit photometry laboratory · worker-backed theoretical modelling</p>
+            <p>Worker-backed exoplanet transit modelling with archival photometry overlays</p>
           </div>
         </section>
 
@@ -684,7 +720,7 @@ class ExoIntelPrimeApp {
                 <div class="readout">
                   <span>Residual RMS</span>
                   <strong id="metric-residual-rms">—</strong>
-                  <small>data minus model</small>
+                  <small>archival data minus model</small>
                 </div>
                 <div class="readout">
                   <span>OOT RMS</span>
@@ -701,6 +737,16 @@ class ExoIntelPrimeApp {
                   <strong id="metric-depth">—</strong>
                   <small>theoretical transit depth</small>
                 </div>
+                <div class="readout">
+                  <span>Moon Signal</span>
+                  <strong id="metric-moon">—</strong>
+                  <small>hypothesis term only</small>
+                </div>
+                <div class="readout">
+                  <span>Spot Boost</span>
+                  <strong id="metric-spot">—</strong>
+                  <small>spot-crossing anomaly</small>
+                </div>
               </div>
               <div id="metric-flags" class="flag-list"></div>
             </div>
@@ -711,6 +757,7 @@ class ExoIntelPrimeApp {
               <h2>Model parameters</h2>
               <span>latest-state mailbox</span>
             </div>
+
             <div class="control-list" id="control-list">
               <div class="control-group">
                 <h3>Orbital geometry</h3>
@@ -826,7 +873,7 @@ class ExoIntelPrimeApp {
 
           <section class="card plot-card">
             <div class="card-header">
-              <h2>Archival photometry versus theoretical model</h2>
+              <h2>Archival photometry versus worker model</h2>
               <span id="plot-status">waiting for model</span>
             </div>
             <div class="plot-wrap">
@@ -837,7 +884,7 @@ class ExoIntelPrimeApp {
       </section>
 
       <footer class="app-footer">
-        <span>Raw archival data are static; the amber model is recomputed off-main-thread.</span>
+        <span>Archival photometry is static; parameter changes recompute only the theoretical model.</span>
         <span id="footer-message">Initialising worker-backed solver...</span>
       </footer>
     `;
@@ -862,6 +909,8 @@ class ExoIntelPrimeApp {
     this.dom.metricOot = document.getElementById("metric-oot-rms");
     this.dom.metricSnr = document.getElementById("metric-snr");
     this.dom.metricDepth = document.getElementById("metric-depth");
+    this.dom.metricMoon = document.getElementById("metric-moon");
+    this.dom.metricSpot = document.getElementById("metric-spot");
     this.dom.metricFlags = document.getElementById("metric-flags");
 
     this.dom.plotStatus = document.getElementById("plot-status");
@@ -908,6 +957,7 @@ class ExoIntelPrimeApp {
         modelResolution: 1440
       };
 
+      this.setText(this.dom.footerMessage, "Full fidelity solve requested. Worker will keep the UI responsive.");
       this.issueParameterRevision("full-fidelity");
     });
 
@@ -928,6 +978,7 @@ class ExoIntelPrimeApp {
     }
 
     this.worker.addEventListener("message", event => this.handleWorkerMessage(event.data));
+
     this.worker.addEventListener("error", event => {
       this.setWorkerFailed(`Worker error: ${event.message || "unknown error"}`);
     });
@@ -939,7 +990,7 @@ class ExoIntelPrimeApp {
     this.postToWorker({
       type: "configure",
       appName: APP_NAME,
-      protocol: "latest-state-mailbox-v1"
+      protocol: "latest-state-mailbox-v2"
     });
 
     this.setText(this.dom.workerStatus, "starting");
@@ -978,6 +1029,12 @@ class ExoIntelPrimeApp {
       this.setText(this.dom.workerStatus, "ready");
       this.setText(this.dom.footerMessage, "Worker ready. Slider updates are coalesced by animation frame.");
       this.sendWorkerDataContext();
+      this.issueParameterRevision("worker-ready");
+      return;
+    }
+
+    if (message.type === "data-ready") {
+      this.setText(this.dom.footerMessage, `Archival data installed in worker: ${Number(message.points || 0).toLocaleString("en-GB")} samples.`);
       return;
     }
 
@@ -1044,16 +1101,38 @@ class ExoIntelPrimeApp {
       snr: finiteOrNull(message.metrics?.snr),
       phaseShift: finiteOrNull(message.metrics?.phaseShift),
       modelDepthPpm: finiteOrNull(message.metrics?.modelDepthPpm),
+      maxPlanetDepthPpm: finiteOrNull(message.metrics?.maxPlanetDepthPpm),
+      maxMoonDepthPpm: finiteOrNull(message.metrics?.maxMoonDepthPpm),
+      maxSpotBoostPpm: finiteOrNull(message.metrics?.maxSpotBoostPpm),
       morphologyFlags: Array.isArray(message.metrics?.morphologyFlags)
         ? message.metrics.morphologyFlags
         : []
     };
 
+    this.timings = {
+      elapsedMs: finiteOrNull(message.timings?.elapsedMs),
+      samples: finiteOrNull(message.timings?.samples),
+      rings: finiteOrNull(message.timings?.rings),
+      azimuth: finiteOrNull(message.timings?.azimuth),
+      surfaceSamples: finiteOrNull(message.timings?.surfaceSamples)
+    };
+
     this.workerBusy = false;
     this.setText(this.dom.solverStatus, `complete r${message.revision}`);
     this.setText(this.dom.revisionStatus, String(message.revision));
-    this.setText(this.dom.plotStatus, `${message.mode || "preview"} model · ${phase.length.toLocaleString("en-GB")} samples`);
-    this.setText(this.dom.footerMessage, `Latest accepted model revision ${message.revision}; stale worker replies are discarded.`);
+    this.setText(
+      this.dom.plotStatus,
+      `${message.mode || "worker model"} · ${phase.length.toLocaleString("en-GB")} phase samples`
+    );
+
+    const elapsed = Number.isFinite(this.timings.elapsedMs)
+      ? `${Math.round(this.timings.elapsedMs)} ms`
+      : "—";
+
+    this.setText(
+      this.dom.footerMessage,
+      `Revision ${message.revision} accepted · worker time ${elapsed} · stale results discarded.`
+    );
 
     this.renderMetrics();
     this.updateScene();
@@ -1128,7 +1207,6 @@ class ExoIntelPrimeApp {
 
     this.lastSentRevision = revision;
     this.workerBusy = true;
-
     this.setText(this.dom.solverStatus, `queued r${revision}`);
 
     this.postToWorker({
@@ -1240,7 +1318,7 @@ class ExoIntelPrimeApp {
         target.pl_name,
         target.hostname,
         target.discoverymethod,
-        target.lightcurve_available ? "observed photometry real lightcurve" : "model only",
+        target.lightcurve_available ? "observed photometry real lightcurve lc data" : "model only",
         target.lightcurve_file
       ].join(" ").toLowerCase();
 
@@ -1283,7 +1361,11 @@ class ExoIntelPrimeApp {
   }
 
   async selectInitialTarget() {
-    const preferred = this.targets.find(target => target.lightcurve_available) || this.targets[0] || normaliseTarget(DEFAULT_TARGET);
+    const preferred =
+      this.targets.find(target => target.lightcurve_available) ||
+      this.targets[0] ||
+      normaliseTarget(DEFAULT_TARGET);
+
     await this.selectTarget(preferred);
   }
 
@@ -1313,7 +1395,8 @@ class ExoIntelPrimeApp {
     }
 
     try {
-      const response = await fetch(`${LIGHTCURVE_BASE_URL}${encodeURIComponent(target.lightcurve_file)}?v=${Date.now()}`, {
+      const safeFile = encodeURIComponent(target.lightcurve_file).replace(/%2F/g, "/");
+      const response = await fetch(`${LIGHTCURVE_BASE_URL}${safeFile}?v=${Date.now()}`, {
         cache: "no-store",
         headers: { Accept: "application/json" }
       });
@@ -1328,7 +1411,10 @@ class ExoIntelPrimeApp {
       }
     } catch (error) {
       this.archivalCurve = generateSyntheticArchive(target, this.latestParams);
-      this.setText(this.dom.footerMessage, `Observed curve unavailable for ${target.pl_name}; synthetic demonstration data shown.`);
+      this.setText(
+        this.dom.footerMessage,
+        `Observed curve unavailable for ${target.pl_name}; synthetic demonstration data shown.`
+      );
     }
   }
 
@@ -1337,16 +1423,29 @@ class ExoIntelPrimeApp {
     this.setText(this.dom.metricOot, formatPpm(this.metrics.ootRmsPpm));
     this.setText(this.dom.metricSnr, this.metrics.snr === null ? "—" : formatNumber(this.metrics.snr, 2));
     this.setText(this.dom.metricDepth, formatPpm(this.metrics.modelDepthPpm));
+    this.setText(this.dom.metricMoon, formatPpm(this.metrics.maxMoonDepthPpm));
+    this.setText(this.dom.metricSpot, formatPpm(this.metrics.maxSpotBoostPpm));
 
-    const flags = this.metrics.morphologyFlags.length
-      ? this.metrics.morphologyFlags
-      : ["no morphology flags"];
+    const flags = [
+      ...(this.metrics.morphologyFlags.length ? this.metrics.morphologyFlags : ["baseline transit model"]),
+      this.timings.surfaceSamples ? `${Number(this.timings.surfaceSamples).toLocaleString("en-GB")} surface samples` : null,
+      this.timings.elapsedMs ? `worker ${Math.round(this.timings.elapsedMs)} ms` : null
+    ].filter(Boolean);
 
     const fragment = document.createDocumentFragment();
 
     for (const flag of flags) {
       const pill = document.createElement("span");
+      const lower = String(flag).toLowerCase();
+
       pill.className = "pill";
+
+      if (lower.includes("high s/n") || lower.includes("quadrature")) {
+        pill.classList.add("ok");
+      } else if (lower.includes("low s/n") || lower.includes("moon") || lower.includes("spot")) {
+        pill.classList.add("warn");
+      }
+
       pill.textContent = flag;
       fragment.appendChild(pill);
     }
@@ -1374,17 +1473,24 @@ class ExoIntelPrimeApp {
     ctx.fillRect(0, 0, width, height);
 
     const pad = {
-      left: Math.max(58 * dpr, width * 0.06),
-      right: Math.max(18 * dpr, width * 0.02),
-      top: Math.max(22 * dpr, height * 0.10),
-      bottom: Math.max(40 * dpr, height * 0.18)
+      left: Math.max(60 * dpr, width * 0.06),
+      right: Math.max(20 * dpr, width * 0.02),
+      top: Math.max(24 * dpr, height * 0.11),
+      bottom: Math.max(42 * dpr, height * 0.18)
     };
 
     const combined = collectPlotValues(this.archivalCurve, this.latestModel);
     const scale = computeScale(combined);
 
-    const xMap = phase => pad.left + (phase - scale.minPhase) / Math.max(1e-9, scale.maxPhase - scale.minPhase) * (width - pad.left - pad.right);
-    const yMap = flux => pad.top + (scale.maxFlux - flux) / Math.max(1e-9, scale.maxFlux - scale.minFlux) * (height - pad.top - pad.bottom);
+    const xMap = phase =>
+      pad.left +
+      (phase - scale.minPhase) / Math.max(1e-9, scale.maxPhase - scale.minPhase) *
+      (width - pad.left - pad.right);
+
+    const yMap = flux =>
+      pad.top +
+      (scale.maxFlux - flux) / Math.max(1e-9, scale.maxFlux - scale.minFlux) *
+      (height - pad.top - pad.bottom);
 
     drawPlotGrid(ctx, width, height, pad, scale, dpr);
     drawArchivalScatter(ctx, this.archivalCurve, xMap, yMap, dpr);
@@ -1426,6 +1532,8 @@ function normaliseTarget(row) {
 
   const name = stringValue(row.pl_name || row.name || row.planet || "Unknown planet");
   const host = stringValue(row.hostname || row.host || "Unknown host");
+  const rpRs = numberValue(row.pl_ratror, 0.1);
+  const depth = numberValue(row.pl_trandep, rpRs * rpRs * 1e6);
 
   return {
     id: `${host}::${name}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""),
@@ -1434,8 +1542,8 @@ function normaliseTarget(row) {
     discoverymethod: stringValue(row.discoverymethod || row.discovery_method || "Transit"),
     pl_orbper: numberValue(row.pl_orbper, 3),
     pl_trandur: numberValue(row.pl_trandur, 2.5),
-    pl_trandep: numberValue(row.pl_trandep, numberValue(row.pl_ratror, 0.1) ** 2 * 1e6),
-    pl_ratror: numberValue(row.pl_ratror, 0.1),
+    pl_trandep: depth,
+    pl_ratror: rpRs,
     pl_orbsmax: numberValue(row.pl_orbsmax, null),
     pl_orbincl: numberValue(row.pl_orbincl, 88.5),
     pl_orbeccen: numberValue(row.pl_orbeccen, 0),
@@ -1524,7 +1632,11 @@ function generateSyntheticArchive(target, params) {
   const error = new Float32Array(n);
 
   const depth = clamp(numberValue(target.pl_trandep, params.rpRs * params.rpRs * 1e6) / 1e6, 0.0001, 0.08);
-  const width = clamp(numberValue(target.pl_trandur, 2.5) / 24 / Math.max(0.2, numberValue(target.pl_orbper, 3)), 0.008, 0.08);
+  const width = clamp(
+    numberValue(target.pl_trandur, 2.5) / 24 / Math.max(0.2, numberValue(target.pl_orbper, 3)),
+    0.008,
+    0.08
+  );
 
   for (let i = 0; i < n; i++) {
     const x = -0.12 + 0.24 * i / (n - 1);
@@ -1631,7 +1743,6 @@ function drawPlotGrid(ctx, width, height, pad, scale, dpr) {
   ctx.rotate(-Math.PI / 2);
   ctx.fillText("Normalised flux", 0, 0);
   ctx.restore();
-
   ctx.restore();
 }
 
@@ -1686,7 +1797,7 @@ function drawLegend(ctx, width, pad, dpr) {
   ctx.fillStyle = "#17202a";
   ctx.fillText("archival photometry", x0 + 10 * dpr, y);
 
-  const x1 = x0 + 170 * dpr;
+  const x1 = x0 + 172 * dpr;
 
   ctx.strokeStyle = "#c47a00";
   ctx.lineWidth = 3 * dpr;
@@ -1696,7 +1807,7 @@ function drawLegend(ctx, width, pad, dpr) {
   ctx.stroke();
 
   ctx.fillStyle = "#17202a";
-  ctx.fillText("theoretical worker model", x1 + 32 * dpr, y);
+  ctx.fillText("worker-computed model", x1 + 32 * dpr, y);
 
   ctx.restore();
 }
