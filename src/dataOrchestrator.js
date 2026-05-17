@@ -112,9 +112,7 @@ export class DataOrchestrator {
       return this.cloneTargets(this.cache);
     }
 
-    const bust = `?v=${Date.now()}`;
-
-    const response = await fetch(`${this.cacheUrl}${bust}`, {
+    const response = await fetch(`${this.cacheUrl}?v=${Date.now()}`, {
       method: "GET",
       cache: "no-store",
       headers: {
@@ -127,7 +125,12 @@ export class DataOrchestrator {
     }
 
     const payload = await response.json();
-    const rows = Array.isArray(payload) ? payload : Array.isArray(payload.targets) ? payload.targets : [];
+    const rows = Array.isArray(payload)
+      ? payload
+      : Array.isArray(payload.targets)
+        ? payload.targets
+        : [];
+
     const normalized = this.normalizeRows(rows, "cache");
 
     if (!normalized.length) {
@@ -197,11 +200,11 @@ export class DataOrchestrator {
 
   async loadLightCurve(target) {
     if (!target) {
-      throw new Error("No target supplied for light-curve loading");
+      throw new Error("No target supplied for observed light-curve loading");
     }
 
     if (target.lightcurve_available === false) {
-      throw new Error("Target is marked as having no local real light-curve file yet");
+      throw new Error("Target is marked as having no local observed light-curve file");
     }
 
     const file = this.getLightCurveFile(target);
@@ -223,7 +226,7 @@ export class DataOrchestrator {
     });
 
     if (!response.ok) {
-      throw new Error(`Light-curve file ${file} HTTP ${response.status}`);
+      throw new Error(`Observed light-curve file ${file} HTTP ${response.status}`);
     }
 
     const payload = await response.json();
@@ -231,7 +234,7 @@ export class DataOrchestrator {
     const curve = this.normalizeLightCurve(payload);
 
     if (!curve.length) {
-      throw new Error(`Light-curve file ${file} contained no valid phase/flux rows`);
+      throw new Error(`Observed light-curve file ${file} contained no valid phase/flux rows`);
     }
 
     curve.meta = metadata;
@@ -242,7 +245,7 @@ export class DataOrchestrator {
   }
 
   extractLightCurveMetadata(payload, file) {
-    const meta = {
+    return {
       file,
       schema: text(payload?.schema),
       generated_utc: text(payload?.generated_utc),
@@ -257,8 +260,6 @@ export class DataOrchestrator {
       processing: text(payload?.processing),
       points_count: integer(payload?.points_count)
     };
-
-    return meta;
   }
 
   attachLightCurveMetadataToTarget(target, meta = {}) {
@@ -331,7 +332,12 @@ export class DataOrchestrator {
 
     if (Array.isArray(payload.phase) && Array.isArray(payload.flux)) {
       const n = Math.min(payload.phase.length, payload.flux.length);
-      const err = Array.isArray(payload.error) ? payload.error : Array.isArray(payload.flux_err) ? payload.flux_err : [];
+      const err = Array.isArray(payload.error)
+        ? payload.error
+        : Array.isArray(payload.flux_err)
+          ? payload.flux_err
+          : [];
+
       const out = [];
 
       for (let i = 0; i < n; i++) {
@@ -364,7 +370,12 @@ export class DataOrchestrator {
   }
 
   getLightCurveFile(target) {
-    const explicit = text(firstDefined(target.lightcurve_file, target.lightcurveFile, target.lc_file, target.photometry_file));
+    const explicit = text(firstDefined(
+      target.lightcurve_file,
+      target.lightcurveFile,
+      target.lc_file,
+      target.photometry_file
+    ));
 
     if (explicit) {
       return explicit;
@@ -497,8 +508,21 @@ export class DataOrchestrator {
     const logg = number(r.st_logg);
     const metallicity = number(firstDefined(r.st_met, r.st_metratio, r.metallicity));
     const snr = number(firstDefined(r.snr, r.signal_to_noise, r.transit_snr));
-    const explicitLightCurveFile = text(firstDefined(r.lightcurve_file, r.lightcurvefile, r.lc_file, r.photometry_file));
-    const lightcurveAvailable = bool(firstDefined(r.lightcurve_available, r.lightcurveavailable, r.has_lightcurve, r.has_real_lc), false);
+
+    const explicitLightCurveFile = text(firstDefined(
+      r.lightcurve_file,
+      r.lightcurvefile,
+      r.lc_file,
+      r.photometry_file
+    ));
+
+    const lightcurveAvailable = bool(firstDefined(
+      r.lightcurve_available,
+      r.lightcurveavailable,
+      r.has_lightcurve,
+      r.has_real_lc,
+      r.has_observed_lc
+    ), false);
 
     const inferredRpRs = finiteNumber(rpRs, null) ?? inferRpRs(rpEarth, stRad);
     const inferredARs = inferARs(semiMajor, stRad);
@@ -561,10 +585,13 @@ export class DataOrchestrator {
     const tokens = q.split(/\s+/).filter(Boolean);
 
     return this.cloneTargets(targets.filter(target => {
-      const lcText = target.lightcurve_available ? "real lc lightcurve photometry telescope data cleaned mast" : "model no lc no photometry";
+      const observedText = target.lightcurve_available
+        ? "real lc obs lc observed light curve lightcurve photometry telescope data mast tess kepler k2 cleaned local json"
+        : "model only no lc no observed no photometry no telescope data";
+
       const systemText = [
-        finiteNumber(target.sy_snum, 1) > 1 ? "binary multi star" : "single star",
-        finiteNumber(target.sy_pnum, 1) > 1 ? "multi planet" : "single planet"
+        finiteNumber(target.sy_snum, 1) > 1 ? "binary multi star multiple stars possible dilution" : "single star",
+        finiteNumber(target.sy_pnum, 1) > 1 ? "multi planet multiple planets" : "single planet one planet"
       ].join(" ");
 
       const haystack = [
@@ -577,7 +604,9 @@ export class DataOrchestrator {
         target.pl_trandep,
         target.lightcurve_file,
         target.lc_processing,
-        lcText,
+        target.lc_source,
+        target.lc_schema,
+        observedText,
         systemText
       ].join(" ").toLowerCase();
 
