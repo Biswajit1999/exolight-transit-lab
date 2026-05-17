@@ -1092,7 +1092,9 @@ export class PrimeHUD {
   }
 }
 
-function computeDiagnostics(target, model, observed, controls, summary = {}) {
+function computeDiagnostics(target, model, observed, controls, summaryInput = {}) {   
+  const summary = summaryInput && typeof summaryInput === "object" ? summaryInput : {};
+  
   const periodDays = finiteNumber(target.pl_orbper, controls.periodDays);
   const durationHours = finiteNumber(target.pl_trandur, null);
 
