@@ -3,6 +3,7 @@
    src/scene.js
    ---------------------------------------------------------------------------
    Ultra-realistic WebGL scene renderer for the ExoLight Transit Lab.
+   v17: dark transit silhouettes + cleaner moon occultation.
 
    This version is intentionally heavier than the recovery Canvas renderer:
    - true WebGL sphere rendering
@@ -270,6 +271,7 @@ uniform vec3 uRimColour;
 uniform vec3 uLightDir;
 uniform float uAtmosphere;
 uniform float uBanding;
+uniform float uTransitSilhouette;
 uniform float uTime;
 
 float hash(vec3 p) {
@@ -311,6 +313,16 @@ void main() {
   vec3 nightColour = vec3(0.004, 0.010, 0.018) * (0.82 + 0.18 * mu);
   vec3 colour = mix(day, nightColour, night * 0.72);
   colour += uRimColour * rim * (0.26 + 0.30 * uAtmosphere);
+
+  // During transit the body must read as an occulting silhouette, not a lit blue sphere.
+  // We retain only a very thin atmospheric rim so the viewer can still perceive curvature.
+  if (uTransitSilhouette > 0.5) {
+    vec3 silhouette = vec3(0.0015, 0.0055, 0.0100);
+    vec3 razorRim = uRimColour * pow(1.0 - mu, 5.2) * (0.060 + 0.070 * uAtmosphere);
+    vec3 softEdge = vec3(0.012, 0.020, 0.028) * pow(1.0 - mu, 2.4) * 0.22;
+    colour = silhouette + softEdge + razorRim;
+  }
+
   gl_FragColor = vec4(colour, 1.0);
 }
 `;
@@ -580,17 +592,25 @@ export class ExoSceneRenderer {
     const planetRadius = clamp(numberOr(p.rpRs, 0.1) * starScale, 0.025, 0.42);
     const moonRadius = clamp(numberOr(p.moonRadius, 0.025) * starScale, 0.012, 0.16);
 
+    const starVisualRadius = this.quality === "ultra" ? 1.56 : 1.50;
+    const planetXY = Math.hypot(projected.planet.x, projected.planet.y);
+    const moonXY = Math.hypot(projected.moon.x, projected.moon.y);
+    const planetSilhouette = projected.planet.front && planetXY <= starVisualRadius + planetRadius * 0.35;
+    const moonSilhouette = projected.moon.front && moonXY <= starVisualRadius + moonRadius * 0.35;
+
     return {
       planet: {
         position: [projected.planet.x, projected.planet.y, projected.planet.z],
         radius: planetRadius,
-        front: projected.planet.front
+        front: projected.planet.front,
+        silhouette: planetSilhouette
       },
       moon: {
         enabled: Boolean(p.moonEnabled),
         position: [projected.moon.x, projected.moon.y, projected.moon.z],
         radius: moonRadius,
-        front: projected.moon.front
+        front: projected.moon.front,
+        silhouette: moonSilhouette
       }
     };
   }
@@ -701,7 +721,8 @@ export class ExoSceneRenderer {
         uRimColour: [0.26, 0.86, 1.00],
         uLightDir: light,
         uAtmosphere: 1.0,
-        uBanding: 0.78,
+        uBanding: body.silhouette ? 0.03 : 0.78,
+        uTransitSilhouette: body.silhouette ? 1.0 : 0.0,
         uTime: time
       }
     });
@@ -719,7 +740,8 @@ export class ExoSceneRenderer {
         uRimColour: [0.88, 0.82, 0.68],
         uLightDir: light,
         uAtmosphere: 0.0,
-        uBanding: 0.18,
+        uBanding: body.silhouette ? 0.02 : 0.18,
+        uTransitSilhouette: body.silhouette ? 1.0 : 0.0,
         uTime: time
       }
     });
