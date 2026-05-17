@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
 
   <title>ExoIntel-Prime | ExoLight Transit Lab</title>
 
@@ -10,96 +14,81 @@
     name="description"
     content="ExoIntel-Prime is a browser-based exoplanet transit photometry laboratory with archival light curves, worker-backed theoretical modelling, and WebGL scientific visualisation."
   />
+
   <meta
     name="keywords"
-    content="exoplanet, transit photometry, light curve, WebGL, TESS, Kepler, MAST, NASA Exoplanet Archive, astrophysics"
+    content="exoplanet, transit photometry, light curve, WebGL, TESS, Kepler, K2, MAST, NASA Exoplanet Archive, astrophysics"
   />
-  <meta name="author" content="Biswajit Jana" />
-  <meta name="theme-color" content="#f5f7fb" />
 
-  <meta property="og:title" content="ExoIntel-Prime | Exoplanet Transit Photometry Lab" />
+  <meta
+    name="author"
+    content="Biswajit Jana"
+  />
+
+  <meta
+    name="theme-color"
+    content="#060b13"
+  />
+
+  <meta
+    property="og:title"
+    content="ExoIntel-Prime | Exoplanet Transit Photometry Lab"
+  />
+
   <meta
     property="og:description"
-    content="A zero-dependency web laboratory for comparing archival exoplanet transit photometry with worker-computed theoretical models."
+    content="A browser-based exoplanet transit laboratory comparing archival photometry with worker-computed theoretical models."
   />
-  <meta property="og:type" content="website" />
 
-  <style>
-    html,
-    body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      background: #f5f7fb;
-      color: #17202a;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    }
+  <meta
+    property="og:type"
+    content="website"
+  />
 
-    noscript {
-      display: block;
-      max-width: 720px;
-      margin: 48px auto;
-      padding: 24px;
-      border: 1px solid #d9e0ea;
-      border-radius: 16px;
-      background: #ffffff;
-      box-shadow: 0 16px 42px rgba(22, 34, 51, 0.10);
-      line-height: 1.5;
-    }
+  <meta
+    property="og:site_name"
+    content="ExoIntel-Prime"
+  />
 
-    #app {
-      min-height: 100vh;
-    }
-
-    .boot-screen {
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background:
-        radial-gradient(circle at 20% 0%, rgba(27, 100, 216, 0.07), transparent 32%),
-        linear-gradient(180deg, #fbfcfe 0%, #eef3f9 100%);
-    }
-
-    .boot-card {
-      width: min(520px, calc(100vw - 32px));
-      padding: 24px;
-      border: 1px solid #d9e0ea;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.88);
-      box-shadow: 0 16px 42px rgba(22, 34, 51, 0.10);
-    }
-
-    .boot-card h1 {
-      margin: 0;
-      font-size: 18px;
-      letter-spacing: 0.01em;
-    }
-
-    .boot-card p {
-      margin: 8px 0 0;
-      color: #637083;
-      font-size: 14px;
-      line-height: 1.45;
-    }
-  </style>
+  <link
+    rel="stylesheet"
+    href="./styles.css"
+  />
 </head>
 
 <body>
   <noscript>
-    <strong>JavaScript is required.</strong><br />
-    ExoIntel-Prime runs its transit model through browser JavaScript and a Web Worker.
-    Please enable JavaScript to use the interactive photometry laboratory.
+    <strong>JavaScript is required.</strong>
+    <br />
+    ExoIntel-Prime uses browser JavaScript, ES modules, WebGL, and a Web Worker
+    to calculate and display exoplanet transit models. Please enable JavaScript
+    to use the interactive photometry laboratory.
   </noscript>
 
-  <main id="app" aria-label="ExoIntel-Prime exoplanet transit photometry laboratory">
+  <main
+    id="app"
+    aria-label="ExoIntel-Prime exoplanet transit photometry laboratory"
+  >
     <section class="boot-screen">
       <div class="boot-card">
+        <div class="boot-mark" aria-hidden="true"></div>
+
         <h1>ExoIntel-Prime</h1>
-        <p>Loading worker-backed transit photometry laboratory...</p>
+
+        <p>
+          Loading worker-backed exoplanet transit photometry laboratory...
+        </p>
+
+        <small>
+          SYSTEM OPERATOR: BISWAJIT JANA // © 2026
+        </small>
       </div>
     </section>
   </main>
 
-  <script type="module" src="./src/app.js"></script>
+  <script
+    type="module"
+    src="./src/app.js"
+  ></script>
 </body>
 </html>
