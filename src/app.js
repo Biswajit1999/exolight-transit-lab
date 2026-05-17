@@ -1,11 +1,11 @@
-import { ExoSceneRenderer } from "./scene.js?v=20260517-recovery-03";
+import { ExoSceneRenderer } from "./scene.js?v=20260517-stellar-v7";
 
 /* ============================================================================
    ExoIntel-Prime Recovery Main Thread Orchestrator
    ============================================================================ */
 
 const APP_NAME = "ExoIntel-Prime";
-const WORKER_URL = new URL("./transitWorker.js?v=20260517-recovery-03", import.meta.url);
+const WORKER_URL = new URL("./transitWorker.js?v=20260517-stellar-v7", import.meta.url);
 const TARGET_CACHE_URL = "./data/exoplanets.json";
 const LIGHTCURVE_BASE_URL = "./data/lightcurves/";
 const THEME_STORAGE_KEY = "exointel-prime-theme-v5";
