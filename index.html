@@ -12,12 +12,12 @@
 
   <meta
     name="description"
-    content="ExoIntel-Prime is an interactive exoplanet transit photometry laboratory with archival light curves, worker-backed theoretical modelling, and cinematic WebGL visualisation."
+    content="ExoIntel-Prime is an interactive exoplanet transit photometry laboratory with archival light curves, worker-backed theoretical modelling, finite-exposure integration, eccentric orbit geometry, and cinematic WebGL visualisation."
   />
 
   <meta
     name="keywords"
-    content="exoplanet, transit photometry, light curve, WebGL, TESS, Kepler, K2, MAST, NASA Exoplanet Archive, astrophysics, exomoon, starspot"
+    content="exoplanet, transit photometry, light curve, WebGL, TESS, Kepler, K2, MAST, NASA Exoplanet Archive, astrophysics, exomoon, starspot, limb darkening, transit modelling"
   />
 
   <meta name="author" content="Biswajit Jana" />
@@ -39,7 +39,7 @@
 
   <link
     rel="stylesheet"
-    href="./styles.css?v=20260517-entry-polish-04"
+    href="./styles.css?v=20260517-final-entry-05"
   />
 </head>
 
@@ -59,7 +59,69 @@
     <section class="boot-screen" aria-label="Loading ExoIntel-Prime">
       <div class="boot-card">
         <div class="boot-logo" aria-hidden="true">
-          <span>EP</span>
+          <svg viewBox="0 0 120 120">
+            <defs>
+              <radialGradient id="bootStar" cx="45%" cy="42%" r="64%">
+                <stop offset="0%" stop-color="#ffe0a3" />
+                <stop offset="42%" stop-color="#ffb547" />
+                <stop offset="72%" stop-color="#d86f16" />
+                <stop offset="100%" stop-color="#5b2508" />
+              </radialGradient>
+
+              <linearGradient id="bootOrbit" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#63a7ff" />
+                <stop offset="100%" stop-color="#50c6df" />
+              </linearGradient>
+
+              <filter id="bootGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="3.5" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+
+            <rect
+              x="7"
+              y="7"
+              width="106"
+              height="106"
+              rx="30"
+              fill="rgba(12,20,35,.96)"
+              stroke="rgba(99,167,255,.38)"
+              stroke-width="2"
+            />
+
+            <circle
+              cx="62"
+              cy="62"
+              r="29"
+              fill="url(#bootStar)"
+              filter="url(#bootGlow)"
+            />
+
+            <path
+              d="M22 77 C40 30, 85 24, 101 47"
+              fill="none"
+              stroke="url(#bootOrbit)"
+              stroke-width="4"
+              stroke-linecap="round"
+              opacity=".95"
+            />
+
+            <circle
+              cx="49"
+              cy="61"
+              r="9.2"
+              fill="#06111f"
+              stroke="#50c6df"
+              stroke-width="1.8"
+            />
+
+            <circle cx="86" cy="34" r="2.8" fill="#ffb547" />
+            <circle cx="30" cy="88" r="2.3" fill="#63a7ff" />
+          </svg>
         </div>
 
         <div class="boot-copy">
@@ -68,8 +130,15 @@
           <h1>ExoIntel-Prime</h1>
 
           <p class="boot-description">
-            Loading the worker-backed exoplanet transit photometry laboratory.
+            Loading archival photometry, worker-backed transit physics, and the
+            WebGL theoretical model viewport.
           </p>
+
+          <div class="boot-metrics" aria-hidden="true">
+            <span>Quadratic limb darkening</span>
+            <span>Finite exposure model</span>
+            <span>Eccentric geometry</span>
+          </div>
 
           <div class="boot-progress" aria-hidden="true">
             <span></span>
@@ -85,7 +154,7 @@
 
   <script
     type="module"
-    src="./src/app.js?v=20260517-premium-app-02"
+    src="./src/app.js?v=20260517-app-worker-sync-04"
   ></script>
 </body>
 </html>
