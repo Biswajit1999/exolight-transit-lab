@@ -1,23 +1,20 @@
-/* ============================================================================
+ /* ============================================================================
    ExoIntel-Prime
    Professional WebGL Scientific Scene Renderer
    ---------------------------------------------------------------------------
    Purpose:
-   - Render a clean, cinematic, physically interpretable transit model.
-   - Avoid fake jittery synchronisation with the archival light curve.
-   - Visualise the current theoretical parameter state from app.js.
-   - Keep rendering lightweight so sliders remain responsive.
-   - Keep all heavy photometric modelling inside transitWorker.js.
+   - Render a visually pleasing, full-orbit exoplanet system.
+   - Keep the scene lightweight and separate from the worker physics engine.
+   - Show the theoretical parameter state without faking archival data.
+   - Planet performs a full smooth revolution around the star.
+   - Planet/front/back ordering is handled so the star correctly hides the
+     planet when it is behind the stellar disk.
+   - Star shader includes limb darkening, granulation, atmosphere glow, and
+     irregular starspot morphology.
 
-   This scene is a visual hypothesis viewport:
-   - Star radius is normalised to 1.
-   - Planet radius follows Rp/R★.
-   - Inclination controls apparent transit chord.
-   - Limb darkening sliders affect the rendered stellar disk.
-   - Starspot sliders affect the rendered spot position/size/contrast.
-   - Exomoon controls affect the rendered moon around the planet.
-
-   The archival data are not animated. The CGI model is explanatory.
+   Important:
+   Heavy photometric calculations remain in transitWorker.js.
+   This file is visualisation only.
    ============================================================================ */
 
 const TWO_PI = Math.PI * 2;
@@ -114,10 +111,10 @@ float spotMask(vec3 n, vec3 centre, float radius, float softness){
 vec3 stellarColour(float teff){
   float t = clamp((teff - 2800.0) / 7200.0, 0.0, 1.0);
 
-  vec3 mStar = vec3(1.00, 0.38, 0.14);
-  vec3 kStar = vec3(1.00, 0.57, 0.22);
+  vec3 mStar = vec3(1.00, 0.33, 0.12);
+  vec3 kStar = vec3(1.00, 0.53, 0.20);
   vec3 gStar = vec3(1.00, 0.74, 0.36);
-  vec3 fStar = vec3(0.92, 0.91, 1.00);
+  vec3 fStar = vec3(0.94, 0.91, 1.00);
   vec3 aStar = vec3(0.58, 0.74, 1.00);
 
   vec3 c = mix(mStar, kStar, smoothstep(0.00, 0.25, t));
@@ -145,7 +142,7 @@ void main(){
 
   float brightCell = smoothstep(0.42, 0.68, cells);
   float darkLane = smoothstep(0.28, 0.48, 1.0 - cells);
-  float grain = 0.86 + 0.18 * convection + 0.13 * fine + 0.08 * brightCell - 0.10 * darkLane;
+  float grain = 0.84 + 0.18 * convection + 0.13 * fine + 0.08 * brightCell - 0.10 * darkLane;
 
   vec3 base = stellarColour(uTeff);
   vec3 photosphere = base * limb * grain;
@@ -196,12 +193,12 @@ uniform vec3 uGlowColour;
 
 void main(){
   float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
-  float rim = pow(1.0 - mu, 1.12);
-  float halo = pow(1.0 - mu, 3.25);
+  float rim = pow(1.0 - mu, 1.08);
+  float halo = pow(1.0 - mu, 3.0);
   float pulse = 0.92 + 0.08 * sin(uTime * 0.58);
 
-  vec3 colour = uGlowColour * (0.44 * rim + 0.62 * halo) * pulse;
-  float alpha = clamp(0.20 * rim + 0.30 * halo, 0.0, 0.60);
+  vec3 colour = uGlowColour * (0.44 * rim + 0.66 * halo) * pulse;
+  float alpha = clamp(0.20 * rim + 0.32 * halo, 0.0, 0.64);
 
   gl_FragColor = vec4(colour, alpha);
 }
@@ -227,7 +224,7 @@ void main(){
   float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
   float rim = pow(1.0 - mu, 2.35);
 
-  vec3 colour = uColour * (0.09 + 0.91 * lambert) + uRimColour * rim * 0.33;
+  vec3 colour = uColour * (0.08 + 0.92 * lambert) + uRimColour * rim * 0.36;
 
   gl_FragColor = vec4(colour, uAlpha);
 }
@@ -253,6 +250,37 @@ uniform float uAlpha;
 
 void main(){
   gl_FragColor = vec4(uColour, uAlpha);
+}
+`;
+
+const STARFIELD_VERTEX_SHADER = `
+attribute vec3 aPosition;
+attribute float aSize;
+attribute float aAlpha;
+
+uniform mat4 uView;
+uniform mat4 uProjection;
+uniform float uPixelRatio;
+
+varying float vAlpha;
+
+void main(){
+  vAlpha = aAlpha;
+  gl_Position = uProjection * uView * vec4(aPosition, 1.0);
+  gl_PointSize = aSize * uPixelRatio;
+}
+`;
+
+const STARFIELD_FRAGMENT_SHADER = `
+precision highp float;
+
+varying float vAlpha;
+
+void main(){
+  vec2 p = gl_PointCoord - vec2(0.5);
+  float d = length(p);
+  float a = smoothstep(0.5, 0.0, d) * vAlpha;
+  gl_FragColor = vec4(0.78, 0.88, 1.0, a);
 }
 `;
 
@@ -299,17 +327,17 @@ export class ExoSceneRenderer {
       revision: 0
     };
 
-    this.phase = -0.13;
+    this.orbitPhase = 0.0;
     this.lastFrame = 0;
     this.frameHandle = null;
     this.view = mat4Identity();
     this.projection = mat4Identity();
 
     this.camera = {
-      eye: [0, 0, 5.25],
+      eye: [0, 0, 5.55],
       target: [0, 0, 0],
       up: [0, 1, 0],
-      fov: 38 * Math.PI / 180,
+      fov: 39 * Math.PI / 180,
       near: 0.01,
       far: 100
     };
@@ -324,7 +352,7 @@ export class ExoSceneRenderer {
     this.container.innerHTML = "";
     this.container.style.position = "relative";
     this.container.style.overflow = "hidden";
-    this.container.style.background = "linear-gradient(180deg,#f9fbfe,#edf2f8)";
+    this.container.style.background = "transparent";
 
     this.canvas = document.createElement("canvas");
     this.canvas.setAttribute("aria-label", "Theoretical exoplanet transit CGI model viewport");
@@ -336,16 +364,16 @@ export class ExoSceneRenderer {
     this.overlay.style.position = "absolute";
     this.overlay.style.left = "16px";
     this.overlay.style.bottom = "16px";
-    this.overlay.style.maxWidth = "680px";
+    this.overlay.style.maxWidth = "760px";
     this.overlay.style.padding = "10px 12px";
-    this.overlay.style.border = "1px solid rgba(217,224,234,.92)";
+    this.overlay.style.border = "1px solid rgba(120,145,180,.38)";
     this.overlay.style.borderRadius = "14px";
-    this.overlay.style.background = "rgba(255,255,255,.82)";
-    this.overlay.style.color = "#637083";
+    this.overlay.style.background = "rgba(5,10,18,.46)";
+    this.overlay.style.color = "#dbeafe";
     this.overlay.style.font = "12px Inter, system-ui, sans-serif";
-    this.overlay.style.backdropFilter = "blur(10px)";
-    this.overlay.style.boxShadow = "0 12px 32px rgba(22,34,51,.08)";
-    this.overlay.textContent = "Theoretical CGI model · archival photometry remains static in the plot below";
+    this.overlay.style.backdropFilter = "blur(12px)";
+    this.overlay.style.boxShadow = "0 14px 34px rgba(0,0,0,.22)";
+    this.overlay.textContent = "Theoretical CGI model · full orbit visualisation · photometric calculation handled by the worker";
 
     this.container.append(this.canvas, this.overlay);
     this.initWebGL();
@@ -373,15 +401,17 @@ export class ExoSceneRenderer {
     this.programs.glow = createProgram(gl, GLOW_VERTEX_SHADER, GLOW_FRAGMENT_SHADER);
     this.programs.body = createProgram(gl, BODY_VERTEX_SHADER, BODY_FRAGMENT_SHADER);
     this.programs.line = createProgram(gl, LINE_VERTEX_SHADER, LINE_FRAGMENT_SHADER);
+    this.programs.starfield = createProgram(gl, STARFIELD_VERTEX_SHADER, STARFIELD_FRAGMENT_SHADER);
 
     this.meshes.sphere = createSphereMesh(gl, 96, 56);
     this.meshes.glowSphere = createSphereMesh(gl, 80, 48);
-    this.meshes.orbit = createUnitCircleMesh(gl, 360);
+    this.meshes.orbit = createUnitCircleMesh(gl, 480);
     this.meshes.moonOrbit = createUnitCircleMesh(gl, 180);
     this.meshes.chord = createLineMesh(gl, [
-      -1.08, 0, 0.026,
-       1.08, 0, 0.026
+      -1.08, 0, 0.035,
+       1.08, 0, 0.035
     ]);
+    this.meshes.starfield = createStarfieldMesh(gl, 360);
 
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
@@ -440,10 +470,10 @@ export class ExoSceneRenderer {
 
     const name = this.target?.pl_name || "selected target";
     const host = this.target?.hostname || "host star";
-    const spot = this.params.spotEnabled ? "spot hypothesis on" : "spot off";
-    const moon = this.params.moonEnabled ? "moon hypothesis on" : "moon off";
+    const spot = this.params.spotEnabled ? "starspot hypothesis active" : "starspot off";
+    const moon = this.params.moonEnabled ? "exomoon hypothesis active" : "moon off";
 
-    this.overlay.textContent = `${name} around ${host} · theoretical CGI model · ${spot} · ${moon}`;
+    this.overlay.textContent = `${name} around ${host} · full-orbit theoretical visual · ${spot} · ${moon}`;
   }
 
   resize() {
@@ -472,11 +502,7 @@ export class ExoSceneRenderer {
     const dt = Math.min(0.05, Math.max(0, (time - this.lastFrame) / 1000 || 0));
     this.lastFrame = time;
 
-    this.phase += dt * 0.035;
-
-    if (this.phase > 0.145) {
-      this.phase = -0.145;
-    }
+    this.orbitPhase = wrap01(this.orbitPhase + dt * 0.055);
 
     this.render(seconds);
     this.frameHandle = requestAnimationFrame(next => this.loop(next));
@@ -493,6 +519,7 @@ export class ExoSceneRenderer {
     const glowColour = stellarGlowColour(teff);
     const bodies = this.computeBodyPositions();
 
+    this.drawStarfield(time);
     this.drawOrbitGuides();
     this.drawTransitChord();
 
@@ -525,15 +552,21 @@ export class ExoSceneRenderer {
     const radius = clamp(numberOr(p.rpRs, 0.1), 0.01, 0.28);
     const inclination = numberOr(p.inclinationDeg, 88.5) * Math.PI / 180;
 
-    const visualPhase = clamp(this.phase, -0.145, 0.145);
-    const theta = visualPhase * TWO_PI + Math.PI / 2;
+    const theta = this.orbitPhase * TWO_PI;
+    const orbitRadius = 1.72;
+    const flatten = Math.max(0.12, Math.abs(Math.cos(inclination)) * 3.3);
 
-    const orbitRadius = 1.55;
-    const flatten = Math.max(0.10, Math.abs(Math.cos(inclination)) * 3.2);
+    /*
+      Full orbit geometry:
+      theta = 0       : planet centred in front of star, transit-like position
+      theta = pi      : planet behind star
+      z >= 0          : draw after star, visually in front
+      z < 0           : draw before star, visually behind
+    */
 
     const x = orbitRadius * Math.sin(theta);
     const y = -orbitRadius * Math.cos(theta) * flatten;
-    const z = 0.92 * Math.cos(theta) * Math.sin(inclination);
+    const z = 1.05 * Math.cos(theta) * Math.sin(inclination);
 
     const planet = {
       position: [x, y, z],
@@ -542,13 +575,16 @@ export class ExoSceneRenderer {
     };
 
     const moonEnabled = Boolean(p.moonEnabled);
-    const moonPhase = numberOr(p.moonPhaseDeg, 45) * Math.PI / 180 + visualPhase * TWO_PI * 5.0;
-    const moonDistance = clamp(numberOr(p.moonDistance, 0.55), 0.05, 2.5) * 0.35;
+    const moonPhase =
+      numberOr(p.moonPhaseDeg, 45) * Math.PI / 180 +
+      this.orbitPhase * TWO_PI * 5.0;
+
+    const moonDistance = clamp(numberOr(p.moonDistance, 0.55), 0.05, 2.5) * 0.34;
     const moonRadius = clamp(numberOr(p.moonRadius, 0.025), 0.004, 0.08);
 
     const mx = planet.position[0] + Math.cos(moonPhase) * moonDistance;
-    const my = planet.position[1] + Math.sin(moonPhase) * moonDistance * 0.50;
-    const mz = planet.position[2] + Math.sin(moonPhase) * moonDistance * 0.55;
+    const my = planet.position[1] + Math.sin(moonPhase) * moonDistance * 0.52;
+    const mz = planet.position[2] + Math.sin(moonPhase) * moonDistance * 0.58;
 
     const moon = {
       enabled: moonEnabled,
@@ -558,6 +594,36 @@ export class ExoSceneRenderer {
     };
 
     return { planet, moon };
+  }
+
+  drawStarfield(time) {
+    const gl = this.gl;
+    const loc = useProgram(gl, this.programs.starfield);
+
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+    gl.depthMask(false);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.meshes.starfield.position);
+    gl.enableVertexAttribArray(loc.aPosition);
+    gl.vertexAttribPointer(loc.aPosition, 3, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.meshes.starfield.size);
+    gl.enableVertexAttribArray(loc.aSize);
+    gl.vertexAttribPointer(loc.aSize, 1, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.meshes.starfield.alpha);
+    gl.enableVertexAttribArray(loc.aAlpha);
+    gl.vertexAttribPointer(loc.aAlpha, 1, gl.FLOAT, false, 0, 0);
+
+    setMat4(gl, loc.uView, this.view);
+    setMat4(gl, loc.uProjection, this.projection);
+    setUniform(gl, loc.uPixelRatio, this.pixelRatio);
+
+    gl.drawArrays(gl.POINTS, 0, this.meshes.starfield.vertexCount);
+
+    gl.depthMask(true);
+    gl.disable(gl.BLEND);
   }
 
   drawStar(time, teff) {
@@ -596,7 +662,7 @@ export class ExoSceneRenderer {
     this.drawSphere({
       program: this.programs.glow,
       mesh: this.meshes.glowSphere,
-      model: mat4Scale(mat4Identity(), [1.23, 1.23, 1.23]),
+      model: mat4Scale(mat4Identity(), [1.25, 1.25, 1.25]),
       uniforms: {
         uTime: time,
         uGlowColour: glowColour
@@ -610,7 +676,7 @@ export class ExoSceneRenderer {
   }
 
   drawPlanet(body) {
-    this.drawBody(body, [0.040, 0.054, 0.070], [0.20, 0.46, 0.58], 1);
+    this.drawBody(body, [0.032, 0.046, 0.064], [0.28, 0.58, 0.72], 1);
   }
 
   drawMoon(body) {
@@ -639,8 +705,8 @@ export class ExoSceneRenderer {
   drawOrbitGuides() {
     const p = this.params;
     const inclination = numberOr(p.inclinationDeg, 88.5) * Math.PI / 180;
-    const orbitRadius = 1.55;
-    const flatten = Math.max(0.10, Math.abs(Math.cos(inclination)) * 3.2);
+    const orbitRadius = 1.72;
+    const flatten = Math.max(0.12, Math.abs(Math.cos(inclination)) * 3.3);
 
     const gl = this.gl;
 
@@ -651,7 +717,7 @@ export class ExoSceneRenderer {
     let model = mat4RotateX(mat4Identity(), Math.PI / 2);
     model = mat4Scale(model, [orbitRadius, orbitRadius, flatten]);
 
-    this.drawLineMesh(this.meshes.orbit, model, [0.10, 0.42, 0.58], 0.22);
+    this.drawLineMesh(this.meshes.orbit, model, [0.24, 0.68, 0.88], 0.25);
 
     gl.depthMask(true);
     gl.disable(gl.BLEND);
@@ -664,7 +730,7 @@ export class ExoSceneRenderer {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     gl.depthMask(false);
 
-    this.drawLineMesh(this.meshes.chord, mat4Identity(), [0.15, 0.40, 0.55], 0.20);
+    this.drawLineMesh(this.meshes.chord, mat4Identity(), [0.92, 0.58, 0.18], 0.22);
 
     gl.depthMask(true);
     gl.disable(gl.BLEND);
@@ -672,7 +738,7 @@ export class ExoSceneRenderer {
 
   drawMoonOrbitGuide(planet) {
     const p = this.params;
-    const distance = clamp(numberOr(p.moonDistance, 0.55), 0.05, 2.5) * 0.35;
+    const distance = clamp(numberOr(p.moonDistance, 0.55), 0.05, 2.5) * 0.34;
 
     const gl = this.gl;
 
@@ -681,9 +747,9 @@ export class ExoSceneRenderer {
     gl.depthMask(false);
 
     let model = mat4Translate(mat4Identity(), planet.position);
-    model = mat4Scale(model, [distance, distance * 0.50, distance * 0.55]);
+    model = mat4Scale(model, [distance, distance * 0.52, distance * 0.58]);
 
-    this.drawLineMesh(this.meshes.moonOrbit, model, [0.72, 0.44, 0.10], 0.20);
+    this.drawLineMesh(this.meshes.moonOrbit, model, [0.90, 0.63, 0.23], 0.24);
 
     gl.depthMask(true);
     gl.disable(gl.BLEND);
@@ -733,6 +799,10 @@ export class ExoSceneRenderer {
   }
 }
 
+/* ============================================================================
+   SCENE HELPERS
+   ============================================================================ */
+
 function computeSpotBasis(params) {
   const x = clamp(numberOr(params.spotX, 0.2), -0.88, 0.88);
   const y = clamp(numberOr(params.spotY, 0.1), -0.88, 0.88);
@@ -746,12 +816,16 @@ function computeSpotBasis(params) {
 }
 
 function stellarGlowColour(teff) {
-  if (teff < 3600) return [1.00, 0.22, 0.05];
-  if (teff < 5200) return [1.00, 0.34, 0.06];
-  if (teff < 6500) return [1.00, 0.48, 0.08];
-  if (teff < 8500) return [0.46, 0.72, 1.00];
+  if (teff < 3600) return [1.00, 0.20, 0.05];
+  if (teff < 5200) return [1.00, 0.33, 0.06];
+  if (teff < 6500) return [1.00, 0.50, 0.09];
+  if (teff < 8500) return [0.48, 0.74, 1.00];
   return [0.28, 0.52, 1.00];
 }
+
+/* ============================================================================
+   WEBGL SETUP
+   ============================================================================ */
 
 function createProgram(gl, vertexSource, fragmentSource) {
   const vertex = compileShader(gl, gl.VERTEX_SHADER, vertexSource);
@@ -881,6 +955,38 @@ function createLineMesh(gl, data) {
   };
 }
 
+function createStarfieldMesh(gl, count) {
+  const positions = [];
+  const sizes = [];
+  const alphas = [];
+
+  for (let i = 0; i < count; i++) {
+    const u = seededRandom(i * 13.17 + 1.1);
+    const v = seededRandom(i * 19.31 + 3.7);
+    const w = seededRandom(i * 29.67 + 5.9);
+
+    const theta = TWO_PI * u;
+    const radius = 2.9 + 2.8 * v;
+    const y = -1.8 + 3.6 * w;
+
+    positions.push(
+      radius * Math.cos(theta),
+      y,
+      -2.8 - radius * Math.sin(theta) * 0.35
+    );
+
+    sizes.push(1.0 + 2.2 * seededRandom(i * 7.77 + 8.4));
+    alphas.push(0.22 + 0.55 * seededRandom(i * 5.45 + 4.2));
+  }
+
+  return {
+    position: bufferData(gl, gl.ARRAY_BUFFER, new Float32Array(positions)),
+    size: bufferData(gl, gl.ARRAY_BUFFER, new Float32Array(sizes)),
+    alpha: bufferData(gl, gl.ARRAY_BUFFER, new Float32Array(alphas)),
+    vertexCount: count
+  };
+}
+
 function bufferData(gl, target, data) {
   const buffer = gl.createBuffer();
 
@@ -930,6 +1036,10 @@ function setMat4(gl, location, matrix) {
 function setMat3(gl, location, matrix) {
   if (location) gl.uniformMatrix3fv(location, false, matrix);
 }
+
+/* ============================================================================
+   MATRIX MATH
+   ============================================================================ */
 
 function mat4Identity() {
   return new Float32Array([
@@ -1061,6 +1171,10 @@ function normalMatrix(m) {
   ]);
 }
 
+/* ============================================================================
+   VECTOR + NUMERIC HELPERS
+   ============================================================================ */
+
 function sub3(a, b) {
   return [
     a[0] - b[0],
@@ -1098,4 +1212,15 @@ function numberOr(value, fallback) {
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
+}
+
+function wrap01(value) {
+  let result = value % 1;
+  if (result < 0) result += 1;
+  return result;
+}
+
+function seededRandom(seed) {
+  const x = Math.sin(seed * 12.9898) * 43758.5453123;
+  return x - Math.floor(x);
 }
