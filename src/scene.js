@@ -123,7 +123,7 @@ void main() {
 
   // Use the actual spherical normal as a moving photospheric coordinate.
   // Ultra quality exaggerates fine scales and time evolution for a solar-video feel.
-  float qLevel = clamp(uQuality, 0.0, 1.35);
+  float qLevel = clamp(uQuality, 0.0, 1.80);
   vec3 rSlow = rotateY(n, uTime * (0.090 + 0.035 * qLevel));
   vec3 rMid  = rotateY(n, -uTime * (0.145 + 0.050 * qLevel));
   vec3 rFast = rotateY(n, uTime * (0.260 + 0.080 * qLevel));
@@ -143,11 +143,11 @@ void main() {
   float cells = 0.22 * globalFlow + 0.24 * superGran + 0.30 * granA + 0.17 * granB + 0.07 * granC;
   float brightCell = smoothstep(0.54, 0.76, cells);
   float hotKernel = smoothstep(0.67, 0.90, cells);
-  float darkLane = smoothstep(0.36, 0.62, 1.0 - cells);
-  float filigree = (granC - 0.5) * 2.0;
+  float darkLane = smoothstep(0.34, 0.64, 1.0 - cells);
+  float filigree = (granC - 0.5) * 2.35;
 
   float tempFactor = clamp((uTeff - 3200.0) / 6200.0, 0.0, 1.0);
-  float granulationContrast = mix(0.30, 0.16, tempFactor) * mix(0.65, 1.45, qLevel);
+  float granulationContrast = mix(0.34, 0.18, tempFactor) * mix(0.75, 2.05, qLevel);
 
   float textureTerm =
     1.0
@@ -182,8 +182,8 @@ void main() {
 
   // Mild filmic compression: brighter, hotter, less muddy than the recovery renderer.
   colour = max(colour, vec3(0.0));
-  colour = colour / (colour + vec3(0.42));
-  colour *= 1.42;
+  colour = colour / (colour + vec3(0.30));
+  colour *= 1.68;
 
   gl_FragColor = vec4(colour, 1.0);
 }
@@ -437,10 +437,10 @@ export class ExoSceneRenderer {
 
   qualitySettings() {
     if (this.quality === "ultra") {
-      return { sphereSegments: 224, sphereRings: 126, starCount: 1250, quality: 1.25, glow: 1.48 };
+      return { sphereSegments: 260, sphereRings: 148, starCount: 1650, quality: 1.72, glow: 1.62 };
     }
     if (this.quality === "high") {
-      return { sphereSegments: 164, sphereRings: 96, starCount: 820, quality: 0.95, glow: 1.14 };
+      return { sphereSegments: 184, sphereRings: 106, starCount: 980, quality: 1.12, glow: 1.22 };
     }
     if (this.quality === "low") {
       return { sphereSegments: 72, sphereRings: 42, starCount: 260, quality: 0.42, glow: 0.72 };
@@ -496,7 +496,7 @@ export class ExoSceneRenderer {
     this.lastFrame = time;
 
     // Full orbit is visible but not frantic. The moon has its own relative motion.
-    const orbitSpeed = this.quality === "ultra" ? 0.030 : 0.026;
+    const orbitSpeed = this.quality === "ultra" ? 0.035 : 0.026;
     this.orbitPhase = wrap01(this.orbitPhase + dt * orbitSpeed);
 
     this.render(time * 0.001);
@@ -531,7 +531,7 @@ export class ExoSceneRenderer {
   computeGeometry(time) {
     const p = this.params;
     const projected = projectedVisualGeometry(this.orbitPhase, p, time);
-    const starScale = 1.52;
+    const starScale = this.quality === "ultra" ? 1.58 : 1.52;
     const planetRadius = clamp(numberOr(p.rpRs, 0.1) * starScale, 0.025, 0.42);
     const moonRadius = clamp(numberOr(p.moonRadius, 0.025) * starScale, 0.012, 0.16);
 
@@ -597,7 +597,7 @@ export class ExoSceneRenderer {
     const p = this.params;
     const gl = this.gl;
     const spot = spotCentreFromProjected(p.spotX, p.spotY);
-    const model = mat4Scale(mat4RotateY(mat4Identity(), time * 0.030), [1.50, 1.50, 1.50]);
+    const model = mat4Scale(mat4RotateY(mat4Identity(), time * (this.quality === "ultra" ? 0.070 : 0.035)), [this.quality === "ultra" ? 1.58 : 1.50, this.quality === "ultra" ? 1.58 : 1.50, this.quality === "ultra" ? 1.58 : 1.50]);
 
     this.drawSphere({
       program: this.programs.star,
@@ -631,7 +631,7 @@ export class ExoSceneRenderer {
     this.drawSphere({
       program: this.programs.glow,
       mesh: this.meshes.glowSphere,
-      model: mat4Scale(mat4Identity(), [1.76, 1.76, 1.76]),
+      model: mat4Scale(mat4Identity(), [this.quality === "ultra" ? 1.92 : 1.76, this.quality === "ultra" ? 1.92 : 1.76, this.quality === "ultra" ? 1.92 : 1.76]),
       uniforms: {
         uGlowColour: glowColour,
         uTime: time,

@@ -7,7 +7,7 @@
    - Starspot and exomoon hypothesis terms
    ============================================================================ */
 
-const WORKER_VERSION = "20260517-recovery-03";
+const WORKER_VERSION = "20260517-physics-v11";
 const TWO_PI = Math.PI * 2;
 
 const DEFAULT_PARAMS = Object.freeze({
@@ -92,7 +92,7 @@ async function drainMailbox() {
       if (result?.obsolete) {
         postMessage({ type: "obsolete", revision: job.revision });
       } else if (result) {
-        postMessage({ type: "result", revision: job.revision, mode: result.mode, phaseBuffer: result.phase.buffer, fluxBuffer: result.flux.buffer, metrics: result.metrics, timings: result.timings }, [result.phase.buffer, result.flux.buffer]);
+        postMessage({ type: "result", revision: job.revision, mode: result.mode, phaseBuffer: result.phase.buffer, fluxBuffer: result.flux.buffer, planetOnlyFluxBuffer: result.planetOnlyFlux.buffer, hypothesisDeltaPpmBuffer: result.hypothesisDeltaPpm.buffer, metrics: result.metrics, timings: result.timings }, [result.phase.buffer, result.flux.buffer, result.planetOnlyFlux.buffer, result.hypothesisDeltaPpm.buffer]);
       }
     } catch (error) {
       postMessage({ type: "error", revision: job.revision, message: error instanceof Error ? error.message : String(error) });
@@ -115,9 +115,13 @@ async function solveTransit(job) {
   const surface = buildSurface(params, quality);
   const exposure = determineExposure(state.archive, target, params, quality);
   const flux = new Float32Array(phase.length);
+  const planetOnlyFlux = new Float32Array(phase.length);
+  const hypothesisDeltaPpm = new Float32Array(phase.length);
   const noSpotFlux = new Float32Array(phase.length);
   const planetDepth = new Float32Array(phase.length);
   const moonDepth = new Float32Array(phase.length);
+  const planetOnlyParams = { ...params, spotEnabled: false, moonEnabled: false };
+  const planetOnlySurface = buildSurface(planetOnlyParams, quality);
 
   for (let i = 0; i < phase.length; i++) {
     if (i > 0 && i % quality.chunkSize === 0) {
@@ -126,7 +130,10 @@ async function solveTransit(job) {
       if (shouldAbort(job.revision)) return { obsolete: true };
     }
     const s = evaluateExposure(phase[i], params, surface, exposure);
+    const baseline = evaluateExposure(phase[i], planetOnlyParams, planetOnlySurface, exposure);
     flux[i] = s.flux;
+    planetOnlyFlux[i] = baseline.flux;
+    hypothesisDeltaPpm[i] = (s.flux - baseline.flux) * 1e6;
     noSpotFlux[i] = s.noSpotFlux;
     planetDepth[i] = s.planetDepth;
     moonDepth[i] = s.moonDepth;
@@ -134,8 +141,8 @@ async function solveTransit(job) {
   if (shouldAbort(job.revision)) return { obsolete: true };
 
   const timings = { elapsedMs: performance.now() - started, samples: phase.length, rings: quality.rings, azimuth: quality.azimuth, surfaceSamples: surface.count, exposureSamples: exposure.samples, exposurePhaseWidth: exposure.phaseWidth, geometryMode: params.eccentricity > 1e-5 ? "eccentric" : "circular" };
-  const metrics = diagnostics({ phase, flux, noSpotFlux, planetDepth, moonDepth, archive: state.archive, target, params, timings, mode: quality.mode });
-  return { phase, flux, metrics, timings, mode: quality.mode };
+  const metrics = diagnostics({ phase, flux, planetOnlyFlux, hypothesisDeltaPpm, noSpotFlux, planetDepth, moonDepth, archive: state.archive, target, params, timings, mode: quality.mode });
+  return { phase, flux, planetOnlyFlux, hypothesisDeltaPpm, metrics, timings, mode: quality.mode };
 }
 
 function solverQuality(params) {
@@ -234,23 +241,33 @@ function projectedGeometry(observedPhase, params) {
 }
 function circleMayOverlapStar(x, y, radius) { return Math.hypot(x, y) <= 1 + radius; }
 
-function diagnostics({ phase, flux, noSpotFlux, planetDepth, moonDepth, archive, target, params, timings, mode }) {
+function diagnostics({ phase, flux, planetOnlyFlux, hypothesisDeltaPpm, noSpotFlux, planetDepth, moonDepth, archive, target, params, timings, mode }) {
   const minFlux = minFinite(flux, 1);
   const modelDepthPpm = Math.max(0, (1 - minFlux) * 1e6);
   const maxPlanetDepthPpm = Math.max(0, maxFinite(planetDepth, 0) * 1e6);
   const maxMoonDepthPpm = params.moonEnabled ? Math.max(0, maxFinite(moonDepth, 0) * 1e6) : 0;
   let maxSpotBoostPpm = 0;
   if (params.spotEnabled) for (let i = 0; i < flux.length; i++) { const boost = (flux[i] - noSpotFlux[i]) * 1e6; if (Number.isFinite(boost)) maxSpotBoostPpm = Math.max(maxSpotBoostPpm, boost); }
+  const hypothesisMaxAbsPpm = maxAbsFinite(hypothesisDeltaPpm, 0);
+  const hypothesisRmsPpm = rmsFinite(hypothesisDeltaPpm, 0);
   const residualRmsPpm = residualRms(archive, phase, flux);
   const ootRmsPpm = ootRms(archive, target, params);
   const snr = Number.isFinite(ootRmsPpm) && ootRmsPpm > 0 ? modelDepthPpm / ootRmsPpm : null;
+  const hypothesisFlags = {
+    moonEnabled: Boolean(params.moonEnabled),
+    moonTransiting: Boolean(params.moonEnabled && maxMoonDepthPpm > 1),
+    spotEnabled: Boolean(params.spotEnabled),
+    spotCrossed: Boolean(params.spotEnabled && maxSpotBoostPpm > 1),
+    activeDeltaPpm: hypothesisMaxAbsPpm,
+    text: buildHypothesisText(params, maxMoonDepthPpm, maxSpotBoostPpm, hypothesisMaxAbsPpm)
+  };
   const morphologyFlags = buildFlags({ params, archive, mode, timings, modelDepthPpm, maxMoonDepthPpm, maxSpotBoostPpm, residualRmsPpm, ootRmsPpm, snr });
-  return { residualRmsPpm, ootRmsPpm, snr, phaseShift: params.phaseShift, modelDepthPpm, maxPlanetDepthPpm, maxMoonDepthPpm, maxSpotBoostPpm, geometryMode: timings.geometryMode, exposurePhaseWidth: timings.exposurePhaseWidth, exposureSamples: timings.exposureSamples, morphologyFlags };
+  return { residualRmsPpm, ootRmsPpm, snr, phaseShift: params.phaseShift, modelDepthPpm, maxPlanetDepthPpm, maxMoonDepthPpm, maxSpotBoostPpm, hypothesisMaxAbsPpm, hypothesisRmsPpm, hypothesisFlags, geometryMode: timings.geometryMode, exposurePhaseWidth: timings.exposurePhaseWidth, exposureSamples: timings.exposureSamples, morphologyFlags };
 }
 function residualRms(archive, modelPhase, modelFlux) { if (!archive || archive.points < 3) return null; let sumSq=0,count=0; for(let i=0;i<archive.points;i++){const ph=archive.phase[i],fl=archive.flux[i]; if(!Number.isFinite(ph)||!Number.isFinite(fl))continue; const m=interpolateLinear(modelPhase,modelFlux,ph); if(!Number.isFinite(m))continue; const r=fl-m; sumSq+=r*r; count++;} return count < 3 ? null : Math.sqrt(sumSq/count)*1e6; }
 function ootRms(archive, target, params) { if (!archive || archive.points < 5) return null; const half = estimateTransitHalfDurationPhase(target, params); const threshold = Math.max(0.018, half * 1.35); const values=[]; for(let i=0;i<archive.points;i++){const ph=archive.phase[i], fl=archive.flux[i]; if(Number.isFinite(ph)&&Number.isFinite(fl)&&Math.abs(ph-params.phaseShift)>threshold) values.push(fl);} if(values.length<5) for(let i=0;i<archive.points;i++) if(Number.isFinite(archive.flux[i])) values.push(archive.flux[i]); if(values.length<5) return null; const med=median(values); let ss=0; for(const v of values) ss+=(v-med)**2; return Math.sqrt(ss/values.length)*1e6; }
 function estimateTransitHalfDurationPhase(target, params) { const dur=Number(target.pl_trandur), per=Number(target.pl_orbper); if(Number.isFinite(dur)&&Number.isFinite(per)&&dur>0&&per>0) return clamp((dur/24)/per/2, .005, .15); const a=Math.max(2,params.aRs), rp=Math.max(.001,params.rpRs), inc=degToRad(params.inclinationDeg), b=Math.abs(a*Math.cos(inc)); if(b>=1+rp) return .018; return clamp(Math.sqrt(Math.max(0,(1+rp)**2-b*b))/(TWO_PI*a),.005,.15); }
-function buildFlags({ params, archive, mode, timings, modelDepthPpm, maxMoonDepthPpm, maxSpotBoostPpm, residualRmsPpm, ootRmsPpm, snr }) { const flags=[]; flags.push(mode.includes("high-accuracy") ? "high-accuracy quadrature" : "preview quadrature"); flags.push(`${timings.rings}x${timings.azimuth} disk quadrature`); flags.push("quadratic limb darkening"); flags.push(timings.geometryMode === "eccentric" ? `eccentric geometry e=${params.eccentricity.toFixed(3)}` : "circular geometry"); if(timings.exposureSamples>1 && timings.exposurePhaseWidth>0) flags.push(`${timings.exposureSamples}-sample exposure integration`); else flags.push("instantaneous exposure model"); flags.push(archive?.points>0 ? "archival photometry loaded" : "synthetic fallback data"); if(params.moonEnabled){flags.push("moon hypothesis active"); if(maxMoonDepthPpm>0) flags.push(`moon signal ${Math.round(maxMoonDepthPpm)} ppm`);} if(params.spotEnabled){flags.push("starspot morphology active"); if(maxSpotBoostPpm>0) flags.push(`spot anomaly ${Math.round(maxSpotBoostPpm)} ppm`);} if(Number.isFinite(snr)) flags.push(snr>=10?"high depth contrast":snr>=4?"moderate depth contrast":"low depth contrast"); if(Number.isFinite(residualRmsPpm)&&Number.isFinite(ootRmsPpm)&&ootRmsPpm>0){const ratio=residualRmsPpm/ootRmsPpm; flags.push(ratio<1.25?"residuals near noise floor":ratio<2.5?"moderate residual structure":"visible model mismatch");} if(modelDepthPpm>50000) flags.push("deep transit geometry"); return flags; }
+function buildFlags({ params, archive, mode, timings, modelDepthPpm, maxMoonDepthPpm, maxSpotBoostPpm, residualRmsPpm, ootRmsPpm, snr }) { const flags=[]; flags.push(mode.includes("high-accuracy") ? "high-accuracy quadrature" : "preview quadrature"); flags.push(`${timings.rings}x${timings.azimuth} disk quadrature`); flags.push("quadratic limb darkening"); flags.push(timings.geometryMode === "eccentric" ? `eccentric geometry e=${params.eccentricity.toFixed(3)}` : "circular geometry"); if(timings.exposureSamples>1 && timings.exposurePhaseWidth>0) flags.push(`${timings.exposureSamples}-sample exposure integration`); else flags.push("instantaneous exposure model"); flags.push(archive?.points>0 ? "archival photometry loaded" : "synthetic fallback data"); if(params.moonEnabled){flags.push("moon hypothesis active"); if(maxMoonDepthPpm>1) flags.push(`moon signal ${Math.round(maxMoonDepthPpm)} ppm`); else flags.push("moon active but not transiting");} if(params.spotEnabled){flags.push("starspot morphology active"); if(maxSpotBoostPpm>1) flags.push(`spot anomaly ${Math.round(maxSpotBoostPpm)} ppm`); else flags.push("spot active but not crossed");} if(Number.isFinite(snr)) flags.push(snr>=10?"high depth contrast":snr>=4?"moderate depth contrast":"low depth contrast"); if(Number.isFinite(residualRmsPpm)&&Number.isFinite(ootRmsPpm)&&ootRmsPpm>0){const ratio=residualRmsPpm/ootRmsPpm; flags.push(ratio<1.25?"residuals near noise floor":ratio<2.5?"moderate residual structure":"visible model mismatch");} if(modelDepthPpm>50000) flags.push("deep transit geometry"); return flags; }
 function determinePhaseRange(archive, target, params) { let min=Infinity,max=-Infinity; if(archive&&archive.points>2) for(let i=0;i<archive.points;i++){const p=archive.phase[i]; if(Number.isFinite(p)){min=Math.min(min,p); max=Math.max(max,p);}} if(!Number.isFinite(min)||!Number.isFinite(max)||min===max){const half=estimateTransitHalfDurationPhase(target,params); const span=clamp(half*4.5,.09,.22); min=-span; max=span;} const centre=.5*(min+max), half=Math.max(.045,.5*(max-min)); return {min:centre-half,max:centre+half}; }
 function createPhaseGrid(min,max,count){const n=Math.max(8,count); const arr=new Float32Array(n); for(let i=0;i<n;i++) arr[i]=min+(max-min)*i/(n-1); return arr;}
 function normaliseParams(input){const p={...DEFAULT_PARAMS,...input};return{rpRs:clamp(numberValue(p.rpRs,DEFAULT_PARAMS.rpRs),.001,.35),aRs:clamp(numberValue(p.aRs,DEFAULT_PARAMS.aRs),2,100),inclinationDeg:clamp(numberValue(p.inclinationDeg,DEFAULT_PARAMS.inclinationDeg),0,90),eccentricity:clamp(numberValue(p.eccentricity,DEFAULT_PARAMS.eccentricity),0,.95),omegaDeg:normaliseDegrees(numberValue(p.omegaDeg,DEFAULT_PARAMS.omegaDeg)),u1:clamp(numberValue(p.u1,DEFAULT_PARAMS.u1),0,1),u2:clamp(numberValue(p.u2,DEFAULT_PARAMS.u2),0,1),spotEnabled:Boolean(p.spotEnabled),spotX:clamp(numberValue(p.spotX,DEFAULT_PARAMS.spotX),-.95,.95),spotY:clamp(numberValue(p.spotY,DEFAULT_PARAMS.spotY),-.95,.95),spotRadius:clamp(numberValue(p.spotRadius,DEFAULT_PARAMS.spotRadius),.005,.6),spotContrast:clamp(numberValue(p.spotContrast,DEFAULT_PARAMS.spotContrast),0,.98),moonEnabled:Boolean(p.moonEnabled),moonRadius:clamp(numberValue(p.moonRadius,DEFAULT_PARAMS.moonRadius),.001,.12),moonDistance:clamp(numberValue(p.moonDistance,DEFAULT_PARAMS.moonDistance),.02,3),moonPhaseDeg:normaliseDegrees(numberValue(p.moonPhaseDeg,DEFAULT_PARAMS.moonPhaseDeg)),phaseShift:clamp(numberValue(p.phaseShift,DEFAULT_PARAMS.phaseShift),-.2,.2),exposureIntegration:Boolean(p.exposureIntegration),exposureSamples:clampInteger(p.exposureSamples,1,21,DEFAULT_PARAMS.exposureSamples),exposurePhaseWidth:clamp(numberValue(p.exposurePhaseWidth,DEFAULT_PARAMS.exposurePhaseWidth),0,.05),modelResolution:clampInteger(p.modelResolution,200,3000,DEFAULT_PARAMS.modelResolution),fidelity:p.fidelity==="full"?"full":"preview",visualQuality:typeof p.visualQuality==="string"?p.visualQuality:"balanced"};}
@@ -263,6 +280,17 @@ function interpolateLinear(xArray,yArray,x){const n=xArray.length;if(n<2||x<xArr
 function median(values){const clean=values.filter(Number.isFinite).sort((a,b)=>a-b);if(!clean.length)return NaN;const mid=Math.floor(clean.length/2);return clean.length%2?clean[mid]:.5*(clean[mid-1]+clean[mid]);}
 function minFinite(array,fallback){let v=Infinity;for(const x of array)if(Number.isFinite(x))v=Math.min(v,x);return Number.isFinite(v)?v:fallback;}
 function maxFinite(array,fallback){let v=-Infinity;for(const x of array)if(Number.isFinite(x))v=Math.max(v,x);return Number.isFinite(v)?v:fallback;}
+function maxAbsFinite(array,fallback){let v=0;for(const x of array)if(Number.isFinite(x))v=Math.max(v,Math.abs(x));return Number.isFinite(v)?v:fallback;}
+function rmsFinite(array,fallback){let ss=0,n=0;for(const x of array)if(Number.isFinite(x)){ss+=x*x;n++;}return n?Math.sqrt(ss/n):fallback;}
+function buildHypothesisText(params, moonPpm, spotPpm, deltaPpm){
+  const parts=[];
+  if(params.moonEnabled) parts.push(moonPpm>1?`Moon is photometrically active (${Math.round(moonPpm)} ppm)`:'Moon enabled, but not transiting the stellar disk in this phase window');
+  else parts.push('Moon off');
+  if(params.spotEnabled) parts.push(spotPpm>1?`Spot crossing affects the curve (${Math.round(spotPpm)} ppm)`:'Spot enabled, but the planet is not crossing the active region');
+  else parts.push('Starspot off');
+  if(deltaPpm>1) parts.push(`Difference curve peak ${Math.round(deltaPpm)} ppm`);
+  return parts;
+}
 function numberValue(v,f){const n=Number(v);return Number.isFinite(n)?n:f;}
 function stringValue(v,f=""){if(v===null||v===undefined)return f;const s=String(v).trim();return s||f;}
 function clamp(v,min,max){const n=Number(v);if(!Number.isFinite(n))return min;return Math.min(max,Math.max(min,n));}

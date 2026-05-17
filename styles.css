@@ -254,3 +254,51 @@ select { width: 100%; min-height: 34px; border: 1px solid var(--line-strong); bo
 @media (max-width: 1180px) { body { overflow: auto; } .exointel-app { height: auto; min-height: 100vh; grid-template-rows: auto auto auto; overflow: visible; } .app-header,.workspace { grid-template-columns: 1fr; } .workspace, .left-panel, .right-panel, .main-panel { overflow: visible; } .left-panel { grid-template-rows: auto auto; } .main-panel { grid-template-rows: 440px 320px; } .status-strip { grid-template-columns: repeat(2,minmax(0,1fr)); } .header-actions { justify-content: flex-start; flex-wrap: wrap; } .app-footer { grid-template-columns: 1fr; align-items: flex-start; min-height: 70px; padding: 8px 16px; } .footer-credit { text-align: left; } .footer-status { text-align: left; white-space: normal; } }
 @media (max-width: 680px) { .boot-card { grid-template-columns: 1fr; } .boot-logo { width: 76px; height: 76px; } .boot-logo svg { width: 66px; height: 66px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .001ms !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; } }
+
+/* Physics v11: moon/starspot visibility readout */
+.hypothesis-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.hypothesis-card {
+  min-height: 52px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.hypothesis-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.hypothesis-card strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.hypothesis-card.ok { border-color: var(--ok); }
+.hypothesis-card.ok strong { color: var(--ok); }
+.hypothesis-card.warn { border-color: var(--warn); }
+.hypothesis-card.warn strong { color: var(--warn); }
+.hypothesis-card.muted strong { color: var(--muted); }
+.hypothesis-note {
+  grid-column: 1 / -1;
+  padding: 9px 10px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  font-size: 11px;
+  line-height: 1.38;
+}
+@media (max-width: 680px) {
+  .hypothesis-grid { grid-template-columns: 1fr; }
+}

@@ -1,11 +1,11 @@
-import { ExoSceneRenderer } from "./scene.js?v=20260517-visual-v10";
+import { ExoSceneRenderer } from "./scene.js?v=20260517-physics-v11";
 
 /* ============================================================================
-   ExoIntel-Prime Recovery Main Thread Orchestrator
+   ExoIntel-Prime Main Thread Orchestrator - Physics Visibility v11
    ============================================================================ */
 
 const APP_NAME = "ExoIntel-Prime";
-const WORKER_URL = new URL("./transitWorker.js?v=20260517-visual-v10", import.meta.url);
+const WORKER_URL = new URL("./transitWorker.js?v=20260517-physics-v11", import.meta.url);
 const TARGET_CACHE_URL = "./data/exoplanets.json";
 const LIGHTCURVE_BASE_URL = "./data/lightcurves/";
 const THEME_STORAGE_KEY = "exointel-prime-theme-v5";
@@ -93,8 +93,8 @@ class ExoIntelPrimeApp {
     this.latestTarget = { ...DEFAULT_TARGET };
     this.latestParams = { ...DEFAULT_PARAMS };
     this.archivalCurve = { phase: new Float32Array(0), flux: new Float32Array(0), error: new Float32Array(0), source: "none", points: 0 };
-    this.latestModel = { phase: new Float32Array(0), flux: new Float32Array(0), revision: 0 };
-    this.metrics = { residualRmsPpm: null, ootRmsPpm: null, snr: null, phaseShift: null, modelDepthPpm: null, maxPlanetDepthPpm: null, maxMoonDepthPpm: null, maxSpotBoostPpm: null, morphologyFlags: ["waiting for physics engine"] };
+    this.latestModel = { phase: new Float32Array(0), flux: new Float32Array(0), planetOnlyFlux: new Float32Array(0), hypothesisDeltaPpm: new Float32Array(0), revision: 0 };
+    this.metrics = { residualRmsPpm: null, ootRmsPpm: null, snr: null, phaseShift: null, modelDepthPpm: null, maxPlanetDepthPpm: null, maxMoonDepthPpm: null, maxSpotBoostPpm: null, hypothesisMaxAbsPpm: null, hypothesisRmsPpm: null, hypothesisFlags: { text: ["Waiting for physics engine"] }, morphologyFlags: ["waiting for physics engine"] };
     this.timings = { elapsedMs: null, samples: null, rings: null, azimuth: null, surfaceSamples: null };
     this.theme = localStorage.getItem(THEME_STORAGE_KEY) === "light" ? "light" : "dark";
     this.dom = {};
@@ -150,6 +150,7 @@ class ExoIntelPrimeApp {
               <div class="readout"><span>Moon signal ${help("moonSignal")}</span><strong id="metric-moon">—</strong><small>hypothesis only</small></div>
               <div class="readout"><span>Spot boost ${help("spotBoost")}</span><strong id="metric-spot">—</strong><small>spot anomaly</small></div>
             </div>
+            <p class="section-title">Hypothesis visibility</p><div id="hypothesis-flags" class="hypothesis-grid"></div>
             <p class="section-title">Planet parameters</p><div id="planet-properties" class="property-grid"></div>
             <p class="section-title">Host star parameters</p><div id="star-properties" class="property-grid"></div>
             <p class="section-title">Catalogue / provenance</p><div id="catalogue-properties" class="property-grid"></div>
@@ -175,7 +176,7 @@ class ExoIntelPrimeApp {
   }
 
   cacheDom() {
-    const ids = ["status-worker","status-revision","status-solver","status-fps","footer-utc","footer-message","scene-stage","scene-status","target-search","target-list","target-count","active-target-label","metric-depth-percent","metric-depth-secondary","metric-rprs-proxy","metric-residual-rms","metric-oot-rms","metric-snr","metric-moon","metric-spot","planet-properties","star-properties","catalogue-properties","assumption-strip","plot-status","curve-canvas","button-theme","button-reset","button-high-fidelity"];
+    const ids = ["status-worker","status-revision","status-solver","status-fps","footer-utc","footer-message","scene-stage","scene-status","target-search","target-list","target-count","active-target-label","metric-depth-percent","metric-depth-secondary","metric-rprs-proxy","metric-residual-rms","metric-oot-rms","metric-snr","metric-moon","metric-spot","hypothesis-flags","planet-properties","star-properties","catalogue-properties","assumption-strip","plot-status","curve-canvas","button-theme","button-reset","button-high-fidelity"];
     for (const id of ids) this.dom[toCamel(id)] = document.getElementById(id);
     this.dom.canvas = this.dom.curveCanvas;
     this.dom.ctx = this.dom.canvas.getContext("2d");
@@ -245,16 +246,18 @@ class ExoIntelPrimeApp {
     if (!Number.isFinite(message.revision) || message.revision < this.currentRevision) return;
     const phase = message.phaseBuffer instanceof ArrayBuffer ? new Float32Array(message.phaseBuffer) : new Float32Array(0);
     const flux = message.fluxBuffer instanceof ArrayBuffer ? new Float32Array(message.fluxBuffer) : new Float32Array(0);
-    this.latestModel = { phase, flux, revision: message.revision };
+    const planetOnlyFlux = message.planetOnlyFluxBuffer instanceof ArrayBuffer ? new Float32Array(message.planetOnlyFluxBuffer) : new Float32Array(0);
+    const hypothesisDeltaPpm = message.hypothesisDeltaPpmBuffer instanceof ArrayBuffer ? new Float32Array(message.hypothesisDeltaPpmBuffer) : new Float32Array(0);
+    this.latestModel = { phase, flux, planetOnlyFlux, hypothesisDeltaPpm, revision: message.revision };
     const m = message.metrics || {};
-    this.metrics = { residualRmsPpm: finiteOrNull(m.residualRmsPpm), ootRmsPpm: finiteOrNull(m.ootRmsPpm), snr: finiteOrNull(m.snr), phaseShift: finiteOrNull(m.phaseShift), modelDepthPpm: finiteOrNull(m.modelDepthPpm), maxPlanetDepthPpm: finiteOrNull(m.maxPlanetDepthPpm), maxMoonDepthPpm: finiteOrNull(m.maxMoonDepthPpm), maxSpotBoostPpm: finiteOrNull(m.maxSpotBoostPpm), morphologyFlags: Array.isArray(m.morphologyFlags) ? m.morphologyFlags : [] };
+    this.metrics = { residualRmsPpm: finiteOrNull(m.residualRmsPpm), ootRmsPpm: finiteOrNull(m.ootRmsPpm), snr: finiteOrNull(m.snr), phaseShift: finiteOrNull(m.phaseShift), modelDepthPpm: finiteOrNull(m.modelDepthPpm), maxPlanetDepthPpm: finiteOrNull(m.maxPlanetDepthPpm), maxMoonDepthPpm: finiteOrNull(m.maxMoonDepthPpm), maxSpotBoostPpm: finiteOrNull(m.maxSpotBoostPpm), hypothesisMaxAbsPpm: finiteOrNull(m.hypothesisMaxAbsPpm), hypothesisRmsPpm: finiteOrNull(m.hypothesisRmsPpm), hypothesisFlags: m.hypothesisFlags || { text: [] }, morphologyFlags: Array.isArray(m.morphologyFlags) ? m.morphologyFlags : [] };
     const t = message.timings || {};
     this.timings = { elapsedMs: finiteOrNull(t.elapsedMs), samples: finiteOrNull(t.samples), rings: finiteOrNull(t.rings), azimuth: finiteOrNull(t.azimuth), surfaceSamples: finiteOrNull(t.surfaceSamples) };
     this.setText(this.dom.statusSolver, "model ready");
     this.setText(this.dom.statusRevision, String(message.revision));
     this.setText(this.dom.plotStatus, `${message.mode || "theoretical model"} · ${phase.length.toLocaleString("en-GB")} phase samples`);
     this.setFriendlyStatus("Theoretical model updated. Archival data remain fixed; only the model curve changed.");
-    this.renderMetrics(); this.updateSciencePanels(); this.updateAssumptionStrip(); this.updateScene(); this.draw();
+    this.renderMetrics(); this.renderHypothesisFlags(); this.updateSciencePanels(); this.updateAssumptionStrip(); this.updateScene(); this.draw();
   }
 
   postToWorker(payload, transfer = []) {
@@ -372,6 +375,42 @@ class ExoIntelPrimeApp {
     this.setText(this.dom.metricSpot, formatPpm(this.metrics.maxSpotBoostPpm));
   }
 
+  renderHypothesisFlags() {
+    if (!this.dom.hypothesisFlags) return;
+    const flags = this.metrics.hypothesisFlags || {};
+    const items = [];
+    items.push({
+      label: "Moon",
+      value: flags.moonEnabled ? (flags.moonTransiting ? "transiting" : "not transiting") : "off",
+      tone: flags.moonEnabled ? (flags.moonTransiting ? "ok" : "warn") : "muted"
+    });
+    items.push({
+      label: "Starspot",
+      value: flags.spotEnabled ? (flags.spotCrossed ? "crossed" : "not crossed") : "off",
+      tone: flags.spotEnabled ? (flags.spotCrossed ? "ok" : "warn") : "muted"
+    });
+    items.push({
+      label: "Difference",
+      value: formatPpm(this.metrics.hypothesisMaxAbsPpm),
+      tone: Number(this.metrics.hypothesisMaxAbsPpm) > 1 ? "ok" : "muted"
+    });
+    const extraText = Array.isArray(flags.text) ? flags.text : [];
+    const frag = document.createDocumentFragment();
+    for (const item of items) {
+      const node = document.createElement("div");
+      node.className = `hypothesis-card ${item.tone}`;
+      node.innerHTML = `<span>${escapeHtml(item.label)}</span><strong>${escapeHtml(item.value)}</strong>`;
+      frag.appendChild(node);
+    }
+    if (extraText.length) {
+      const note = document.createElement("div");
+      note.className = "hypothesis-note";
+      note.textContent = extraText.join(" · ");
+      frag.appendChild(note);
+    }
+    this.dom.hypothesisFlags.replaceChildren(frag);
+  }
+
   updateSciencePanels() {
     const t = this.latestTarget;
     this.renderPropertyGrid(this.dom.planetProperties, [["Period", formatUnit(t.pl_orbper,"d",4)], ["Duration", formatUnit(t.pl_trandur,"h",3)], ["Rp/R★", formatMaybe(t.pl_ratror,4)], ["Depth", formatDepthPair(t.pl_trandep)], ["Radius", firstFiniteUnit([t.pl_rade,t.pl_radj],["R⊕","RJ"],[2,3])], ["Mass", firstFiniteUnit([t.pl_bmasse,t.pl_bmassj],["M⊕","MJ"],[2,3])], ["a", formatUnit(t.pl_orbsmax,"AU",4)], ["Inclination", formatUnit(t.pl_orbincl,"°",2)], ["Eccentricity", formatMaybe(t.pl_orbeccen,3)], ["ω", formatUnit(t.pl_orblper,"°",2)], ["Discovery", t.disc_year ? String(t.disc_year) : "—"]]);
@@ -385,15 +424,46 @@ class ExoIntelPrimeApp {
   updateAssumptionStrip() { if (!this.dom.assumptionStrip) return; const flags = [...(this.metrics.morphologyFlags.length ? this.metrics.morphologyFlags : ["baseline transit model"]), this.timings.surfaceSamples ? `${Number(this.timings.surfaceSamples).toLocaleString("en-GB")} surface samples` : null, "ppm + percent depth"].filter(Boolean); const frag = document.createDocumentFragment(); for (const flag of flags.slice(0,9)) { const pill = document.createElement("span"); const lower = String(flag).toLowerCase(); pill.className = "pill"; if (lower.includes("high") || lower.includes("loaded") || lower.includes("quadrature") || lower.includes("residuals near")) pill.classList.add("ok"); else if (lower.includes("moon") || lower.includes("spot") || lower.includes("eccentric") || lower.includes("circular") || lower.includes("exposure")) pill.classList.add("warn"); else if (lower.includes("mismatch") || lower.includes("low")) pill.classList.add("danger"); pill.textContent = flag; frag.appendChild(pill); } this.dom.assumptionStrip.replaceChildren(frag); }
 
   draw() {
-    const canvas = this.dom.canvas, ctx = this.dom.ctx; if (!canvas || !ctx) return;
-    const rect = canvas.getBoundingClientRect(); const dpr = Math.min(window.devicePixelRatio || 1, 1.75); const width = Math.max(2, Math.floor(rect.width * dpr)); const height = Math.max(2, Math.floor(rect.height * dpr)); if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
-    const theme = getComputedStyle(this.root); const plotBg = theme.getPropertyValue("--plot-bg").trim() || "#fff"; const grid = theme.getPropertyValue("--grid").trim() || "#d9e0ea"; const text = theme.getPropertyValue("--text").trim() || "#17202a"; const muted = theme.getPropertyValue("--muted").trim() || "#637083"; const data = theme.getPropertyValue("--data").trim() || "#176b87"; const model = theme.getPropertyValue("--model").trim() || "#c47a00";
-    ctx.clearRect(0,0,width,height); ctx.fillStyle = plotBg; ctx.fillRect(0,0,width,height);
-    const pad = { left: Math.max(60*dpr, width*.06), right: Math.max(20*dpr, width*.02), top: Math.max(26*dpr, height*.12), bottom: Math.max(44*dpr, height*.19) };
+    const canvas = this.dom.canvas, ctx = this.dom.ctx;
+    if (!canvas || !ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+    const width = Math.max(2, Math.floor(rect.width * dpr));
+    const height = Math.max(2, Math.floor(rect.height * dpr));
+    if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
+
+    const theme = getComputedStyle(this.root);
+    const plotBg = theme.getPropertyValue("--plot-bg").trim() || "#0b1220";
+    const grid = theme.getPropertyValue("--grid").trim() || "#243247";
+    const text = theme.getPropertyValue("--text").trim() || "#edf4ff";
+    const muted = theme.getPropertyValue("--muted").trim() || "#9ba9bd";
+    const data = theme.getPropertyValue("--data").trim() || "#50c6df";
+    const model = theme.getPropertyValue("--model").trim() || "#ffb547";
+    const accent = theme.getPropertyValue("--accent").trim() || "#63a7ff";
+    const danger = theme.getPropertyValue("--danger").trim() || "#ff8a80";
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = plotBg;
+    ctx.fillRect(0, 0, width, height);
+
+    const pad = { left: Math.max(60*dpr,width*.06), right: Math.max(20*dpr,width*.02), top: Math.max(26*dpr,height*.11), bottom: Math.max(38*dpr,height*.16) };
+    const diffHeight = Math.max(44*dpr, height * 0.25);
+    const gap = 14*dpr;
+    const mainBottom = Math.max(pad.top + 60*dpr, height - pad.bottom - diffHeight - gap);
+    const diffTop = mainBottom + gap;
+    const diffBottom = height - pad.bottom;
+
     const scale = computeScale(collectPlotValues(this.archivalCurve, this.latestModel));
-    const xMap = phase => pad.left + (phase - scale.minPhase) / Math.max(1e-9, scale.maxPhase - scale.minPhase) * (width - pad.left - pad.right);
-    const yMap = flux => pad.top + (scale.maxFlux - flux) / Math.max(1e-9, scale.maxFlux - scale.minFlux) * (height - pad.top - pad.bottom);
-    drawPlotGrid(ctx,width,height,pad,scale,dpr,{grid,text,muted}); drawArchivalScatter(ctx,this.archivalCurve,xMap,yMap,dpr,data); drawModelCurve(ctx,this.latestModel,xMap,yMap,dpr,model); drawLegend(ctx,pad,dpr,{text,data,model});
+    const xMap = ph => pad.left + (ph-scale.minPhase)/Math.max(1e-9,scale.maxPhase-scale.minPhase)*(width-pad.left-pad.right);
+    const yMap = fl => pad.top + (scale.maxFlux-fl)/Math.max(1e-9,scale.maxFlux-scale.minFlux)*(mainBottom-pad.top);
+
+    drawPlotGrid(ctx,width,height,{...pad,bottom:height-mainBottom},scale,dpr,{grid,text,muted});
+    drawArchivalScatter(ctx,this.archivalCurve,xMap,yMap,dpr,data);
+    drawPlanetOnlyCurve(ctx,this.latestModel,xMap,yMap,dpr,muted);
+    drawModelCurve(ctx,this.latestModel,xMap,yMap,dpr,model);
+    drawLegend(ctx,pad,dpr,{text,data,model,muted});
+    drawDifferencePanel(ctx,this.latestModel,xMap,{ top: diffTop, bottom: diffBottom, left: pad.left, right: width-pad.right },dpr,{ grid, text, muted, accent, danger });
   }
 
   startTelemetryLoop() {
@@ -456,12 +526,31 @@ function inferARs(target,fallback) { const aAu = numberValue(target.pl_orbsmax,n
 function normaliseLightCurvePayload(payload) { const rows = extractLightCurveRows(payload); const pts = []; for (const row of rows) { const phase = numberValue(row.phase ?? row.Phase ?? row.x ?? row[0], NaN); const flux = numberValue(row.flux ?? row.Flux ?? row.normalized_flux ?? row.y ?? row[1], NaN); const error = numberValue(row.error ?? row.flux_err ?? row.err ?? row[2], NaN); if (!Number.isFinite(phase) || !Number.isFinite(flux)) continue; if (phase < -1.5 || phase > 1.5 || flux < .2 || flux > 1.8) continue; pts.push({ phase, flux, error: Number.isFinite(error) ? error : 0 }); } pts.sort((a,b) => a.phase-b.phase); return { phase:new Float32Array(pts.map(p=>p.phase)), flux:new Float32Array(pts.map(p=>p.flux)), error:new Float32Array(pts.map(p=>p.error || 0)), source:stringValue(payload?.source || "local light-curve JSON"), points:pts.length }; }
 function extractLightCurveRows(payload) { if (Array.isArray(payload)) return payload; if (Array.isArray(payload?.points)) return payload.points; if (Array.isArray(payload?.data)) return payload.data; if (Array.isArray(payload?.phase) && Array.isArray(payload?.flux)) { const n = Math.min(payload.phase.length, payload.flux.length); return Array.from({ length:n }, (_,i) => ({ phase: payload.phase[i], flux: payload.flux[i], error: Array.isArray(payload.error) ? payload.error[i] : 0 })); } return []; }
 function generateSyntheticArchive(target, params) { const n=480; const phase=new Float32Array(n), flux=new Float32Array(n), error=new Float32Array(n); const depth=clamp(numberValue(target.pl_trandep, params.rpRs*params.rpRs*1e6)/1e6,.0001,.08); const width=clamp(numberValue(target.pl_trandur,2.5)/24/Math.max(.2,numberValue(target.pl_orbper,3)),.008,.08); for (let i=0;i<n;i++){ const x=-.12+.24*i/(n-1); const transit=Math.exp(-.5*(x/Math.max(.002,width))**2); const noise=.00045*Math.sin(i*12.9898)+.00022*Math.sin(i*4.1414+1.7); phase[i]=x; flux[i]=1-depth*transit+noise; error[i]=.0005; } return { phase, flux, error, source:"synthetic demonstration fallback", points:n }; }
-function collectPlotValues(archive,model) { return { phaseValues:[...archive.phase,...model.phase], fluxValues:[...archive.flux,...model.flux] }; }
+function collectPlotValues(archive,model) { return { phaseValues:[...archive.phase,...model.phase], fluxValues:[...archive.flux,...model.flux,...(model.planetOnlyFlux||[]) ] }; }
 function computeScale(values) { let minPhase=Infinity,maxPhase=-Infinity,minFluxRaw=Infinity,maxFluxRaw=-Infinity; for (const v of values.phaseValues) if (Number.isFinite(v)) { minPhase=Math.min(minPhase,v); maxPhase=Math.max(maxPhase,v); } for (const v of values.fluxValues) if (Number.isFinite(v)) { minFluxRaw=Math.min(minFluxRaw,v); maxFluxRaw=Math.max(maxFluxRaw,v); } if (!Number.isFinite(minPhase)||!Number.isFinite(maxPhase)||minPhase===maxPhase){minPhase=-.12;maxPhase=.12;} if (!Number.isFinite(minFluxRaw)||!Number.isFinite(maxFluxRaw)||minFluxRaw===maxFluxRaw){minFluxRaw=.99;maxFluxRaw=1.001;} const span=Math.max(.0005,maxFluxRaw-minFluxRaw); return { minPhase,maxPhase,minFlux:minFluxRaw-span*.18,maxFlux:maxFluxRaw+span*.15 }; }
 function drawPlotGrid(ctx,width,height,pad,scale,dpr,c){ctx.save();ctx.strokeStyle=c.grid;ctx.lineWidth=1*dpr;for(let i=0;i<=10;i++){const x=pad.left+i/10*(width-pad.left-pad.right);ctx.beginPath();ctx.moveTo(x,pad.top);ctx.lineTo(x,height-pad.bottom);ctx.stroke();}for(let i=0;i<=6;i++){const y=pad.top+i/6*(height-pad.top-pad.bottom);ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(width-pad.right,y);ctx.stroke();}ctx.strokeStyle=c.muted;ctx.strokeRect(pad.left,pad.top,width-pad.left-pad.right,height-pad.top-pad.bottom);ctx.fillStyle=c.muted;ctx.font=`${11*dpr}px Inter, system-ui, sans-serif`;ctx.textAlign="center";ctx.textBaseline="top";for(let i=0;i<=4;i++){const ph=scale.minPhase+i/4*(scale.maxPhase-scale.minPhase);const x=pad.left+i/4*(width-pad.left-pad.right);ctx.fillText(formatNumber(ph,3),x,height-pad.bottom+10*dpr);}ctx.textAlign="right";ctx.textBaseline="middle";for(let i=0;i<=4;i++){const fl=scale.maxFlux-i/4*(scale.maxFlux-scale.minFlux);const y=pad.top+i/4*(height-pad.top-pad.bottom);ctx.fillText(formatNumber(fl,5),pad.left-10*dpr,y);}ctx.fillStyle=c.text;ctx.textAlign="left";ctx.textBaseline="top";ctx.fillText("Orbital phase",pad.left,height-20*dpr);ctx.save();ctx.translate(18*dpr,height*.5);ctx.rotate(-Math.PI/2);ctx.fillText("Normalised flux",0,0);ctx.restore();ctx.restore();}
 function drawArchivalScatter(ctx,archive,xMap,yMap,dpr,colour){ctx.save();ctx.fillStyle=alphaColour(colour,.55);const r=Math.max(1.2,1.45*dpr);for(let i=0;i<archive.phase.length;i++){ctx.beginPath();ctx.arc(xMap(archive.phase[i]),yMap(archive.flux[i]),r,0,Math.PI*2);ctx.fill();}ctx.restore();}
 function drawModelCurve(ctx,model,xMap,yMap,dpr,colour){if(model.phase.length<2)return;ctx.save();ctx.beginPath();for(let i=0;i<model.phase.length;i++){const x=xMap(model.phase[i]);const y=yMap(model.flux[i]);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.strokeStyle=colour;ctx.lineWidth=Math.max(2,2.35*dpr);ctx.stroke();ctx.restore();}
-function drawLegend(ctx,pad,dpr,c){ctx.save();ctx.font=`${12*dpr}px Inter, system-ui, sans-serif`;ctx.textBaseline="middle";const y=pad.top-10*dpr,x0=pad.left;ctx.fillStyle=c.data;ctx.beginPath();ctx.arc(x0,y,4*dpr,0,Math.PI*2);ctx.fill();ctx.fillStyle=c.text;ctx.fillText("archival photometry",x0+10*dpr,y);const x1=x0+172*dpr;ctx.strokeStyle=c.model;ctx.lineWidth=3*dpr;ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x1+22*dpr,y);ctx.stroke();ctx.fillStyle=c.text;ctx.fillText("theoretical model",x1+32*dpr,y);ctx.restore();}
+function drawPlanetOnlyCurve(ctx,model,xMap,yMap,dpr,colour){if(!model.planetOnlyFlux||model.planetOnlyFlux.length<2||model.planetOnlyFlux.length!==model.phase.length)return;ctx.save();ctx.beginPath();for(let i=0;i<model.phase.length;i++){const x=xMap(model.phase[i]);const y=yMap(model.planetOnlyFlux[i]);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.setLineDash([6*dpr,4*dpr]);ctx.strokeStyle=alphaColour(colour,.72);ctx.lineWidth=Math.max(1,1.25*dpr);ctx.stroke();ctx.restore();}
+function drawDifferencePanel(ctx,model,xMap,box,dpr,c){
+  const delta=model.hypothesisDeltaPpm;
+  ctx.save();
+  ctx.strokeStyle=alphaColour(c.grid,.65);ctx.lineWidth=1*dpr;
+  ctx.strokeRect(box.left,box.top,box.right-box.left,box.bottom-box.top);
+  ctx.font=`${10.5*dpr}px Inter, system-ui, sans-serif`;ctx.fillStyle=c.muted;ctx.textAlign="left";ctx.textBaseline="bottom";
+  ctx.fillText("hypothesis difference: active model − planet-only model [ppm]",box.left,box.top-5*dpr);
+  if(!delta||delta.length<2||delta.length!==model.phase.length){ctx.fillStyle=c.muted;ctx.fillText("waiting for worker difference curve",box.left+10*dpr,(box.top+box.bottom)/2);ctx.restore();return;}
+  let maxAbs=0;for(const v of delta)if(Number.isFinite(v))maxAbs=Math.max(maxAbs,Math.abs(v));
+  const span=Math.max(5,Math.ceil(maxAbs/10)*10);
+  const y0=(box.top+box.bottom)/2;
+  const yMap=v=>y0-(v/span)*(box.bottom-box.top)*0.42;
+  ctx.strokeStyle=alphaColour(c.grid,.75);ctx.beginPath();ctx.moveTo(box.left,y0);ctx.lineTo(box.right,y0);ctx.stroke();
+  ctx.fillStyle=c.muted;ctx.textAlign="right";ctx.textBaseline="middle";ctx.fillText(`+${span} ppm`,box.left-8*dpr,box.top+8*dpr);ctx.fillText("0",box.left-8*dpr,y0);ctx.fillText(`-${span} ppm`,box.left-8*dpr,box.bottom-8*dpr);
+  ctx.beginPath();for(let i=0;i<model.phase.length;i++){const x=xMap(model.phase[i]);const y=yMap(delta[i]);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.strokeStyle=maxAbs>1?c.accent:alphaColour(c.muted,.65);ctx.lineWidth=Math.max(1.5,1.8*dpr);ctx.stroke();
+  ctx.fillStyle=maxAbs>1?c.accent:c.muted;ctx.textAlign="right";ctx.textBaseline="top";ctx.fillText(`peak |Δ| ${Math.round(maxAbs).toLocaleString("en-GB")} ppm`,box.right-8*dpr,box.top+7*dpr);
+  ctx.restore();
+}
+function drawLegend(ctx,pad,dpr,c){ctx.save();ctx.font=`${12*dpr}px Inter, system-ui, sans-serif`;ctx.textBaseline="middle";const y=pad.top-10*dpr,x0=pad.left;ctx.fillStyle=c.data;ctx.beginPath();ctx.arc(x0,y,4*dpr,0,Math.PI*2);ctx.fill();ctx.fillStyle=c.text;ctx.fillText("archival photometry",x0+10*dpr,y);const x1=x0+172*dpr;ctx.strokeStyle=c.model;ctx.lineWidth=3*dpr;ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x1+22*dpr,y);ctx.stroke();ctx.fillStyle=c.text;ctx.fillText("active model",x1+32*dpr,y);const x2=x1+150*dpr;ctx.strokeStyle=alphaColour(c.muted,.72);ctx.setLineDash([6*dpr,4*dpr]);ctx.beginPath();ctx.moveTo(x2,y);ctx.lineTo(x2+22*dpr,y);ctx.stroke();ctx.setLineDash([]);ctx.fillText("planet-only",x2+32*dpr,y);ctx.restore();}
 function serialiseTarget(t){return{pl_name:t.pl_name,hostname:t.hostname,pl_orbper:numberValue(t.pl_orbper,3),pl_trandur:numberValue(t.pl_trandur,2.5),pl_trandep:numberValue(t.pl_trandep,10000),pl_orbeccen:numberValue(t.pl_orbeccen,0),pl_orblper:numberValue(t.pl_orblper,90),st_teff:numberValue(t.st_teff,5772),st_rad:numberValue(t.st_rad,1),st_mass:numberValue(t.st_mass,1)};}
 function toCamel(id){return id.replace(/-([a-z])/g,(_,c)=>c.toUpperCase());}
 function normaliseDegrees(deg){let v=Number(deg);if(!Number.isFinite(v))return 0;v%=360;if(v<0)v+=360;return v;}
