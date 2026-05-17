@@ -240,84 +240,11 @@ exolight-transit-lab/
 │   └── exointel-prime-dashboard.png
 │
 └── docs/
-    ├── ExoIntel_Prime_User_Guide.tex
     └── ExoIntel_Prime_User_Guide.pdf
 ```
 
 ---
 
-## Main files
-
-### `index.html`
-
-The entry file. It contains:
-
-* metadata;
-* SEO/Open Graph tags;
-* loading screen markup;
-* stylesheet link;
-* module script entry.
-
----
-
-### `styles.css`
-
-Global page styling. It controls:
-
-* boot screen;
-* loading progress bar;
-* no-script fallback;
-* scrollbars;
-* base typography;
-* accessibility focus states.
-
-Most of the full dashboard UI styling is injected by `src/app.js`.
-
----
-
-### `src/app.js`
-
-The main browser orchestrator. It handles:
-
-* cinematic boot sequence;
-* target archive loading;
-* interface rendering;
-* theme switching;
-* canvas plot drawing;
-* control events;
-* worker communication;
-* revision tracking;
-* stale worker-result rejection.
-
----
-
-### `src/transitWorker.js`
-
-The physics worker. It handles:
-
-* numerical light-curve generation;
-* finite exposure integration;
-* circular/eccentric projected geometry;
-* limb-darkened disk sampling;
-* starspot intensity modification;
-* optional exomoon occultation;
-* residual and OOT diagnostics;
-* latest-state mailbox execution.
-
----
-
-### `src/scene.js`
-
-The WebGL scene renderer. It handles:
-
-* animated star rendering;
-* stellar temperature colour mapping;
-* procedural photospheric texture;
-* planet and moon visualisation;
-* visual quality modes;
-* synchronisation with the current target and model state.
-
----
 
 ## Running locally
 
