@@ -445,18 +445,16 @@ Planned future upgrades include:
 
 ---
 
-## Author
-
-**Biswajit Jana**
-© 2026
-
----
-
 ## Licence and reuse
 
-This repository is intended as a scientific visualisation and educational research-communication project. If you reuse or modify the code, please keep appropriate attribution to the original author.
+This project is developed by **Biswajit Jana** as a scientific visualisation, education, and research-communication platform.
 
-For custom data experiments, fork the repository rather than modifying the live deployment directly.
+You are welcome to study the code, fork the repository, and use it for learning or non-commercial scientific demonstration, provided that appropriate credit is given to the original author.
 
-```
-```
+Please do not present modified versions as the original ExoIntel-Prime project without clear attribution.
+
+For custom data experiments, fork the repository and run your own version rather than attempting to modify the live deployment.
+
+**Author:** Biswajit Jana  
+**Project:** ExoIntel-Prime / ExoLight Transit Lab  
+**Year:** © 2026
