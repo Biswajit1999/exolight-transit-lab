@@ -1,3 +1,5 @@
+import { ExoSceneRenderer } from "./scene.js";
+
 /* ============================================================================
    ExoIntel-Prime
    Main Thread Orchestrator
@@ -8,11 +10,7 @@
    - Send only the latest parameter snapshot to the worker.
    - Discard stale worker replies by revision number.
    - Render static archival data + latest theoretical model.
-   - Display worker-returned scientific diagnostics.
-
-   This file deliberately keeps the main thread light. Heavy transit synthesis,
-   spot mapping, residual metrics, and future Mandel/Agol logic belong inside
-   src/transitWorker.js.
+   - Mount and update the lightweight WebGL CGI scene.
    ============================================================================ */
 
 const APP_NAME = "ExoIntel-Prime";
@@ -61,6 +59,7 @@ class ExoIntelPrimeApp {
   constructor() {
     this.root = document.getElementById("app") || document.body;
     this.worker = null;
+    this.scene = null;
 
     this.currentRevision = 0;
     this.lastSentRevision = 0;
@@ -73,6 +72,7 @@ class ExoIntelPrimeApp {
 
     this.targets = [];
     this.activeTarget = null;
+
     this.archivalCurve = {
       phase: new Float32Array(0),
       flux: new Float32Array(0),
@@ -109,6 +109,7 @@ class ExoIntelPrimeApp {
     this.cacheDom();
     this.bindUi();
     this.initWorker();
+    this.initScene();
     this.startTelemetryLoop();
 
     await this.loadTargetCache();
@@ -128,7 +129,6 @@ class ExoIntelPrimeApp {
         --bg:#f5f7fb;
         --surface:#ffffff;
         --surface-2:#f0f3f8;
-        --surface-3:#e8edf5;
         --line:#d9e0ea;
         --line-strong:#b8c3d2;
         --text:#17202a;
@@ -146,9 +146,7 @@ class ExoIntelPrimeApp {
         --mono:"SFMono-Regular","Cascadia Mono","Roboto Mono",Consolas,monospace;
       }
 
-      *{
-        box-sizing:border-box;
-      }
+      *{ box-sizing:border-box; }
 
       html,
       body{
@@ -572,7 +570,7 @@ class ExoIntelPrimeApp {
         display:block;
       }
 
-      .scene-placeholder{
+      .scene-panel{
         min-height:0;
         display:grid;
         grid-template-rows:42px minmax(0,1fr);
@@ -582,26 +580,8 @@ class ExoIntelPrimeApp {
         min-height:0;
         position:relative;
         background:
-          radial-gradient(circle at 52% 44%,rgba(196,122,0,.20),transparent 28%),
-          radial-gradient(circle at 50% 50%,#ffffff 0%,#f7d58f 10%,#c47a00 22%,transparent 23%),
+          radial-gradient(circle at 52% 44%,rgba(196,122,0,.14),transparent 32%),
           linear-gradient(180deg,#f9fbfe,#edf2f8);
-      }
-
-      .scene-note{
-        position:absolute;
-        left:16px;
-        bottom:16px;
-        max-width:580px;
-        padding:10px 12px;
-        border:1px solid var(--line);
-        border-radius:14px;
-        background:rgba(255,255,255,.82);
-        color:var(--muted);
-        font-size:12px;
-      }
-
-      .scene-note strong{
-        color:var(--text);
       }
 
       .app-footer{
@@ -836,17 +816,12 @@ class ExoIntelPrimeApp {
         </aside>
 
         <main class="main-panel">
-          <section class="card scene-placeholder">
+          <section class="card scene-panel">
             <div class="card-header">
-              <h2>CGI model viewport</h2>
-              <span>3D renderer placeholder · shader scene returns in next file</span>
+              <h2>CGI theoretical model viewport</h2>
+              <span id="scene-status">mounting renderer</span>
             </div>
-            <div class="scene-stage">
-              <div class="scene-note">
-                <strong>Pedagogical mode:</strong>
-                the 3D model is a theoretical hypothesis. The archival photometry below stays fixed while sliders ask the worker for a new theoretical curve.
-              </div>
-            </div>
+            <div id="scene-stage" class="scene-stage"></div>
           </section>
 
           <section class="card plot-card">
@@ -874,6 +849,9 @@ class ExoIntelPrimeApp {
     this.dom.solverStatus = document.getElementById("status-solver");
     this.dom.fpsStatus = document.getElementById("status-fps");
     this.dom.footerMessage = document.getElementById("footer-message");
+
+    this.dom.sceneStage = document.getElementById("scene-stage");
+    this.dom.sceneStatus = document.getElementById("scene-status");
 
     this.dom.targetSearch = document.getElementById("target-search");
     this.dom.targetList = document.getElementById("target-list");
@@ -910,6 +888,7 @@ class ExoIntelPrimeApp {
       input.addEventListener(eventName, () => {
         this.syncParamsFromControls();
         this.syncControlOutputs();
+        this.updateScene();
         this.issueParameterRevision(`control:${key}`);
       });
     }
@@ -918,6 +897,7 @@ class ExoIntelPrimeApp {
       this.latestParams = { ...DEFAULT_PARAMS };
       this.syncControlsFromParams();
       this.syncControlOutputs();
+      this.updateScene();
       this.issueParameterRevision("reset");
     });
 
@@ -938,7 +918,10 @@ class ExoIntelPrimeApp {
 
   initWorker() {
     try {
-      this.worker = new Worker(WORKER_URL, { type: "module", name: "ExoIntelTransitWorker" });
+      this.worker = new Worker(WORKER_URL, {
+        type: "module",
+        name: "ExoIntelTransitWorker"
+      });
     } catch (error) {
       this.setWorkerFailed(`Worker could not be constructed: ${error.message}`);
       return;
@@ -960,6 +943,31 @@ class ExoIntelPrimeApp {
     });
 
     this.setText(this.dom.workerStatus, "starting");
+  }
+
+  initScene() {
+    this.scene = new ExoSceneRenderer({
+      container: this.dom.sceneStage,
+      onStatus: message => {
+        this.setText(this.dom.sceneStatus, message);
+      },
+      onWarning: message => {
+        this.setText(this.dom.sceneStatus, message);
+      }
+    });
+
+    this.scene.mount();
+    this.updateScene();
+  }
+
+  updateScene() {
+    if (!this.scene) return;
+
+    this.scene.updateState({
+      params: this.latestParams,
+      target: this.latestTarget,
+      model: this.latestModel
+    });
   }
 
   handleWorkerMessage(message) {
@@ -1048,6 +1056,7 @@ class ExoIntelPrimeApp {
     this.setText(this.dom.footerMessage, `Latest accepted model revision ${message.revision}; stale worker replies are discarded.`);
 
     this.renderMetrics();
+    this.updateScene();
     this.draw();
   }
 
@@ -1288,6 +1297,7 @@ class ExoIntelPrimeApp {
     this.latestParams = targetToParams(target, this.latestParams);
     this.syncControlsFromParams();
     this.syncControlOutputs();
+    this.updateScene();
 
     await this.loadArchivalLightCurve(target);
     this.sendWorkerDataContext();
@@ -1377,10 +1387,8 @@ class ExoIntelPrimeApp {
     const yMap = flux => pad.top + (scale.maxFlux - flux) / Math.max(1e-9, scale.maxFlux - scale.minFlux) * (height - pad.top - pad.bottom);
 
     drawPlotGrid(ctx, width, height, pad, scale, dpr);
-
     drawArchivalScatter(ctx, this.archivalCurve, xMap, yMap, dpr);
     drawModelCurve(ctx, this.latestModel, xMap, yMap, dpr);
-
     drawLegend(ctx, width, pad, dpr);
   }
 
