@@ -1,11 +1,11 @@
-import { ExoSceneRenderer } from "./scene.js?v=20260517-webgl-v8";
+import { ExoSceneRenderer } from "./scene.js?v=20260517-visual-v10";
 
 /* ============================================================================
    ExoIntel-Prime Recovery Main Thread Orchestrator
    ============================================================================ */
 
 const APP_NAME = "ExoIntel-Prime";
-const WORKER_URL = new URL("./transitWorker.js?v=20260517-webgl-v8", import.meta.url);
+const WORKER_URL = new URL("./transitWorker.js?v=20260517-visual-v10", import.meta.url);
 const TARGET_CACHE_URL = "./data/exoplanets.json";
 const LIGHTCURVE_BASE_URL = "./data/lightcurves/";
 const THEME_STORAGE_KEY = "exointel-prime-theme-v5";
@@ -161,7 +161,7 @@ class ExoIntelPrimeApp {
         </main>
         <aside class="right-panel">
           <section class="card control-card"><div class="card-header"><h2>Model controls</h2><span>live what-if physics</span></div><div class="control-list" id="control-list">
-            <div class="control-group"><h3>Rendering</h3>${selectControl("visualQuality", "Visual quality", [["low", "Low"], ["balanced", "Balanced"], ["ultra", "Ultra"]], this.latestParams.visualQuality, "visualQuality")}</div>
+            <div class="control-group"><h3>Rendering</h3>${selectControl("visualQuality", "Visual quality", [["low", "Low"], ["balanced", "Balanced"], ["high", "High"], ["ultra", "Ultra"]], this.latestParams.visualQuality, "visualQuality")}</div>
             <div class="control-group"><h3>Planet and orbit</h3>${rangeControl("rpRs", "Radius ratio Rp/R★", 0.01, 0.25, 0.001, this.latestParams.rpRs, 3)}${rangeControl("aRs", "Scaled distance a/R★", 2, 60, 0.1, this.latestParams.aRs, 1)}${rangeControl("inclinationDeg", "Inclination", 75, 90, 0.01, this.latestParams.inclinationDeg, 2, "°")}${readonlyControl("eccentricity-display", "Catalogue eccentricity", "—", "eccentricity")}<div class="disabled-note">Eccentricity and ω are read from the catalogue and passed to the worker model when available.</div></div>
             <div class="control-group"><h3>Stellar atmosphere</h3>${rangeControl("u1", "Quadratic limb u1", 0, 1, 0.01, this.latestParams.u1, 2)}${rangeControl("u2", "Quadratic limb u2", 0, 1, 0.01, this.latestParams.u2, 2)}</div>
             <div class="control-group"><h3>Starspot morphology</h3>${toggleControl("spotEnabled", "Enable starspot", this.latestParams.spotEnabled)}${rangeControl("spotX", "Spot x-position", -0.9, 0.9, 0.01, this.latestParams.spotX, 2)}${rangeControl("spotY", "Spot y-position", -0.9, 0.9, 0.01, this.latestParams.spotY, 2)}${rangeControl("spotRadius", "Spot radius", 0.02, 0.3, 0.005, this.latestParams.spotRadius, 3)}${rangeControl("spotContrast", "Spot contrast", 0.05, 0.95, 0.01, this.latestParams.spotContrast, 2)}</div>
@@ -215,7 +215,7 @@ class ExoIntelPrimeApp {
     this.worker.addEventListener("message", event => this.handleWorkerMessage(event.data));
     this.worker.addEventListener("error", event => this.setWorkerFailed(`Physics engine error: ${event.message || "unknown error"}`));
     this.worker.addEventListener("messageerror", () => this.setWorkerFailed("Physics engine message could not be read."));
-    this.postToWorker({ type: "configure", appName: APP_NAME, protocol: "latest-state-mailbox-v3" });
+    this.postToWorker({ type: "configure", appName: APP_NAME, protocol: "latest-state-mailbox-v10" });
     this.setText(this.dom.statusWorker, "starting");
   }
 

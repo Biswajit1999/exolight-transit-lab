@@ -2,14 +2,14 @@
    ExoIntel-Prime
    src/scene.js
    ---------------------------------------------------------------------------
-   Ultra WebGL scene renderer for the ExoLight Transit Lab.
+   Ultra-realistic WebGL scene renderer for the ExoLight Transit Lab.
 
    This version is intentionally heavier than the recovery Canvas renderer:
    - true WebGL sphere rendering
    - procedural GLSL stellar granulation
    - animated rotating photosphere
    - temperature-based stellar colour
-   - soft coronal atmosphere / glow shell
+   - subtle non-flat coronal atmosphere / glow shell
    - shaded planet and moon spheres
    - no cartoon orbit rings or dotted moon guides
    - stable public API for the current src/app.js
@@ -91,11 +91,11 @@ float noise(vec3 p) {
 
 float fbm(vec3 p) {
   float v = 0.0;
-  float a = 0.54;
-  for (int i = 0; i < 6; i++) {
+  float a = 0.56;
+  for (int i = 0; i < 7; i++) {
     v += a * noise(p);
-    p = p * 2.08 + vec3(4.17, 8.31, 2.73);
-    a *= 0.48;
+    p = p * 2.03 + vec3(4.17, 8.31, 2.73);
+    a *= 0.49;
   }
   return v;
 }
@@ -109,65 +109,83 @@ vec3 rotateY(vec3 p, float a) {
 float spotMask(vec3 n, vec3 centre, float radius, float contrast) {
   vec3 c = normalize(centre);
   float d = length(n - c);
-  float edgeNoise = fbm(n * 42.0 + vec3(2.1, 5.3, 7.4));
-  float ragged = radius * (0.78 + 0.34 * edgeNoise);
-  float penumbra = 1.0 - smoothstep(ragged, ragged + radius * 0.45, d);
-  float umbra = 1.0 - smoothstep(ragged * 0.34, ragged * 0.34 + radius * 0.16, d);
-  return clamp((0.52 * penumbra + 0.72 * umbra) * contrast, 0.0, 0.95);
+  float edgeNoise = fbm(n * 70.0 + vec3(2.1, 5.3, 7.4));
+  float smallNoise = fbm(n * 155.0 + vec3(9.3, 1.4, 5.6));
+  float ragged = radius * (0.76 + 0.30 * edgeNoise + 0.12 * smallNoise);
+  float penumbra = 1.0 - smoothstep(ragged, ragged + radius * 0.50, d);
+  float umbra = 1.0 - smoothstep(ragged * 0.30, ragged * 0.30 + radius * 0.18, d);
+  float pores = smoothstep(0.62, 0.92, fbm(n * 210.0 + vec3(4.7, 8.8, 2.2)));
+  return clamp((0.42 * penumbra + 0.72 * umbra + 0.08 * pores * penumbra) * contrast, 0.0, 0.96);
 }
 
 void main() {
   vec3 n = normalize(vNormal);
 
-  // Rotate the physical texture around the sphere so the star looks alive.
-  vec3 rn = rotateY(n, uTime * 0.075);
-  vec3 rnFast = rotateY(n, -uTime * 0.14);
+  // Use the actual spherical normal as a moving photospheric coordinate.
+  // Ultra quality exaggerates fine scales and time evolution for a solar-video feel.
+  float qLevel = clamp(uQuality, 0.0, 1.35);
+  vec3 rSlow = rotateY(n, uTime * (0.090 + 0.035 * qLevel));
+  vec3 rMid  = rotateY(n, -uTime * (0.145 + 0.050 * qLevel));
+  vec3 rFast = rotateY(n, uTime * (0.260 + 0.080 * qLevel));
 
-  // View-space limb darkening. Real stars are not uniform disks.
+  // Limb darkening in view space; this makes the disk read as a sphere.
   float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
-  float q = 1.0 - mu;
-  float limb = clamp(1.0 - uU1 * q - uU2 * q * q, 0.02, 1.28);
+  float oneMinusMu = 1.0 - mu;
+  float limb = clamp(1.0 - uU1 * oneMinusMu - uU2 * oneMinusMu * oneMinusMu, 0.03, 1.24);
 
-  // Multi-scale photospheric granulation: large evolving patches + fine cells.
-  float large = fbm(rn * 4.0 + vec3(uTime * 0.020, -uTime * 0.011, uTime * 0.015));
-  float mid = fbm(rnFast * 14.0 + vec3(-uTime * 0.060, uTime * 0.038, -uTime * 0.021));
-  float fine = fbm(rn * 42.0 + vec3(uTime * 0.115, -uTime * 0.087, uTime * 0.049));
-  float ultra = fbm(rnFast * 92.0 + vec3(-uTime * 0.18, uTime * 0.12, -uTime * 0.08));
+  // Solar-style nested cellular texture: broad convection, fine granules, and dark lanes.
+  float globalFlow = fbm(rSlow * 2.8 + vec3(uTime * 0.018, -uTime * 0.011, uTime * 0.014));
+  float superGran = fbm(rSlow * 6.5 + vec3(-uTime * 0.035, uTime * 0.022, -uTime * 0.018));
+  float granA = fbm(rMid * 24.0 + vec3(uTime * 0.125, -uTime * 0.082, uTime * 0.055));
+  float granB = fbm(rFast * 62.0 + vec3(-uTime * 0.260, uTime * 0.190, -uTime * 0.140));
+  float granC = fbm(rFast * 138.0 + vec3(uTime * 0.420, -uTime * 0.310, uTime * 0.220));
 
-  float cells = 0.38 * large + 0.34 * mid + 0.18 * fine + 0.10 * ultra;
-  float brightCell = smoothstep(0.50, 0.78, cells);
-  float darkLane = smoothstep(0.34, 0.58, 1.0 - cells);
+  float cells = 0.22 * globalFlow + 0.24 * superGran + 0.30 * granA + 0.17 * granB + 0.07 * granC;
+  float brightCell = smoothstep(0.54, 0.76, cells);
+  float hotKernel = smoothstep(0.67, 0.90, cells);
+  float darkLane = smoothstep(0.36, 0.62, 1.0 - cells);
+  float filigree = (granC - 0.5) * 2.0;
 
-  float tempFactor = clamp((uTeff - 3200.0) / 5200.0, 0.0, 1.0);
-  float contrast = mix(0.20, 0.13, tempFactor);
-  contrast *= mix(0.75, 1.18, uQuality);
+  float tempFactor = clamp((uTeff - 3200.0) / 6200.0, 0.0, 1.0);
+  float granulationContrast = mix(0.30, 0.16, tempFactor) * mix(0.65, 1.45, qLevel);
 
-  float granulation = 1.0 + contrast * (0.90 * brightCell - 0.75 * darkLane + (cells - 0.5) * 0.90);
+  float textureTerm =
+    1.0
+    + granulationContrast * (0.78 * brightCell + 0.34 * hotKernel - 0.85 * darkLane)
+    + granulationContrast * 0.16 * filigree;
 
-  // A directional component gives a stronger 3-D volume without making the star
-  // look like an externally lit rock. It remains mostly self-luminous.
-  vec3 light = normalize(vec3(-0.45, 0.22, 0.86));
-  float volume = 0.74 + 0.26 * max(dot(n, light), 0.0);
-  float centerGlow = 0.92 + 0.18 * pow(mu, 0.65);
+  // Self-luminous volume. Directional term is subtle; the star must not look like a planet lit by a lamp.
+  vec3 virtualViewLight = normalize(vec3(-0.35, 0.18, 0.92));
+  float volume = 0.86 + 0.14 * max(dot(n, virtualViewLight), 0.0);
+  float centre = 0.90 + 0.23 * pow(mu, 0.55);
 
-  vec3 colour = mix(uCoolColour, uBaseColour, limb);
-  colour = mix(colour, uHotColour, brightCell * 0.38 + pow(mu, 1.5) * 0.18);
-  colour *= limb * granulation * volume * centerGlow;
+  vec3 photosphere = mix(uCoolColour, uBaseColour, limb);
+  photosphere = mix(photosphere, uHotColour, 0.28 * brightCell + 0.20 * hotKernel + 0.16 * pow(mu, 1.4));
 
-  // Soft orange/red edge for cooler atmosphere and limb optical depth.
-  vec3 rimColour = mix(uBaseColour, vec3(1.0, 0.32, 0.08), 0.42);
-  colour = mix(colour, rimColour * 0.70, pow(1.0 - mu, 1.65) * 0.35);
+  vec3 colour = photosphere * limb * textureTerm * volume * centre;
+
+  // Chromatic limb: darker and slightly redder at the edge, like an optically thick stellar disk.
+  vec3 chromaLimb = mix(uBaseColour, vec3(1.00, 0.26, 0.055), 0.36);
+  colour = mix(colour, chromaLimb * 0.58, pow(oneMinusMu, 1.35) * 0.42);
+
+  // Faculae close to the limb and small bright magnetic fragments.
+  float facula = smoothstep(0.60, 0.90, fbm(rFast * 96.0 + vec3(7.1, uTime * 0.38, 3.2)));
+  colour += uHotColour * facula * pow(oneMinusMu, 1.15) * 0.045 * qLevel;
 
   if (uSpotEnabled > 0.5) {
     float s = spotMask(n, uSpotCentre, uSpotRadius, uSpotContrast);
-    colour *= (1.0 - s);
-    colour = mix(colour, colour * vec3(0.55, 0.36, 0.22), s * 0.55);
+    vec3 penumbraColour = vec3(0.34, 0.17, 0.075);
+    vec3 umbraColour = vec3(0.055, 0.030, 0.018);
+    colour = mix(colour, penumbraColour * limb, s * 0.72);
+    colour = mix(colour, umbraColour, smoothstep(0.55, 0.95, s) * 0.86);
   }
 
-  // Very fine shimmer at the visible photosphere, subtle and non-cartoon.
-  colour += uHotColour * pow(mu, 0.75) * 0.018 * (fine - 0.45);
+  // Mild filmic compression: brighter, hotter, less muddy than the recovery renderer.
+  colour = max(colour, vec3(0.0));
+  colour = colour / (colour + vec3(0.42));
+  colour *= 1.42;
 
-  gl_FragColor = vec4(max(colour, vec3(0.0)), 1.0);
+  gl_FragColor = vec4(colour, 1.0);
 }
 `;
 
@@ -182,11 +200,16 @@ uniform float uStrength;
 
 void main() {
   float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
-  float rim = pow(1.0 - mu, 1.20);
-  float halo = pow(1.0 - mu, 3.30);
-  float pulse = 0.94 + 0.06 * sin(uTime * 0.55);
-  vec3 colour = uGlowColour * (0.42 * rim + 0.84 * halo) * uStrength * pulse;
-  float alpha = clamp((0.16 * rim + 0.35 * halo) * uStrength, 0.0, 0.62);
+  float edge = 1.0 - mu;
+
+  // No flat circular disk: emission is concentrated around the limb/corona.
+  float innerSuppression = smoothstep(0.10, 0.74, edge);
+  float corona = pow(edge, 2.0) * innerSuppression;
+  float outer = pow(edge, 5.0);
+  float pulse = 0.96 + 0.04 * sin(uTime * 0.45);
+
+  vec3 colour = uGlowColour * (0.58 * corona + 1.10 * outer) * uStrength * pulse;
+  float alpha = clamp((0.055 * corona + 0.24 * outer) * uStrength, 0.0, 0.38);
   gl_FragColor = vec4(colour, alpha);
 }
 `;
@@ -414,12 +437,15 @@ export class ExoSceneRenderer {
 
   qualitySettings() {
     if (this.quality === "ultra") {
-      return { sphereSegments: 164, sphereRings: 92, starCount: 780, quality: 1.0, glow: 1.35 };
+      return { sphereSegments: 224, sphereRings: 126, starCount: 1250, quality: 1.25, glow: 1.48 };
+    }
+    if (this.quality === "high") {
+      return { sphereSegments: 164, sphereRings: 96, starCount: 820, quality: 0.95, glow: 1.14 };
     }
     if (this.quality === "low") {
-      return { sphereSegments: 64, sphereRings: 36, starCount: 240, quality: 0.42, glow: 0.82 };
+      return { sphereSegments: 72, sphereRings: 42, starCount: 260, quality: 0.42, glow: 0.72 };
     }
-    return { sphereSegments: 112, sphereRings: 64, starCount: 480, quality: 0.72, glow: 1.0 };
+    return { sphereSegments: 118, sphereRings: 70, starCount: 520, quality: 0.72, glow: 0.92 };
   }
 
   rebuildMeshes() {
@@ -561,7 +587,7 @@ export class ExoSceneRenderer {
     setMat4(gl, loc.uView, this.view);
     setMat4(gl, loc.uProjection, this.projection);
     setUniform(gl, loc.uColour, [0.95, 0.66, 0.30]);
-    setUniform(gl, loc.uAlpha, 0.075);
+    setUniform(gl, loc.uAlpha, this.quality === "ultra" ? 0.0 : 0.018);
     gl.drawArrays(gl.LINES, 0, this.meshes.chord.vertexCount);
     gl.depthMask(true);
     gl.disable(gl.BLEND);
@@ -571,7 +597,7 @@ export class ExoSceneRenderer {
     const p = this.params;
     const gl = this.gl;
     const spot = spotCentreFromProjected(p.spotX, p.spotY);
-    const model = mat4Scale(mat4RotateY(mat4Identity(), time * 0.016), [1.52, 1.52, 1.52]);
+    const model = mat4Scale(mat4RotateY(mat4Identity(), time * 0.030), [1.50, 1.50, 1.50]);
 
     this.drawSphere({
       program: this.programs.star,
@@ -605,7 +631,7 @@ export class ExoSceneRenderer {
     this.drawSphere({
       program: this.programs.glow,
       mesh: this.meshes.glowSphere,
-      model: mat4Scale(mat4Identity(), [2.05, 2.05, 2.05]),
+      model: mat4Scale(mat4Identity(), [1.76, 1.76, 1.76]),
       uniforms: {
         uGlowColour: glowColour,
         uTime: time,
