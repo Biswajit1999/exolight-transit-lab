@@ -2,30 +2,32 @@
    ExoIntel-Prime
    Transit Physics Worker
    ---------------------------------------------------------------------------
-   Purpose:
-   - Keep all expensive transit-model calculations away from the main UI thread.
-   - Use a latest-state mailbox so slider interaction does not create a long
-     FIFO backlog.
-   - Compute a deterministic numerical transit model with:
-       * quadratic limb darkening
-       * projected orbital geometry
-       * optional irregular starspot map
-       * optional exomoon hypothesis
-       * residual and noise diagnostics against archival photometry
+   Research-grade browser worker for:
+   - latest-state mailbox execution
+   - quadratic limb-darkened numerical transit modelling
+   - eccentric projected orbit support
+   - finite exposure-time integration
+   - irregular starspot contrast maps
+   - optional exomoon hypothesis geometry
+   - residual / OOT / depth-contrast diagnostics
 
-   Important:
-   This worker is the scientific calculation layer. The WebGL scene is only the
-   visual representation. The plotted theoretical model comes from this file.
+   Scientific note:
+   This is still a browser numerical model, not a replacement for full fitting
+   tools such as batman, PyTransit, allesfitter, EXOFAST, juliet, or starry.
+   However, it is now much more honest and transparent than a purely visual
+   demonstration.
    ============================================================================ */
 
-const WORKER_VERSION = "20260517-worker-diagnostics-03";
+const WORKER_VERSION = "20260517-worker-eccentric-exposure-04";
 const TWO_PI = Math.PI * 2;
 
 const DEFAULT_PARAMS = Object.freeze({
   rpRs: 0.1,
   aRs: 12.0,
   inclinationDeg: 88.5,
+
   eccentricity: 0.0,
+  omegaDeg: 90.0,
 
   u1: 0.32,
   u2: 0.28,
@@ -42,16 +44,25 @@ const DEFAULT_PARAMS = Object.freeze({
   moonPhaseDeg: 45,
 
   phaseShift: 0.0,
+
+  exposureIntegration: true,
+  exposureSamples: 5,
+  exposurePhaseWidth: 0,
+
   modelResolution: 720,
-  fidelity: "preview"
+  fidelity: "preview",
+  visualQuality: "balanced"
 });
 
 const DEFAULT_TARGET = Object.freeze({
   pl_name: "Synthetic Hot Jupiter",
   hostname: "Demonstration Host",
+
   pl_orbper: 3.0,
   pl_trandur: 2.4,
   pl_trandep: 10000,
+  pl_orbeccen: 0.0,
+
   st_teff: 5772,
   st_rad: 1.0,
   st_mass: 1.0
@@ -266,6 +277,7 @@ async function solveTransitArchitecture(job) {
 
   const quality = solverQuality(params);
   const phaseRange = determinePhaseRange(state.archive, target, params);
+
   const phase = createPhaseGrid(
     phaseRange.min,
     phaseRange.max,
@@ -278,6 +290,13 @@ async function solveTransitArchitecture(job) {
   const noSpotFlux = new Float32Array(phase.length);
   const planetDepth = new Float32Array(phase.length);
   const moonDepth = new Float32Array(phase.length);
+
+  const exposure = determineExposureIntegration(
+    state.archive,
+    target,
+    params,
+    quality
+  );
 
   const chunkSize = quality.chunkSize;
 
@@ -296,10 +315,11 @@ async function solveTransitArchitecture(job) {
       }
     }
 
-    const sample = evaluateFluxAtPhase(
+    const sample = evaluateExposureIntegratedFlux(
       phase[i],
       params,
-      surface
+      surface,
+      exposure
     );
 
     flux[i] = sample.flux;
@@ -319,7 +339,10 @@ async function solveTransitArchitecture(job) {
     samples: phase.length,
     rings: quality.rings,
     azimuth: quality.azimuth,
-    surfaceSamples: surface.count
+    surfaceSamples: surface.count,
+    exposureSamples: exposure.samples,
+    exposurePhaseWidth: exposure.phaseWidth,
+    geometryMode: params.eccentricity > 1e-5 ? "eccentric" : "circular"
   };
 
   const metrics = calculateDiagnostics({
@@ -354,19 +377,146 @@ function solverQuality(params) {
   if (full) {
     return {
       mode: "high-accuracy numerical quadrature",
-      phaseSamples: clampInteger(params.modelResolution, 900, 2200, 1440),
-      rings: 82,
-      azimuth: 150,
-      chunkSize: 18
+      phaseSamples: clampInteger(params.modelResolution, 900, 2600, 1440),
+      rings: 88,
+      azimuth: 164,
+      chunkSize: 16
     };
   }
 
   return {
     mode: "preview numerical quadrature",
-    phaseSamples: clampInteger(params.modelResolution, 360, 1100, 720),
-    rings: 46,
-    azimuth: 96,
-    chunkSize: 28
+    phaseSamples: clampInteger(params.modelResolution, 360, 1200, 720),
+    rings: 52,
+    azimuth: 108,
+    chunkSize: 24
+  };
+}
+
+/* ============================================================================
+   FINITE EXPOSURE INTEGRATION
+   ============================================================================ */
+
+function determineExposureIntegration(archive, target, params, quality) {
+  if (!params.exposureIntegration) {
+    return {
+      enabled: false,
+      samples: 1,
+      phaseWidth: 0
+    };
+  }
+
+  const explicitWidth = Number(params.exposurePhaseWidth);
+
+  let phaseWidth = Number.isFinite(explicitWidth) && explicitWidth > 0
+    ? explicitWidth
+    : inferExposurePhaseWidth(archive, target);
+
+  phaseWidth = clamp(phaseWidth, 0, 0.04);
+
+  const requestedSamples = clampInteger(
+    params.exposureSamples,
+    1,
+    quality.mode.includes("high-accuracy") ? 15 : 9,
+    quality.mode.includes("high-accuracy") ? 9 : 5
+  );
+
+  const samples = phaseWidth > 0 ? Math.max(1, requestedSamples) : 1;
+
+  return {
+    enabled: samples > 1 && phaseWidth > 0,
+    samples,
+    phaseWidth
+  };
+}
+
+function inferExposurePhaseWidth(archive, target) {
+  const fromArchive = medianPositivePhaseSpacing(archive);
+
+  if (Number.isFinite(fromArchive) && fromArchive > 0) {
+    /*
+      The local light curves are usually already folded or binned. Using the
+      median phase spacing as an effective exposure/bin width is a conservative
+      browser approximation.
+    */
+    return clamp(fromArchive, 0.00005, 0.02);
+  }
+
+  const periodDays = Number(target.pl_orbper);
+
+  if (Number.isFinite(periodDays) && periodDays > 0) {
+    /*
+      Conservative fallback equivalent to a few-minute photometric cadence.
+      This is small enough not to dominate, but honest enough to avoid an
+      infinitely sharp instantaneous exposure model.
+    */
+    return clamp(2 / (1440 * periodDays), 0.00002, 0.006);
+  }
+
+  return 0;
+}
+
+function medianPositivePhaseSpacing(archive) {
+  if (!archive || archive.points < 4) {
+    return NaN;
+  }
+
+  const values = [];
+
+  for (let i = 1; i < archive.points; i++) {
+    const a = archive.phase[i - 1];
+    const b = archive.phase[i];
+
+    if (!Number.isFinite(a) || !Number.isFinite(b)) {
+      continue;
+    }
+
+    const d = Math.abs(b - a);
+
+    if (d > 0 && d < 0.1) {
+      values.push(d);
+    }
+  }
+
+  if (values.length < 3) {
+    return NaN;
+  }
+
+  return median(values);
+}
+
+function evaluateExposureIntegratedFlux(centralPhase, params, surface, exposure) {
+  if (!exposure.enabled || exposure.samples <= 1 || exposure.phaseWidth <= 0) {
+    return evaluateFluxAtPhase(centralPhase, params, surface);
+  }
+
+  let flux = 0;
+  let noSpotFlux = 0;
+  let planetDepth = 0;
+  let moonDepth = 0;
+
+  for (let i = 0; i < exposure.samples; i++) {
+    const f =
+      exposure.samples === 1
+        ? 0
+        : (i / (exposure.samples - 1)) - 0.5;
+
+    const subPhase = centralPhase + f * exposure.phaseWidth;
+    const sample = evaluateFluxAtPhase(subPhase, params, surface);
+
+    flux += sample.flux;
+    noSpotFlux += sample.noSpotFlux;
+    planetDepth += sample.planetDepth;
+    moonDepth += sample.moonDepth;
+  }
+
+  const inv = 1 / exposure.samples;
+
+  return {
+    flux: flux * inv,
+    noSpotFlux: noSpotFlux * inv,
+    planetDepth: planetDepth * inv,
+    moonDepth: moonDepth * inv
   };
 }
 
@@ -403,7 +553,7 @@ function buildStellarSurfaceGrid(params, quality) {
 
       /*
         Polar area element is proportional to r dr dtheta.
-        The constant dr dtheta cancels out in normalised flux, so r is enough.
+        The constant dr dtheta cancels in normalised flux, so r is enough.
       */
       const areaWeight = r;
       const base = limb * areaWeight;
@@ -448,10 +598,10 @@ function calculateSpotFactor(x, y, params) {
   const angle = Math.atan2(dy, dx);
 
   /*
-    Irregular multi-component spot morphology:
-    - not a perfect circular blob
-    - combines penumbra and umbra
-    - still deterministic and cheap for browser physics
+    Irregular multi-component starspot:
+    - penumbra + umbra
+    - deterministic ragged boundary
+    - no claim of full stellar-surface inversion
   */
   const irregularRadius =
     radius *
@@ -565,24 +715,62 @@ function evaluateFluxAtPhase(observedPhase, params, surface) {
 function projectedGeometry(observedPhase, params) {
   const shiftedPhase = observedPhase - params.phaseShift;
 
-  const theta = TWO_PI * shiftedPhase;
+  const e = clamp(params.eccentricity, 0, 0.95);
+  const omega = degToRad(params.omegaDeg);
+  const inclination = degToRad(clamp(params.inclinationDeg, 0, 90));
+  const aRs = clamp(params.aRs, 2, 100);
 
-  const aRs = clamp(params.aRs, 2, 80);
-  const inclination = clamp(params.inclinationDeg, 0, 90) * Math.PI / 180;
+  let xPlanet;
+  let yPlanet;
+  let zPlanet;
+  let orbitalRadiusRs;
 
-  /*
-    Circular projected orbit in stellar-radius units.
-    At phase = 0:
-      x ≈ 0
-      y ≈ impact parameter
-      z > 0, so the planet is in front of the star.
-  */
-  const xPlanet = -aRs * Math.sin(theta);
-  const yPlanet = aRs * Math.cos(inclination) * Math.cos(theta);
-  const zPlanet = aRs * Math.sin(inclination) * Math.cos(theta);
+  if (e > 1e-5) {
+    /*
+      Eccentric orbit approximation:
+      - phase = 0 is anchored near inferior conjunction
+      - true anomaly at conjunction: f0 ≈ π/2 − ω
+      - mean anomaly is advanced by 2π phase
+      - projected coordinates use u = ω + f
+
+      This is suitable for browser visual/interactive modelling and is a major
+      improvement over silently treating all catalogue eccentricities as active
+      when the geometry was circular.
+    */
+    const f0 = wrapRadians(Math.PI / 2 - omega);
+    const e0 = trueAnomalyToEccentricAnomaly(f0, e);
+    const m0 = eccentricAnomalyToMeanAnomaly(e0, e);
+
+    const meanAnomaly = m0 + TWO_PI * shiftedPhase;
+    const eccentricAnomaly = solveKepler(meanAnomaly, e);
+    const trueAnomaly = eccentricAnomalyToTrueAnomaly(eccentricAnomaly, e);
+
+    orbitalRadiusRs =
+      aRs *
+      (1 - e * e) /
+      Math.max(1e-8, 1 + e * Math.cos(trueAnomaly));
+
+    const u = omega + trueAnomaly;
+
+    xPlanet = -orbitalRadiusRs * Math.cos(u);
+    yPlanet = orbitalRadiusRs * Math.sin(u) * Math.cos(inclination);
+    zPlanet = orbitalRadiusRs * Math.sin(u) * Math.sin(inclination);
+  } else {
+    /*
+      Circular model:
+      phase = 0 places the planet in front of the stellar disk.
+    */
+    const theta = TWO_PI * shiftedPhase;
+
+    orbitalRadiusRs = aRs;
+
+    xPlanet = -aRs * Math.sin(theta);
+    yPlanet = aRs * Math.cos(inclination) * Math.cos(theta);
+    zPlanet = aRs * Math.sin(inclination) * Math.cos(theta);
+  }
 
   const moonPhase =
-    params.moonPhaseDeg * Math.PI / 180 +
+    degToRad(params.moonPhaseDeg) +
     shiftedPhase * TWO_PI * 5;
 
   const moonDistance = clamp(params.moonDistance, 0.02, 3.0);
@@ -596,7 +784,8 @@ function projectedGeometry(observedPhase, params) {
       y: yPlanet,
       z: zPlanet,
       radius: clamp(params.rpRs, 0.001, 0.35),
-      front: zPlanet > 0
+      front: zPlanet > 0,
+      orbitalRadiusRs
     },
 
     moon: {
@@ -692,6 +881,9 @@ function calculateDiagnostics({
     maxPlanetDepthPpm,
     maxMoonDepthPpm,
     maxSpotBoostPpm,
+    geometryMode: timings.geometryMode,
+    exposurePhaseWidth: timings.exposurePhaseWidth,
+    exposureSamples: timings.exposureSamples,
     morphologyFlags
   };
 }
@@ -800,7 +992,7 @@ function estimateTransitHalfDurationPhase(target, params) {
 
   const a = Math.max(2, params.aRs);
   const rp = Math.max(0.001, params.rpRs);
-  const inc = params.inclinationDeg * Math.PI / 180;
+  const inc = degToRad(params.inclinationDeg);
   const b = Math.abs(a * Math.cos(inc));
 
   if (b >= 1 + rp) {
@@ -834,6 +1026,23 @@ function buildMorphologyFlags({
   flags.push(`${timings.rings}x${timings.azimuth} disk quadrature`);
   flags.push("quadratic limb darkening");
 
+  if (timings.geometryMode === "eccentric") {
+    flags.push(`eccentric geometry e=${params.eccentricity.toFixed(3)}`);
+    flags.push(`ω=${params.omegaDeg.toFixed(1)}°`);
+  } else {
+    flags.push("circular geometry");
+  }
+
+  if (
+    timings.exposureSamples > 1 &&
+    Number.isFinite(timings.exposurePhaseWidth) &&
+    timings.exposurePhaseWidth > 0
+  ) {
+    flags.push(`${timings.exposureSamples}-sample exposure integration`);
+  } else {
+    flags.push("instantaneous exposure model");
+  }
+
   if (archive?.points > 0) {
     flags.push("archival photometry loaded");
   } else {
@@ -858,11 +1067,11 @@ function buildMorphologyFlags({
 
   if (Number.isFinite(snr)) {
     if (snr >= 10) {
-      flags.push("high S/N transit");
+      flags.push("high depth contrast");
     } else if (snr >= 4) {
-      flags.push("moderate S/N transit");
+      flags.push("moderate depth contrast");
     } else {
-      flags.push("low S/N fit");
+      flags.push("low depth contrast");
     }
   }
 
@@ -948,9 +1157,11 @@ function normaliseParams(input) {
 
   return {
     rpRs: clamp(numberValue(p.rpRs, DEFAULT_PARAMS.rpRs), 0.001, 0.35),
-    aRs: clamp(numberValue(p.aRs, DEFAULT_PARAMS.aRs), 2, 80),
+    aRs: clamp(numberValue(p.aRs, DEFAULT_PARAMS.aRs), 2, 100),
     inclinationDeg: clamp(numberValue(p.inclinationDeg, DEFAULT_PARAMS.inclinationDeg), 0, 90),
+
     eccentricity: clamp(numberValue(p.eccentricity, DEFAULT_PARAMS.eccentricity), 0, 0.95),
+    omegaDeg: normaliseDegrees(numberValue(p.omegaDeg, DEFAULT_PARAMS.omegaDeg)),
 
     u1: clamp(numberValue(p.u1, DEFAULT_PARAMS.u1), 0, 1),
     u2: clamp(numberValue(p.u2, DEFAULT_PARAMS.u2), 0, 1),
@@ -964,10 +1175,15 @@ function normaliseParams(input) {
     moonEnabled: Boolean(p.moonEnabled),
     moonRadius: clamp(numberValue(p.moonRadius, DEFAULT_PARAMS.moonRadius), 0.001, 0.12),
     moonDistance: clamp(numberValue(p.moonDistance, DEFAULT_PARAMS.moonDistance), 0.02, 3.0),
-    moonPhaseDeg: numberValue(p.moonPhaseDeg, DEFAULT_PARAMS.moonPhaseDeg),
+    moonPhaseDeg: normaliseDegrees(numberValue(p.moonPhaseDeg, DEFAULT_PARAMS.moonPhaseDeg)),
 
     phaseShift: clamp(numberValue(p.phaseShift, DEFAULT_PARAMS.phaseShift), -0.2, 0.2),
-    modelResolution: clampInteger(p.modelResolution, 200, 2500, DEFAULT_PARAMS.modelResolution),
+
+    exposureIntegration: Boolean(p.exposureIntegration),
+    exposureSamples: clampInteger(p.exposureSamples, 1, 21, DEFAULT_PARAMS.exposureSamples),
+    exposurePhaseWidth: clamp(numberValue(p.exposurePhaseWidth, DEFAULT_PARAMS.exposurePhaseWidth), 0, 0.05),
+
+    modelResolution: clampInteger(p.modelResolution, 200, 3000, DEFAULT_PARAMS.modelResolution),
     fidelity: p.fidelity === "full" ? "full" : "preview",
     visualQuality: typeof p.visualQuality === "string" ? p.visualQuality : "balanced"
   };
@@ -982,13 +1198,73 @@ function normaliseTarget(input) {
   return {
     pl_name: stringValue(t.pl_name, DEFAULT_TARGET.pl_name),
     hostname: stringValue(t.hostname, DEFAULT_TARGET.hostname),
+
     pl_orbper: numberValue(t.pl_orbper, DEFAULT_TARGET.pl_orbper),
     pl_trandur: numberValue(t.pl_trandur, DEFAULT_TARGET.pl_trandur),
     pl_trandep: numberValue(t.pl_trandep, DEFAULT_TARGET.pl_trandep),
+    pl_orbeccen: numberValue(t.pl_orbeccen, DEFAULT_TARGET.pl_orbeccen),
+
     st_teff: numberValue(t.st_teff, DEFAULT_TARGET.st_teff),
     st_rad: numberValue(t.st_rad, DEFAULT_TARGET.st_rad),
     st_mass: numberValue(t.st_mass, DEFAULT_TARGET.st_mass)
   };
+}
+
+/* ============================================================================
+   ORBIT MATH
+   ============================================================================ */
+
+function solveKepler(meanAnomaly, eccentricity) {
+  const e = clamp(eccentricity, 0, 0.95);
+  const m = wrapRadians(meanAnomaly);
+
+  if (e < 1e-8) {
+    return m;
+  }
+
+  let E = e < 0.8 ? m : Math.PI;
+
+  for (let i = 0; i < 30; i++) {
+    const f = E - e * Math.sin(E) - m;
+    const fp = 1 - e * Math.cos(E);
+    const dE = -f / Math.max(fp, 1e-12);
+
+    E += dE;
+
+    if (Math.abs(dE) < 1e-12) {
+      break;
+    }
+  }
+
+  return E;
+}
+
+function trueAnomalyToEccentricAnomaly(f, e) {
+  if (e < 1e-8) {
+    return wrapRadians(f);
+  }
+
+  const factor = Math.sqrt((1 - e) / (1 + e));
+  return wrapRadians(2 * Math.atan2(
+    factor * Math.sin(f / 2),
+    Math.cos(f / 2)
+  ));
+}
+
+function eccentricAnomalyToTrueAnomaly(E, e) {
+  if (e < 1e-8) {
+    return wrapRadians(E);
+  }
+
+  const factor = Math.sqrt((1 + e) / (1 - e));
+  return wrapRadians(2 * Math.atan2(
+    factor * Math.sin(E / 2),
+    Math.cos(E / 2)
+  ));
+}
+
+function eccentricAnomalyToMeanAnomaly(E, e) {
+  return wrapRadians(E - e * Math.sin(E));
 }
 
 /* ============================================================================
@@ -1029,7 +1305,6 @@ function interpolateLinear(xArray, yArray, x) {
   }
 
   const t = (x - x0) / (x1 - x0);
-
   return y0 + t * (y1 - y0);
 }
 
@@ -1116,4 +1391,40 @@ function smoothstep(edge0, edge1, x) {
 
   const t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
   return t * t * (3 - 2 * t);
+}
+
+function degToRad(deg) {
+  return deg * Math.PI / 180;
+}
+
+function normaliseDegrees(deg) {
+  let value = Number(deg);
+
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  value %= 360;
+
+  if (value < 0) {
+    value += 360;
+  }
+
+  return value;
+}
+
+function wrapRadians(angle) {
+  let value = Number(angle);
+
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  value %= TWO_PI;
+
+  if (value < 0) {
+    value += TWO_PI;
+  }
+
+  return value;
 }
