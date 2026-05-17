@@ -1,5 +1,5 @@
 /* ========================================================================== 
-   ExoIntel-Prime Recovery Build Styles
+   ExoIntel-Prime WebGL v8 Build Styles
    Author: Biswajit Jana
    ========================================================================== */
 
@@ -240,9 +240,10 @@ button { cursor: pointer; }
 input[type="range"] { width: 100%; accent-color: var(--accent); }
 input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
 select { width: 100%; min-height: 34px; border: 1px solid var(--line-strong); border-radius: 10px; padding: 0 10px; background: var(--surface-2); color: var(--text); outline: none; }
-.app-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 16px; border-top: 1px solid var(--line); background: var(--surface-glass); color: var(--muted); font-size: 11px; }
+.app-footer { display: grid; grid-template-columns: minmax(220px,1fr) auto minmax(220px,1fr); align-items: center; gap: 12px; padding: 0 16px; border-top: 1px solid var(--line); background: var(--surface-glass); color: var(--muted); font-size: 11px; }
 .app-footer strong { color: var(--text); font-weight: 950; }
-.footer-credit { white-space: nowrap; }
+.footer-credit { white-space: nowrap; text-align: center; }
+.footer-utc { white-space: nowrap; font-family: var(--mono); color: var(--muted); text-align: left; }
 .footer-status { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: right; }
 * { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
 *::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -250,6 +251,6 @@ select { width: 100%; min-height: 34px; border: 1px solid var(--line-strong); bo
 *::-webkit-scrollbar-thumb { border: 3px solid transparent; border-radius: 999px; background: var(--line-strong); background-clip: padding-box; }
 :focus-visible { outline: 3px solid rgba(99,167,255,.40); outline-offset: 2px; }
 @media (max-width: 1420px) { .workspace { grid-template-columns: 330px minmax(0,1fr) 350px; } .control-row,.toggle-row,.select-row{grid-template-columns:120px minmax(0,1fr) 62px;} .select-row{grid-template-columns:120px minmax(0,1fr) 22px;} }
-@media (max-width: 1180px) { body { overflow: auto; } .exointel-app { height: auto; min-height: 100vh; grid-template-rows: auto auto auto; overflow: visible; } .app-header,.workspace { grid-template-columns: 1fr; } .workspace, .left-panel, .right-panel, .main-panel { overflow: visible; } .left-panel { grid-template-rows: auto auto; } .main-panel { grid-template-rows: 440px 320px; } .status-strip { grid-template-columns: repeat(2,minmax(0,1fr)); } .header-actions { justify-content: flex-start; flex-wrap: wrap; } .app-footer { flex-direction: column; align-items: flex-start; min-height: 54px; padding: 8px 16px; } .footer-status { text-align: left; white-space: normal; } }
+@media (max-width: 1180px) { body { overflow: auto; } .exointel-app { height: auto; min-height: 100vh; grid-template-rows: auto auto auto; overflow: visible; } .app-header,.workspace { grid-template-columns: 1fr; } .workspace, .left-panel, .right-panel, .main-panel { overflow: visible; } .left-panel { grid-template-rows: auto auto; } .main-panel { grid-template-rows: 440px 320px; } .status-strip { grid-template-columns: repeat(2,minmax(0,1fr)); } .header-actions { justify-content: flex-start; flex-wrap: wrap; } .app-footer { grid-template-columns: 1fr; align-items: flex-start; min-height: 70px; padding: 8px 16px; } .footer-credit { text-align: left; } .footer-status { text-align: left; white-space: normal; } }
 @media (max-width: 680px) { .boot-card { grid-template-columns: 1fr; } .boot-logo { width: 76px; height: 76px; } .boot-logo svg { width: 66px; height: 66px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .001ms !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; } }

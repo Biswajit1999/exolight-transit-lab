@@ -1,11 +1,11 @@
-import { ExoSceneRenderer } from "./scene.js?v=20260517-stellar-v7";
+import { ExoSceneRenderer } from "./scene.js?v=20260517-webgl-v8";
 
 /* ============================================================================
    ExoIntel-Prime Recovery Main Thread Orchestrator
    ============================================================================ */
 
 const APP_NAME = "ExoIntel-Prime";
-const WORKER_URL = new URL("./transitWorker.js?v=20260517-stellar-v7", import.meta.url);
+const WORKER_URL = new URL("./transitWorker.js?v=20260517-webgl-v8", import.meta.url);
 const TARGET_CACHE_URL = "./data/exoplanets.json";
 const LIGHTCURVE_BASE_URL = "./data/lightcurves/";
 const THEME_STORAGE_KEY = "exointel-prime-theme-v5";
@@ -170,12 +170,12 @@ class ExoIntelPrimeApp {
           </div></section>
         </aside>
       </section>
-      <footer class="app-footer"><span class="footer-credit"><strong>Author: Biswajit Jana</strong> // © 2026</span><span id="footer-message" class="footer-status">Initialising physics engine...</span></footer>
+      <footer class="app-footer"><span id="footer-utc" class="footer-utc">UTC --</span><span class="footer-credit"><strong>Biswajit Jana</strong> © 2026</span><span id="footer-message" class="footer-status">Initialising physics engine...</span></footer>
     `;
   }
 
   cacheDom() {
-    const ids = ["status-worker","status-revision","status-solver","status-fps","footer-message","scene-stage","scene-status","target-search","target-list","target-count","active-target-label","metric-depth-percent","metric-depth-secondary","metric-rprs-proxy","metric-residual-rms","metric-oot-rms","metric-snr","metric-moon","metric-spot","planet-properties","star-properties","catalogue-properties","assumption-strip","plot-status","curve-canvas","button-theme","button-reset","button-high-fidelity"];
+    const ids = ["status-worker","status-revision","status-solver","status-fps","footer-utc","footer-message","scene-stage","scene-status","target-search","target-list","target-count","active-target-label","metric-depth-percent","metric-depth-secondary","metric-rprs-proxy","metric-residual-rms","metric-oot-rms","metric-snr","metric-moon","metric-spot","planet-properties","star-properties","catalogue-properties","assumption-strip","plot-status","curve-canvas","button-theme","button-reset","button-high-fidelity"];
     for (const id of ids) this.dom[toCamel(id)] = document.getElementById(id);
     this.dom.canvas = this.dom.curveCanvas;
     this.dom.ctx = this.dom.canvas.getContext("2d");
@@ -396,7 +396,27 @@ class ExoIntelPrimeApp {
     drawPlotGrid(ctx,width,height,pad,scale,dpr,{grid,text,muted}); drawArchivalScatter(ctx,this.archivalCurve,xMap,yMap,dpr,data); drawModelCurve(ctx,this.latestModel,xMap,yMap,dpr,model); drawLegend(ctx,pad,dpr,{text,data,model});
   }
 
-  startTelemetryLoop() { const tick = now => { this.frameCounter += 1; if (now - this.lastFpsTime >= 500) { this.fps = Math.round(this.frameCounter * 1000 / (now - this.lastFpsTime)); this.frameCounter = 0; this.lastFpsTime = now; this.setText(this.dom.statusFps, `${this.fps} fps`); } requestAnimationFrame(tick); }; requestAnimationFrame(tick); }
+  startTelemetryLoop() {
+    const updateUtc = () => {
+      const now = new Date();
+      const stamp = now.toISOString().replace("T", " ").replace(/\.\d{3}Z$/, " UTC");
+      this.setText(this.dom.footerUtc, stamp);
+    };
+    updateUtc();
+    setInterval(updateUtc, 1000);
+
+    const tick = now => {
+      this.frameCounter += 1;
+      if (now - this.lastFpsTime >= 500) {
+        this.fps = Math.round(this.frameCounter * 1000 / (now - this.lastFpsTime));
+        this.frameCounter = 0;
+        this.lastFpsTime = now;
+        this.setText(this.dom.statusFps, `${this.fps} fps`);
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
   setWorkerFailed(message) { this.workerReady = false; this.setText(this.dom.statusWorker, "failed"); this.setText(this.dom.statusSolver, "offline"); this.setFriendlyStatus(message); }
   setFriendlyStatus(message) { this.setText(this.dom.footerMessage, message); }
   setText(node, value) { if (node) node.textContent = String(value); }
