@@ -8,7 +8,7 @@ import {
 import { ObservatoryScene } from "./scene.js";
 import { PrimeHUD } from "./ui.js";
 
-const APP_VERSION = "ExoIntel-Prime Iteration VII Coupled Orbit Observatory";
+const APP_VERSION = "ExoIntel-Prime Iteration VIII Coupled Physics Telemetry";
 const TARGET_CACHE_URL = "./data/exoplanets.json";
 
 const CURVE_PHASE_MIN = -0.085;
@@ -91,7 +91,7 @@ class ExoIntelPrimeApp {
 
     this.hud.log(`${APP_VERSION} bootstrap sequence engaged.`, "info");
     this.hud.log(
-      "Architecture mode: physics.js is the state authority. Orbit, projected geometry, model flux, marker phase, and renderer input now come from one physical state vector.",
+      "Architecture mode: physics.js is the state authority. Orbit, projected geometry, model flux, marker phase, and renderer input all come from one physical state vector.",
       "info"
     );
 
@@ -104,7 +104,7 @@ class ExoIntelPrimeApp {
       });
 
       this.hud.log(
-        "WebGL scene online. Current renderer still has a compatibility path; next rewrite will make scene.js consume systemState directly.",
+        "WebGL scene online. Renderer, model curve, and HUD are now fed by the coupled physics state.",
         "info"
       );
     } catch (error) {
@@ -313,7 +313,11 @@ class ExoIntelPrimeApp {
       "info"
     );
 
-    if (target?.lc_source || target?.lc_processing || finiteNumber(target?.lc_phase_shift_applied) !== null) {
+    if (
+      target?.lc_source ||
+      target?.lc_processing ||
+      finiteNumber(target?.lc_phase_shift_applied) !== null
+    ) {
       this.hud.log(
         `Observed LC provenance: ${target.lc_source || "local JSON"} | preprocessing shift ${signedMaybe(target.lc_phase_shift_applied)} | points ${finiteNumber(target.lc_points_count, null) ?? "—"}.`,
         "info"
@@ -495,9 +499,23 @@ class ExoIntelPrimeApp {
     const fps = this.scene.getFPS();
 
     this.hud.setSceneReadouts({
+      orbitPhase: state.rawOrbitPhase,
+      rawOrbitPhase: state.rawOrbitPhase,
+      correctedOrbitPhase: state.correctedOrbitPhase,
+
       phase: state.transitPhase,
-      impact: state.impact,
+      transitPhase: state.transitPhase,
+
+      flux: state.flux,
+
       depthPpm: state.depthPpm,
+      totalDepthPpm: state.depthPpm,
+
+      planetDepthPpm: state.planetDepthPpm,
+      moonDepthPpm: state.moonDepthPpm,
+      spotBoostPpm: state.spotBoostPpm,
+
+      impact: state.impact,
       moon: this.params.moonEnabled ? state.moon.label : "DISABLED",
       fps
     });
