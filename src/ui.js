@@ -8,7 +8,7 @@ export class PrimeHUD {
     this.phaseMarker = null;
     this.cachedModelCurve = [];
     this.cachedObservedCurve = [];
-    this.cachedSummary = null;
+    this.cachedSummary = {};
     this.observationSignature = "";
     this.observationAlpha = 1;
     this.observationFadeFrame = null;
@@ -16,6 +16,7 @@ export class PrimeHUD {
     this.lightcurveContext = this.lightcurveCanvas ? this.lightcurveCanvas.getContext("2d") : null;
     this.diagnosticNodes = {};
     this.lastDiagnostics = null;
+
     this.liveReadouts = {
       orbitPhase: null,
       transitPhase: null,
@@ -119,8 +120,13 @@ export class PrimeHUD {
     if (tapExpand) {
       tapExpand.addEventListener("click", () => {
         const panel = this.$("tap-panel");
+        if (!panel) return;
+
         const expanded = !panel.classList.contains("expanded");
-        if (this.callbacks.onConsoleToggle) this.callbacks.onConsoleToggle(expanded);
+
+        if (this.callbacks.onConsoleToggle) {
+          this.callbacks.onConsoleToggle(expanded);
+        }
       });
     }
 
@@ -196,103 +202,6 @@ export class PrimeHUD {
     `;
 
     kernelTable.insertAdjacentElement("afterend", section);
-
-    const style = document.createElement("style");
-    style.textContent = `
-      .research-diagnostics{
-        margin:0 8px 8px;
-        padding:8px;
-        border:1px solid rgba(0,240,255,.12);
-        background:
-          linear-gradient(135deg,rgba(0,240,255,.055),transparent 60%),
-          rgba(0,0,0,.28);
-      }
-
-      .diagnostics-title{
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:8px;
-        margin-bottom:6px;
-        padding-bottom:6px;
-        border-bottom:1px solid rgba(255,255,255,.06);
-      }
-
-      .diagnostics-title strong{
-        color:#e8f7ff;
-        font-size:9px;
-        letter-spacing:.06em;
-        text-transform:uppercase;
-      }
-
-      .diagnostics-title span{
-        overflow:hidden;
-        color:#7d8993;
-        font-size:8px;
-        white-space:nowrap;
-        text-overflow:ellipsis;
-        text-transform:uppercase;
-      }
-
-      .diagnostics-grid{
-        display:grid;
-        grid-template-columns:repeat(2,minmax(0,1fr));
-        gap:5px;
-      }
-
-      .diagnostics-grid div{
-        min-height:32px;
-        padding:5px 6px;
-        display:flex;
-        flex-direction:column;
-        justify-content:space-between;
-        border:1px solid rgba(255,255,255,.055);
-        background:rgba(0,0,0,.22);
-      }
-
-      .diagnostics-grid .diagnostic-wide{
-        grid-column:1 / -1;
-      }
-
-      .diagnostics-grid span{
-        color:#7d8993;
-        font-size:8px;
-        line-height:1;
-        text-transform:uppercase;
-      }
-
-      .diagnostics-grid strong{
-        overflow:hidden;
-        color:#00f0ff;
-        font-size:9px;
-        line-height:1.15;
-        white-space:nowrap;
-        text-overflow:ellipsis;
-        text-shadow:0 0 8px rgba(0,240,255,.22);
-      }
-
-      .diagnostics-grid strong.warn{
-        color:#ffb000;
-        text-shadow:0 0 8px rgba(255,176,0,.22);
-      }
-
-      .diagnostics-grid strong.bad{
-        color:#ff3149;
-        text-shadow:0 0 8px rgba(255,49,73,.22);
-      }
-
-      .diagnostics-grid strong.good{
-        color:#63ff9f;
-        text-shadow:0 0 8px rgba(99,255,159,.20);
-      }
-
-      .diagnostics-grid strong.provenance{
-        color:#ffd078;
-        text-shadow:0 0 8px rgba(255,176,0,.18);
-      }
-    `;
-
-    document.head.appendChild(style);
 
     this.diagnosticNodes = {
       liveOrbit: this.$("diagnostic-live-orbit"),
@@ -451,10 +360,15 @@ export class PrimeHUD {
     const now = new Date();
     const text = now.toISOString().slice(11, 19) + " UTC";
     const clock = this.$("utc-clock");
+    const footerClock = this.$("footer-utc-mirror");
 
     if (clock) {
       clock.textContent = text;
       clock.setAttribute("datetime", now.toISOString());
+    }
+
+    if (footerClock) {
+      footerClock.textContent = text;
     }
   }
 
@@ -603,7 +517,7 @@ export class PrimeHUD {
 
   renderLightCurve(modelCurve = [], summary = {}, observedCurve = []) {
     this.cachedModelCurve = Array.isArray(modelCurve) ? modelCurve : [];
-    this.cachedSummary = summary || {};
+    this.cachedSummary = summary && typeof summary === "object" ? summary : {};
 
     const nextObserved = Array.isArray(observedCurve) ? observedCurve : [];
     const nextSignature = this.curveSignature(nextObserved);
@@ -929,11 +843,11 @@ export class PrimeHUD {
   }
 
   setFluxSummary(summary = {}) {
-    this.cachedSummary = summary || {};
+    this.cachedSummary = summary && typeof summary === "object" ? summary : {};
 
-    setText(this.$("flux-min-chip"), finite(summary.minFlux) ? `MIN ${fmt(summary.minFlux, 6)}` : "MIN —");
-    setText(this.$("model-depth-chip"), finite(summary.depthPpm) ? `MODEL ${Math.round(summary.depthPpm)} PPM` : "MODEL — PPM");
-    setText(this.$("scene-depth-readout"), finite(summary.depthPpm) ? `${Math.round(summary.depthPpm)} ppm` : "— ppm");
+    setText(this.$("flux-min-chip"), finite(this.cachedSummary.minFlux) ? `MIN ${fmt(this.cachedSummary.minFlux, 6)}` : "MIN —");
+    setText(this.$("model-depth-chip"), finite(this.cachedSummary.depthPpm) ? `MODEL ${Math.round(this.cachedSummary.depthPpm)} PPM` : "MODEL — PPM");
+    setText(this.$("scene-depth-readout"), finite(this.cachedSummary.depthPpm) ? `${Math.round(this.cachedSummary.depthPpm)} ppm` : "— ppm");
     setText(this.$("ttv-chip"), this.controls.ttvEnabled?.checked ? "TTV ON" : "TTV OFF");
 
     this.updateDiagnostics();
@@ -1092,9 +1006,9 @@ export class PrimeHUD {
   }
 }
 
-function computeDiagnostics(target, model, observed, controls, summaryInput = {}) {   
+function computeDiagnostics(target, model, observed, controls, summaryInput = {}) {
   const summary = summaryInput && typeof summaryInput === "object" ? summaryInput : {};
-  
+
   const periodDays = finiteNumber(target.pl_orbper, controls.periodDays);
   const durationHours = finiteNumber(target.pl_trandur, null);
 
@@ -1170,11 +1084,11 @@ function computeDiagnostics(target, model, observed, controls, summaryInput = {}
       ? "local-json"
       : "";
 
-  const maxMoonSignalPpm = finite(summary.maxMoonDepthPpm)
+  const maxMoonSignalPpm = finite(summary?.maxMoonDepthPpm)
     ? summary.maxMoonDepthPpm
     : maxFromCurve(model, "moonDepthPpm");
 
-  const maxSpotSignalPpm = finite(summary.maxSpotBoostPpm)
+  const maxSpotSignalPpm = finite(summary?.maxSpotBoostPpm)
     ? summary.maxSpotBoostPpm
     : maxFromCurve(model, "spotBoostPpm");
 
@@ -1445,6 +1359,7 @@ function fmt(value, digits) {
 
 function signed(value, digits) {
   if (!Number.isFinite(value)) return "—";
+
   const sign = value >= 0 ? "+" : "";
   return `${sign}${Number(value).toFixed(digits)}`;
 }
