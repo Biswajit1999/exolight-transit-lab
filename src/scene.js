@@ -147,7 +147,7 @@ void main() {
   float filigree = (granC - 0.5) * 2.35;
 
   float tempFactor = clamp((uTeff - 3200.0) / 6200.0, 0.0, 1.0);
-  float granulationContrast = mix(0.34, 0.18, tempFactor) * mix(0.75, 2.05, qLevel);
+  float granulationContrast = mix(0.30, 0.16, tempFactor) * mix(0.72, 1.60, qLevel);
 
   float textureTerm =
     1.0
@@ -157,10 +157,10 @@ void main() {
   // Self-luminous volume. Directional term is subtle; the star must not look like a planet lit by a lamp.
   vec3 virtualViewLight = normalize(vec3(-0.35, 0.18, 0.92));
   float volume = 0.86 + 0.14 * max(dot(n, virtualViewLight), 0.0);
-  float centre = 0.90 + 0.23 * pow(mu, 0.55);
+  float centre = 0.84 + 0.18 * pow(mu, 0.58);
 
   vec3 photosphere = mix(uCoolColour, uBaseColour, limb);
-  photosphere = mix(photosphere, uHotColour, 0.28 * brightCell + 0.20 * hotKernel + 0.16 * pow(mu, 1.4));
+  photosphere = mix(photosphere, uHotColour, 0.18 * brightCell + 0.13 * hotKernel + 0.10 * pow(mu, 1.4));
 
   vec3 colour = photosphere * limb * textureTerm * volume * centre;
 
@@ -170,7 +170,7 @@ void main() {
 
   // Faculae close to the limb and small bright magnetic fragments.
   float facula = smoothstep(0.60, 0.90, fbm(rFast * 96.0 + vec3(7.1, uTime * 0.38, 3.2)));
-  colour += uHotColour * facula * pow(oneMinusMu, 1.15) * 0.045 * qLevel;
+  colour += uHotColour * facula * pow(oneMinusMu, 1.15) * 0.028 * qLevel;
 
   if (uSpotEnabled > 0.5) {
     float s = spotMask(n, uSpotCentre, uSpotRadius, uSpotContrast);
@@ -182,8 +182,10 @@ void main() {
 
   // Mild filmic compression: brighter, hotter, less muddy than the recovery renderer.
   colour = max(colour, vec3(0.0));
-  colour = colour / (colour + vec3(0.30));
-  colour *= 1.68;
+  colour *= 0.82;
+  colour = colour / (colour + vec3(0.46));
+  colour *= 1.34;
+  colour = pow(colour, vec3(0.96));
 
   gl_FragColor = vec4(colour, 1.0);
 }
@@ -208,8 +210,8 @@ void main() {
   float outer = pow(edge, 5.0);
   float pulse = 0.96 + 0.04 * sin(uTime * 0.45);
 
-  vec3 colour = uGlowColour * (0.58 * corona + 1.10 * outer) * uStrength * pulse;
-  float alpha = clamp((0.055 * corona + 0.24 * outer) * uStrength, 0.0, 0.38);
+  vec3 colour = uGlowColour * (0.36 * corona + 0.78 * outer) * uStrength * pulse;
+  float alpha = clamp((0.040 * corona + 0.16 * outer) * uStrength, 0.0, 0.26);
   gl_FragColor = vec4(colour, alpha);
 }
 `;
