@@ -12,26 +12,35 @@
 
   <meta
     name="description"
-    content="ExoIntel-Prime is a browser-based exoplanet transit photometry laboratory with archival light curves, worker-backed theoretical modelling, and WebGL scientific visualisation."
+    content="ExoIntel-Prime is an interactive exoplanet transit photometry laboratory with archival light curves, worker-backed theoretical modelling, and cinematic WebGL visualisation."
   />
 
   <meta
     name="keywords"
-    content="exoplanet, transit photometry, light curve, WebGL, TESS, Kepler, K2, MAST, NASA Exoplanet Archive, astrophysics"
+    content="exoplanet, transit photometry, light curve, WebGL, TESS, Kepler, K2, MAST, NASA Exoplanet Archive, astrophysics, exomoon, starspot"
   />
 
   <meta name="author" content="Biswajit Jana" />
   <meta name="theme-color" content="#060b13" />
+  <meta name="color-scheme" content="dark light" />
 
-  <meta property="og:title" content="ExoIntel-Prime | Exoplanet Transit Photometry Lab" />
+  <meta
+    property="og:title"
+    content="ExoIntel-Prime | Exoplanet Transit Photometry Lab"
+  />
+
   <meta
     property="og:description"
     content="A browser-based exoplanet transit laboratory comparing archival photometry with worker-computed theoretical models."
   />
+
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="ExoIntel-Prime" />
 
-  <link rel="stylesheet" href="./styles.css?v=20260517-dark-reset-01" />
+  <link
+    rel="stylesheet"
+    href="./styles.css?v=20260517-entry-polish-04"
+  />
 </head>
 
 <body>
@@ -47,26 +56,36 @@
     id="app"
     aria-label="ExoIntel-Prime exoplanet transit photometry laboratory"
   >
-    <section class="boot-screen">
+    <section class="boot-screen" aria-label="Loading ExoIntel-Prime">
       <div class="boot-card">
-        <div class="boot-mark" aria-hidden="true"></div>
+        <div class="boot-logo" aria-hidden="true">
+          <span>EP</span>
+        </div>
 
-        <h1>ExoIntel-Prime</h1>
+        <div class="boot-copy">
+          <p class="boot-eyebrow">ExoLight Transit Lab</p>
 
-        <p>
-          Loading worker-backed exoplanet transit photometry laboratory...
-        </p>
+          <h1>ExoIntel-Prime</h1>
 
-        <small>
-          SYSTEM OPERATOR: BISWAJIT JANA // © 2026
-        </small>
+          <p class="boot-description">
+            Loading the worker-backed exoplanet transit photometry laboratory.
+          </p>
+
+          <div class="boot-progress" aria-hidden="true">
+            <span></span>
+          </div>
+
+          <small>
+            Author: Biswajit Jana // © 2026
+          </small>
+        </div>
       </div>
     </section>
   </main>
 
   <script
     type="module"
-    src="./src/app.js?v=20260517-dark-reset-01"
+    src="./src/app.js?v=20260517-premium-app-02"
   ></script>
 </body>
 </html>
