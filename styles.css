@@ -183,7 +183,7 @@ button { cursor: pointer; }
 .left-panel, .right-panel { min-height: 0; display: grid; gap: 12px; overflow: hidden; }
 .left-panel { grid-template-rows: 250px minmax(0,1fr); }
 .right-panel { grid-template-rows: minmax(0,1fr); }
-.main-panel { min-height: 0; display: grid; grid-template-rows: minmax(365px,1fr) 260px; gap: 12px; overflow: hidden; }
+.main-panel { min-height: 0; display: grid; grid-template-rows: minmax(335px,1fr) 330px; gap: 12px; overflow: hidden; }
 .card { min-height: 0; border: 1px solid var(--line); border-radius: 18px; background: var(--surface-glass); box-shadow: var(--shadow); overflow: hidden; }
 .card-header { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: linear-gradient(180deg, var(--surface), var(--surface-2)); }
 .card-header h2 { margin: 0; font-size: 13px; font-weight: 950; letter-spacing: .01em; }

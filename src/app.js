@@ -1,11 +1,11 @@
-import { ExoSceneRenderer } from "./scene.js?v=20260517-polish-v12";
+import { ExoSceneRenderer } from "./scene.js?v=20260517-plot-fix-v13";
 
 /* ============================================================================
    ExoIntel-Prime Main Thread Orchestrator - Physics Visibility v11
    ============================================================================ */
 
 const APP_NAME = "ExoIntel-Prime";
-const WORKER_URL = new URL("./transitWorker.js?v=20260517-polish-v12", import.meta.url);
+const WORKER_URL = new URL("./transitWorker.js?v=20260517-plot-fix-v13", import.meta.url);
 const TARGET_CACHE_URL = "./data/exoplanets.json";
 const LIGHTCURVE_BASE_URL = "./data/lightcurves/";
 const THEME_STORAGE_KEY = "exointel-prime-theme-v5";
@@ -424,14 +424,19 @@ class ExoIntelPrimeApp {
   updateAssumptionStrip() { if (!this.dom.assumptionStrip) return; const flags = [...(this.metrics.morphologyFlags.length ? this.metrics.morphologyFlags : ["baseline transit model"]), this.timings.surfaceSamples ? `${Number(this.timings.surfaceSamples).toLocaleString("en-GB")} surface samples` : null, "ppm + percent depth"].filter(Boolean); const frag = document.createDocumentFragment(); for (const flag of flags.slice(0,9)) { const pill = document.createElement("span"); const lower = String(flag).toLowerCase(); pill.className = "pill"; if (lower.includes("high") || lower.includes("loaded") || lower.includes("quadrature") || lower.includes("residuals near")) pill.classList.add("ok"); else if (lower.includes("moon") || lower.includes("spot") || lower.includes("eccentric") || lower.includes("circular") || lower.includes("exposure")) pill.classList.add("warn"); else if (lower.includes("mismatch") || lower.includes("low")) pill.classList.add("danger"); pill.textContent = flag; frag.appendChild(pill); } this.dom.assumptionStrip.replaceChildren(frag); }
 
   draw() {
-    const canvas = this.dom.canvas, ctx = this.dom.ctx;
+    const canvas = this.dom.canvas;
+    const ctx = this.dom.ctx;
     if (!canvas || !ctx) return;
 
     const rect = canvas.getBoundingClientRect();
     const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
     const width = Math.max(2, Math.floor(rect.width * dpr));
     const height = Math.max(2, Math.floor(rect.height * dpr));
-    if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
+
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+    }
 
     const theme = getComputedStyle(this.root);
     const plotBg = theme.getPropertyValue("--plot-bg").trim() || "#0b1220";
@@ -447,23 +452,67 @@ class ExoIntelPrimeApp {
     ctx.fillStyle = plotBg;
     ctx.fillRect(0, 0, width, height);
 
-    const pad = { left: Math.max(60*dpr,width*.06), right: Math.max(20*dpr,width*.02), top: Math.max(26*dpr,height*.11), bottom: Math.max(38*dpr,height*.16) };
-    const diffHeight = Math.max(32*dpr, height * 0.18);
-    const gap = 10*dpr;
-    const mainBottom = Math.max(pad.top + 60*dpr, height - pad.bottom - diffHeight - gap);
-    const diffTop = mainBottom + gap;
+    /*
+      v13 plot layout:
+      The previous two-panel canvas was too compressed, so the main flux-axis
+      labels, phase labels, and the hypothesis-difference panel collided. This
+      layout gives the main flux plot its own label space, keeps the difference
+      panel compact, and draws the orbital-phase labels only once at the bottom.
+    */
+    const pad = {
+      left: Math.max(76 * dpr, width * 0.072),
+      right: Math.max(30 * dpr, width * 0.025),
+      top: Math.max(30 * dpr, height * 0.105),
+      bottom: Math.max(34 * dpr, height * 0.13)
+    };
+
+    const diffHeight = Math.max(58 * dpr, Math.min(92 * dpr, height * 0.24));
+    const gap = Math.max(16 * dpr, height * 0.055);
     const diffBottom = height - pad.bottom;
+    const diffTop = diffBottom - diffHeight;
+    const mainBottom = Math.max(pad.top + 86 * dpr, diffTop - gap);
 
     const scale = computeScale(collectPlotValues(this.archivalCurve, this.latestModel));
-    const xMap = ph => pad.left + (ph-scale.minPhase)/Math.max(1e-9,scale.maxPhase-scale.minPhase)*(width-pad.left-pad.right);
-    const yMap = fl => pad.top + (scale.maxFlux-fl)/Math.max(1e-9,scale.maxFlux-scale.minFlux)*(mainBottom-pad.top);
+    const xMap = phase =>
+      pad.left +
+      (phase - scale.minPhase) /
+      Math.max(1e-9, scale.maxPhase - scale.minPhase) *
+      (width - pad.left - pad.right);
 
-    drawPlotGrid(ctx,width,height,{...pad,bottom:height-mainBottom},scale,dpr,{grid,text,muted});
-    drawArchivalScatter(ctx,this.archivalCurve,xMap,yMap,dpr,data);
-    drawPlanetOnlyCurve(ctx,this.latestModel,xMap,yMap,dpr,muted);
-    drawModelCurve(ctx,this.latestModel,xMap,yMap,dpr,model);
-    drawLegend(ctx,pad,dpr,{text,data,model,muted});
-    drawDifferencePanel(ctx,this.latestModel,xMap,{ top: diffTop, bottom: diffBottom, left: pad.left, right: width-pad.right },dpr,{ grid, text, muted, accent, danger });
+    const yMap = flux =>
+      pad.top +
+      (scale.maxFlux - flux) /
+      Math.max(1e-9, scale.maxFlux - scale.minFlux) *
+      (mainBottom - pad.top);
+
+    drawPlotGrid(
+      ctx,
+      { left: pad.left, right: width - pad.right, top: pad.top, bottom: mainBottom },
+      scale,
+      dpr,
+      { grid, text, muted }
+    );
+
+    drawArchivalScatter(ctx, this.archivalCurve, xMap, yMap, dpr, data);
+    drawPlanetOnlyCurve(ctx, this.latestModel, xMap, yMap, dpr, muted);
+    drawModelCurve(ctx, this.latestModel, xMap, yMap, dpr, model);
+    drawLegend(ctx, { left: pad.left, top: pad.top }, dpr, { text, data, model, muted });
+
+    drawDifferencePanel(
+      ctx,
+      this.latestModel,
+      xMap,
+      {
+        top: diffTop,
+        bottom: diffBottom,
+        left: pad.left,
+        right: width - pad.right,
+        minPhase: scale.minPhase,
+        maxPhase: scale.maxPhase
+      },
+      dpr,
+      { grid, text, muted, accent, danger }
+    );
   }
 
   startTelemetryLoop() {
@@ -528,28 +577,137 @@ function extractLightCurveRows(payload) { if (Array.isArray(payload)) return pay
 function generateSyntheticArchive(target, params) { const n=480; const phase=new Float32Array(n), flux=new Float32Array(n), error=new Float32Array(n); const depth=clamp(numberValue(target.pl_trandep, params.rpRs*params.rpRs*1e6)/1e6,.0001,.08); const width=clamp(numberValue(target.pl_trandur,2.5)/24/Math.max(.2,numberValue(target.pl_orbper,3)),.008,.08); for (let i=0;i<n;i++){ const x=-.12+.24*i/(n-1); const transit=Math.exp(-.5*(x/Math.max(.002,width))**2); const noise=.00045*Math.sin(i*12.9898)+.00022*Math.sin(i*4.1414+1.7); phase[i]=x; flux[i]=1-depth*transit+noise; error[i]=.0005; } return { phase, flux, error, source:"synthetic demonstration fallback", points:n }; }
 function collectPlotValues(archive,model) { return { phaseValues:[...archive.phase,...model.phase], fluxValues:[...archive.flux,...model.flux,...(model.planetOnlyFlux||[]) ] }; }
 function computeScale(values) { let minPhase=Infinity,maxPhase=-Infinity,minFluxRaw=Infinity,maxFluxRaw=-Infinity; for (const v of values.phaseValues) if (Number.isFinite(v)) { minPhase=Math.min(minPhase,v); maxPhase=Math.max(maxPhase,v); } for (const v of values.fluxValues) if (Number.isFinite(v)) { minFluxRaw=Math.min(minFluxRaw,v); maxFluxRaw=Math.max(maxFluxRaw,v); } if (!Number.isFinite(minPhase)||!Number.isFinite(maxPhase)||minPhase===maxPhase){minPhase=-.12;maxPhase=.12;} if (!Number.isFinite(minFluxRaw)||!Number.isFinite(maxFluxRaw)||minFluxRaw===maxFluxRaw){minFluxRaw=.99;maxFluxRaw=1.001;} const span=Math.max(.0005,maxFluxRaw-minFluxRaw); return { minPhase,maxPhase,minFlux:minFluxRaw-span*.18,maxFlux:maxFluxRaw+span*.15 }; }
-function drawPlotGrid(ctx,width,height,pad,scale,dpr,c){ctx.save();ctx.strokeStyle=c.grid;ctx.lineWidth=1*dpr;for(let i=0;i<=10;i++){const x=pad.left+i/10*(width-pad.left-pad.right);ctx.beginPath();ctx.moveTo(x,pad.top);ctx.lineTo(x,height-pad.bottom);ctx.stroke();}for(let i=0;i<=6;i++){const y=pad.top+i/6*(height-pad.top-pad.bottom);ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(width-pad.right,y);ctx.stroke();}ctx.strokeStyle=c.muted;ctx.strokeRect(pad.left,pad.top,width-pad.left-pad.right,height-pad.top-pad.bottom);ctx.fillStyle=c.muted;ctx.font=`${11*dpr}px Inter, system-ui, sans-serif`;ctx.textAlign="center";ctx.textBaseline="top";for(let i=0;i<=4;i++){const ph=scale.minPhase+i/4*(scale.maxPhase-scale.minPhase);const x=pad.left+i/4*(width-pad.left-pad.right);ctx.fillText(formatNumber(ph,3),x,height-pad.bottom+10*dpr);}ctx.textAlign="right";ctx.textBaseline="middle";for(let i=0;i<=4;i++){const fl=scale.maxFlux-i/4*(scale.maxFlux-scale.minFlux);const y=pad.top+i/4*(height-pad.top-pad.bottom);ctx.fillText(formatNumber(fl,5),pad.left-10*dpr,y);}ctx.fillStyle=c.text;ctx.textAlign="left";ctx.textBaseline="top";ctx.fillText("Orbital phase",pad.left,height-20*dpr);ctx.save();ctx.translate(18*dpr,height*.5);ctx.rotate(-Math.PI/2);ctx.fillText("Flux",0,0);ctx.restore();ctx.restore();}
+function drawPlotGrid(ctx, box, scale, dpr, colours) {
+  ctx.save();
+
+  const width = box.right - box.left;
+  const height = box.bottom - box.top;
+
+  ctx.strokeStyle = alphaColour(colours.grid, 0.88);
+  ctx.lineWidth = 1 * dpr;
+
+  for (let i = 0; i <= 10; i += 1) {
+    const x = box.left + (i / 10) * width;
+    ctx.beginPath();
+    ctx.moveTo(x, box.top);
+    ctx.lineTo(x, box.bottom);
+    ctx.stroke();
+  }
+
+  for (let i = 0; i <= 5; i += 1) {
+    const y = box.top + (i / 5) * height;
+    ctx.beginPath();
+    ctx.moveTo(box.left, y);
+    ctx.lineTo(box.right, y);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = alphaColour(colours.muted, 0.78);
+  ctx.strokeRect(box.left, box.top, width, height);
+
+  ctx.fillStyle = colours.muted;
+  ctx.font = `${10.5 * dpr}px Inter, system-ui, sans-serif`;
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+
+  for (let i = 0; i <= 4; i += 1) {
+    const flux = scale.maxFlux - (i / 4) * (scale.maxFlux - scale.minFlux);
+    const y = box.top + (i / 4) * height;
+    ctx.fillText(formatNumber(flux, 5), box.left - 10 * dpr, y);
+  }
+
+  ctx.textAlign = "left";
+  ctx.textBaseline = "bottom";
+  ctx.fillStyle = colours.text;
+  ctx.font = `${11 * dpr}px Inter, system-ui, sans-serif`;
+  ctx.fillText("Flux", box.left, box.top - 7 * dpr);
+
+  ctx.restore();
+}
+
 function drawArchivalScatter(ctx,archive,xMap,yMap,dpr,colour){ctx.save();ctx.fillStyle=alphaColour(colour,.55);const r=Math.max(1.2,1.45*dpr);for(let i=0;i<archive.phase.length;i++){ctx.beginPath();ctx.arc(xMap(archive.phase[i]),yMap(archive.flux[i]),r,0,Math.PI*2);ctx.fill();}ctx.restore();}
 function drawModelCurve(ctx,model,xMap,yMap,dpr,colour){if(model.phase.length<2)return;ctx.save();ctx.beginPath();for(let i=0;i<model.phase.length;i++){const x=xMap(model.phase[i]);const y=yMap(model.flux[i]);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.strokeStyle=colour;ctx.lineWidth=Math.max(2,2.35*dpr);ctx.stroke();ctx.restore();}
 function drawPlanetOnlyCurve(ctx,model,xMap,yMap,dpr,colour){if(!model.planetOnlyFlux||model.planetOnlyFlux.length<2||model.planetOnlyFlux.length!==model.phase.length)return;ctx.save();ctx.beginPath();for(let i=0;i<model.phase.length;i++){const x=xMap(model.phase[i]);const y=yMap(model.planetOnlyFlux[i]);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.setLineDash([6*dpr,4*dpr]);ctx.strokeStyle=alphaColour(colour,.72);ctx.lineWidth=Math.max(1,1.25*dpr);ctx.stroke();ctx.restore();}
-function drawDifferencePanel(ctx,model,xMap,box,dpr,c){
-  const delta=model.hypothesisDeltaPpm;
+function drawDifferencePanel(ctx, model, xMap, box, dpr, colours) {
+  const delta = model.hypothesisDeltaPpm;
+
   ctx.save();
-  ctx.strokeStyle=alphaColour(c.grid,.65);ctx.lineWidth=1*dpr;
-  ctx.strokeRect(box.left,box.top,box.right-box.left,box.bottom-box.top);
-  ctx.font=`${9.5*dpr}px Inter, system-ui, sans-serif`;ctx.fillStyle=c.muted;ctx.textAlign="left";ctx.textBaseline="bottom";
-  ctx.fillText("Δ model [ppm]",box.left,box.top-4*dpr);
-  if(!delta||delta.length<2||delta.length!==model.phase.length){ctx.fillStyle=c.muted;ctx.fillText("waiting for worker difference curve",box.left+10*dpr,(box.top+box.bottom)/2);ctx.restore();return;}
-  let maxAbs=0;for(const v of delta)if(Number.isFinite(v))maxAbs=Math.max(maxAbs,Math.abs(v));
-  const span=Math.max(5,Math.ceil(maxAbs/10)*10);
-  const y0=(box.top+box.bottom)/2;
-  const yMap=v=>y0-(v/span)*(box.bottom-box.top)*0.42;
-  ctx.strokeStyle=alphaColour(c.grid,.75);ctx.beginPath();ctx.moveTo(box.left,y0);ctx.lineTo(box.right,y0);ctx.stroke();
-  ctx.fillStyle=c.muted;ctx.textAlign="right";ctx.textBaseline="middle";ctx.fillText(`+${span} ppm`,box.left-8*dpr,box.top+8*dpr);ctx.fillText("0",box.left-8*dpr,y0);ctx.fillText(`-${span} ppm`,box.left-8*dpr,box.bottom-8*dpr);
-  ctx.beginPath();for(let i=0;i<model.phase.length;i++){const x=xMap(model.phase[i]);const y=yMap(delta[i]);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.strokeStyle=maxAbs>1?c.accent:alphaColour(c.muted,.65);ctx.lineWidth=Math.max(1.5,1.8*dpr);ctx.stroke();
-  ctx.fillStyle=maxAbs>1?c.accent:c.muted;ctx.textAlign="right";ctx.textBaseline="top";ctx.fillText(`peak |Δ| ${Math.round(maxAbs).toLocaleString("en-GB")} ppm`,box.right-8*dpr,box.top+7*dpr);
+
+  const panelHeight = box.bottom - box.top;
+  const panelWidth = box.right - box.left;
+
+  ctx.strokeStyle = alphaColour(colours.grid, 0.72);
+  ctx.lineWidth = 1 * dpr;
+  ctx.strokeRect(box.left, box.top, panelWidth, panelHeight);
+
+  ctx.font = `${10 * dpr}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = colours.text;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "bottom";
+  ctx.fillText("Hypothesis residual: active − planet-only [ppm]", box.left, box.top - 6 * dpr);
+
+  if (!delta || delta.length < 2 || delta.length !== model.phase.length) {
+    ctx.fillStyle = colours.muted;
+    ctx.textBaseline = "middle";
+    ctx.fillText("waiting for worker difference curve", box.left + 10 * dpr, (box.top + box.bottom) / 2);
+    ctx.restore();
+    return;
+  }
+
+  let maxAbs = 0;
+  for (const value of delta) {
+    if (Number.isFinite(value)) maxAbs = Math.max(maxAbs, Math.abs(value));
+  }
+
+  const span = Math.max(5, Math.ceil(maxAbs / 10) * 10);
+  const y0 = (box.top + box.bottom) / 2;
+  const yMap = value => y0 - (value / span) * panelHeight * 0.38;
+
+  ctx.strokeStyle = alphaColour(colours.grid, 0.8);
+  ctx.beginPath();
+  ctx.moveTo(box.left, y0);
+  ctx.lineTo(box.right, y0);
+  ctx.stroke();
+
+  ctx.fillStyle = colours.muted;
+  ctx.font = `${9.5 * dpr}px Inter, system-ui, sans-serif`;
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  ctx.fillText(`+${span}`, box.left - 8 * dpr, box.top + 9 * dpr);
+  ctx.fillText("0", box.left - 8 * dpr, y0);
+  ctx.fillText(`-${span}`, box.left - 8 * dpr, box.bottom - 9 * dpr);
+
+  ctx.beginPath();
+  for (let i = 0; i < model.phase.length; i += 1) {
+    const x = xMap(model.phase[i]);
+    const y = yMap(delta[i]);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = maxAbs > 1 ? colours.accent : alphaColour(colours.muted, 0.65);
+  ctx.lineWidth = Math.max(1.4, 1.65 * dpr);
+  ctx.stroke();
+
+  ctx.fillStyle = maxAbs > 1 ? colours.accent : colours.muted;
+  ctx.textAlign = "right";
+  ctx.textBaseline = "top";
+  ctx.fillText(`peak |Δ| ${Math.round(maxAbs).toLocaleString("en-GB")} ppm`, box.right - 8 * dpr, box.top + 7 * dpr);
+
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillStyle = colours.muted;
+  for (let i = 0; i <= 4; i += 1) {
+    const phase = box.minPhase + (i / 4) * (box.maxPhase - box.minPhase);
+    const x = box.left + (i / 4) * panelWidth;
+    ctx.fillText(formatNumber(phase, 3), x, box.bottom + 8 * dpr);
+  }
+
+  ctx.fillStyle = colours.text;
+  ctx.fillText("Orbital phase", box.left + panelWidth / 2, box.bottom + 23 * dpr);
+
   ctx.restore();
 }
+
 function drawLegend(ctx,pad,dpr,c){ctx.save();ctx.font=`${12*dpr}px Inter, system-ui, sans-serif`;ctx.textBaseline="middle";const y=pad.top-10*dpr,x0=pad.left;ctx.fillStyle=c.data;ctx.beginPath();ctx.arc(x0,y,4*dpr,0,Math.PI*2);ctx.fill();ctx.fillStyle=c.text;ctx.fillText("archival photometry",x0+10*dpr,y);const x1=x0+172*dpr;ctx.strokeStyle=c.model;ctx.lineWidth=3*dpr;ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x1+22*dpr,y);ctx.stroke();ctx.fillStyle=c.text;ctx.fillText("active model",x1+32*dpr,y);const x2=x1+150*dpr;ctx.strokeStyle=alphaColour(c.muted,.72);ctx.setLineDash([6*dpr,4*dpr]);ctx.beginPath();ctx.moveTo(x2,y);ctx.lineTo(x2+22*dpr,y);ctx.stroke();ctx.setLineDash([]);ctx.fillText("planet-only",x2+32*dpr,y);ctx.restore();}
 function serialiseTarget(t){return{pl_name:t.pl_name,hostname:t.hostname,pl_orbper:numberValue(t.pl_orbper,3),pl_trandur:numberValue(t.pl_trandur,2.5),pl_trandep:numberValue(t.pl_trandep,10000),pl_orbeccen:numberValue(t.pl_orbeccen,0),pl_orblper:numberValue(t.pl_orblper,90),st_teff:numberValue(t.st_teff,5772),st_rad:numberValue(t.st_rad,1),st_mass:numberValue(t.st_mass,1)};}
 function toCamel(id){return id.replace(/-([a-z])/g,(_,c)=>c.toUpperCase());}
