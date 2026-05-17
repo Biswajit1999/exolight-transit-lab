@@ -1,6 +1,6 @@
 /* ==========================================================================
    ExoIntel-Prime
-   Global Entry + Boot Styles
+   Global Entry + Cinematic Boot Styles
    ========================================================================== */
 
 :root {
@@ -128,6 +128,12 @@ a:hover {
     radial-gradient(circle at 50% 50%, transparent 0%, transparent 52%, rgba(0, 0, 0, 0.30) 100%);
 }
 
+.boot-screen.is-fading {
+  opacity: 0;
+  transition: opacity 0.55s ease;
+  pointer-events: none;
+}
+
 .boot-card {
   position: relative;
   z-index: 2;
@@ -199,6 +205,44 @@ a:hover {
   line-height: 1.55;
 }
 
+.boot-status-wrap {
+  margin-top: 16px;
+}
+
+.boot-status {
+  min-height: 22px;
+  margin: 0 0 10px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+}
+
+.boot-percent-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.boot-percent-label {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.boot-percent-value {
+  color: var(--data);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 850;
+  letter-spacing: 0.03em;
+}
+
 .boot-metrics {
   display: flex;
   flex-wrap: wrap;
@@ -224,33 +268,33 @@ a:hover {
 .boot-progress {
   position: relative;
   width: 100%;
-  height: 8px;
-  margin-top: 20px;
+  height: 10px;
+  margin-top: 14px;
   overflow: hidden;
   border-radius: 999px;
   background: rgba(64, 81, 107, 0.42);
+  border: 1px solid rgba(99, 167, 255, 0.14);
 }
 
 .boot-progress span {
   position: absolute;
   top: 0;
+  left: 0;
   bottom: 0;
-  left: -40%;
-  width: 42%;
+  width: 0%;
   border-radius: inherit;
   background:
-    linear-gradient(90deg, transparent, rgba(99, 167, 255, 0.95), rgba(255, 181, 71, 0.88), transparent);
-  animation: boot-load 1.55s ease-in-out infinite;
-}
-
-@keyframes boot-load {
-  0% {
-    transform: translateX(0);
-  }
-
-  100% {
-    transform: translateX(340%);
-  }
+    linear-gradient(
+      90deg,
+      #4cc9f0 0%,
+      #63a7ff 35%,
+      #8ec5ff 55%,
+      #ffb547 100%
+    );
+  box-shadow:
+    0 0 16px rgba(99, 167, 255, 0.35),
+    0 0 24px rgba(255, 181, 71, 0.18);
+  transition: width 0.18s linear;
 }
 
 .boot-card small {
@@ -335,9 +379,7 @@ noscript strong {
   }
 
   .boot-progress span {
-    animation: none;
-    left: 0;
-    width: 100%;
+    transition: none;
   }
 }
 
