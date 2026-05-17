@@ -1,4 +1,4 @@
-import { ExoSceneRenderer } from "./scene.js?v=20260517-ultra-scene-01";
+import { ExoSceneRenderer } from "./scene.js?v=20260517-scene-worker-sync-03";
 
 
 /* ============================================================================
@@ -7,7 +7,7 @@ import { ExoSceneRenderer } from "./scene.js?v=20260517-ultra-scene-01";
    ============================================================================ */
 
 const APP_NAME = "ExoIntel-Prime";
-const WORKER_URL = new URL("./transitWorker.js?v=20260517-worker-03", import.meta.url);
+const WORKER_URL = new URL("./transitWorker.js?v=20260517-worker-eccentric-exposure-04", import.meta.url);
 const TARGET_CACHE_URL = "./data/exoplanets.json";
 const LIGHTCURVE_BASE_URL = "./data/lightcurves/";
 const THEME_STORAGE_KEY = "exointel-prime-theme-v4";
@@ -34,6 +34,10 @@ const DEFAULT_PARAMS = Object.freeze({
   moonPhaseDeg: 45,
 
   phaseShift: 0.0,
+  exposureIntegration: true,
+  exposureSamples: 5,
+  exposurePhaseWidth: 0,
+   
   visualQuality: "balanced",
   modelResolution: 720,
   fidelity: "preview"
@@ -47,6 +51,7 @@ const DEFAULT_TARGET = Object.freeze({
   disc_year: null,
 
   pl_orbper: 3.0,
+  pl_orblper: 90.0,
   pl_trandur: 2.4,
   pl_trandep: 10000,
   pl_ratror: 0.1,
@@ -1522,8 +1527,8 @@ class ExoIntelPrimeApp {
 
     next.fidelity = "preview";
     next.modelResolution = 720;
-    next.eccentricity = numberValue(this.latestTarget.pl_orbeccen, 0);
-
+    next.eccentricity = clamp(numberValue(this.latestTarget.pl_orbeccen, 0), 0, 0.95);
+    next.omegaDeg = normaliseDegrees(numberValue(this.latestTarget.pl_orblper, 90));
     this.latestParams = next;
   }
 
@@ -1727,6 +1732,7 @@ class ExoIntelPrimeApp {
       ["a", formatUnit(t.pl_orbsmax, "AU", 4)],
       ["Inclination", formatUnit(t.pl_orbincl, "°", 2)],
       ["Eccentricity", formatMaybe(t.pl_orbeccen, 3)],
+      ["ω", formatUnit(t.pl_orblper, "°", 2)],
       ["Discovery", t.disc_year ? String(t.disc_year) : "—"]
     ]);
 
@@ -1773,31 +1779,60 @@ class ExoIntelPrimeApp {
   }
 
   updateAssumptionStrip() {
-    if (!this.dom.assumptionStrip) return;
+   if (!this.dom.assumptionStrip) return;
 
-    const flags = [
-      ...(this.metrics.morphologyFlags.length ? this.metrics.morphologyFlags : ["baseline transit model"]),
-      this.timings.surfaceSamples ? `${Number(this.timings.surfaceSamples).toLocaleString("en-GB")} surface samples` : null,
-      "circular projected geometry",
-      "ppm + percent depth"
-    ].filter(Boolean);
+   const workerFlags = this.metrics.morphologyFlags.length
+    ? this.metrics.morphologyFlags
+    : ["baseline transit model"];
 
-    const fragment = document.createDocumentFragment();
+   const extraFlags = [
+    this.timings.surfaceSamples
+      ? `${Number(this.timings.surfaceSamples).toLocaleString("en-GB")} surface samples`
+      : null,
+    "ppm + percent depth"
+  ];
 
-    for (const flag of flags.slice(0, 8)) {
-      const pill = document.createElement("span");
-      const lower = String(flag).toLowerCase();
-      pill.className = "pill";
+   const flags = [
+    ...workerFlags,
+    ...extraFlags
+  ].filter(Boolean);
 
-      if (lower.includes("high") || lower.includes("loaded") || lower.includes("quadrature")) pill.classList.add("ok");
-      else if (lower.includes("moon") || lower.includes("spot") || lower.includes("circular")) pill.classList.add("warn");
+   const fragment = document.createDocumentFragment();
 
-      pill.textContent = flag;
-      fragment.appendChild(pill);
+   for (const flag of flags.slice(0, 9)) {
+    const pill = document.createElement("span");
+    const lower = String(flag).toLowerCase();
+
+    pill.className = "pill";
+
+    if (
+      lower.includes("high") ||
+      lower.includes("loaded") ||
+      lower.includes("quadrature") ||
+      lower.includes("residuals near")
+    ) {
+      pill.classList.add("ok");
+    } else if (
+      lower.includes("moon") ||
+      lower.includes("spot") ||
+      lower.includes("eccentric") ||
+      lower.includes("circular") ||
+      lower.includes("exposure")
+    ) {
+      pill.classList.add("warn");
+    } else if (
+      lower.includes("mismatch") ||
+      lower.includes("low")
+    ) {
+      pill.classList.add("danger");
     }
 
-    this.dom.assumptionStrip.replaceChildren(fragment);
+    pill.textContent = flag;
+    fragment.appendChild(pill);
   }
+
+  this.dom.assumptionStrip.replaceChildren(fragment);
+}
 
   draw() {
     const canvas = this.dom.canvas;
@@ -1999,6 +2034,7 @@ function normaliseTarget(row) {
     pl_orbsmax: numberValue(row.pl_orbsmax, null),
     pl_orbincl: numberValue(row.pl_orbincl, 88.5),
     pl_orbeccen: numberValue(row.pl_orbeccen, 0),
+    pl_orblper: numberValue(row.pl_orblper ?? row.omega, 90),
     pl_bmassj: numberValue(row.pl_bmassj, null),
     pl_bmasse: numberValue(row.pl_bmasse, null),
     pl_radj: numberValue(row.pl_radj, null),
@@ -2024,7 +2060,8 @@ function targetToParams(target, previous) {
     rpRs: clamp(numberValue(target.pl_ratror, previous.rpRs), 0.01, 0.25),
     aRs: clamp(inferARs(target, previous.aRs), 2, 60),
     inclinationDeg: clamp(numberValue(target.pl_orbincl, previous.inclinationDeg), 75, 90),
-    eccentricity: numberValue(target.pl_orbeccen, 0),
+    eccentricity: clamp(numberValue(target.pl_orbeccen, 0), 0, 0.95),
+    omegaDeg: normaliseDegrees(numberValue(target.pl_orblper, 90)),
     fidelity: "preview",
     modelResolution: 720
   };
@@ -2308,6 +2345,22 @@ function serialiseTarget(target) {
     st_rad: numberValue(target.st_rad, 1),
     st_mass: numberValue(target.st_mass, 1)
   };
+}
+
+function normaliseDegrees(deg) {
+  let value = Number(deg);
+
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  value %= 360;
+
+  if (value < 0) {
+    value += 360;
+  }
+
+  return value;
 }
 
 function numberValue(value, fallback) {
