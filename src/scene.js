@@ -1,23 +1,26 @@
- /* ============================================================================
+/* ============================================================================
    ExoIntel-Prime
-   Professional WebGL Scientific Scene Renderer
+   Ultra Cinematic WebGL Scientific Scene Renderer
    ---------------------------------------------------------------------------
    Purpose:
-   - Render a visually pleasing, full-orbit exoplanet system.
-   - Keep the scene lightweight and separate from the worker physics engine.
-   - Show the theoretical parameter state without faking archival data.
-   - Planet performs a full smooth revolution around the star.
-   - Planet/front/back ordering is handled so the star correctly hides the
-     planet when it is behind the stellar disk.
-   - Star shader includes limb darkening, granulation, atmosphere glow, and
-     irregular starspot morphology.
+   - Provide a high-end scientific/cinematic visualisation of an exoplanet
+     transit system.
+   - Keep heavy photometric modelling inside transitWorker.js.
+   - Render a full-orbit theoretical scene with physically interpretable
+     geometry.
+   - Visual quality is adjustable through params.visualQuality:
+       "low" | "balanced" | "ultra"
 
    Important:
-   Heavy photometric calculations remain in transitWorker.js.
-   This file is visualisation only.
+   This file is VISUALISATION ONLY.
+   The transit light-curve calculation remains in the Web Worker.
    ============================================================================ */
 
 const TWO_PI = Math.PI * 2;
+
+/* ============================================================================
+   SHADERS
+   ============================================================================ */
 
 const STAR_VERTEX_SHADER = `
 attribute vec3 aPosition;
@@ -52,6 +55,8 @@ uniform float uTime;
 uniform float uU1;
 uniform float uU2;
 uniform float uTeff;
+uniform float uGranulationStrength;
+
 uniform float uSpotEnabled;
 uniform vec3 uSpotA;
 uniform vec3 uSpotB;
@@ -94,10 +99,10 @@ float fbm(vec3 p){
   float value = 0.0;
   float amp = 0.54;
 
-  for(int i = 0; i < 5; i++){
+  for(int i = 0; i < 6; i++){
     value += amp * noise(p);
-    p = p * 2.04 + vec3(5.31, 7.17, 3.83);
-    amp *= 0.48;
+    p = p * 2.03 + vec3(5.31, 7.17, 3.83);
+    amp *= 0.47;
   }
 
   return value;
@@ -111,11 +116,11 @@ float spotMask(vec3 n, vec3 centre, float radius, float softness){
 vec3 stellarColour(float teff){
   float t = clamp((teff - 2800.0) / 7200.0, 0.0, 1.0);
 
-  vec3 mStar = vec3(1.00, 0.33, 0.12);
-  vec3 kStar = vec3(1.00, 0.53, 0.20);
-  vec3 gStar = vec3(1.00, 0.74, 0.36);
-  vec3 fStar = vec3(0.94, 0.91, 1.00);
-  vec3 aStar = vec3(0.58, 0.74, 1.00);
+  vec3 mStar = vec3(1.00, 0.30, 0.10);
+  vec3 kStar = vec3(1.00, 0.50, 0.18);
+  vec3 gStar = vec3(1.00, 0.72, 0.34);
+  vec3 fStar = vec3(0.93, 0.91, 1.00);
+  vec3 aStar = vec3(0.55, 0.72, 1.00);
 
   vec3 c = mix(mStar, kStar, smoothstep(0.00, 0.25, t));
   c = mix(c, gStar, smoothstep(0.23, 0.52, t));
@@ -130,52 +135,65 @@ void main(){
 
   float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
   float q = 1.0 - mu;
+
   float limb = clamp(1.0 - uU1 * q - uU2 * q * q, 0.0, 1.25);
 
-  vec3 slowCoord = n * 8.5 + vec3(uTime * 0.014, -uTime * 0.011, uTime * 0.009);
-  vec3 cellCoord = n * 31.0 + vec3(-uTime * 0.028, uTime * 0.020, -uTime * 0.015);
-  vec3 fineCoord = n * 82.0 + vec3(uTime * 0.047, uTime * 0.036, -uTime * 0.025);
+  vec3 slowCoord = n * 7.5 + vec3(uTime * 0.010, -uTime * 0.008, uTime * 0.007);
+  vec3 cellCoord = n * 31.0 + vec3(-uTime * 0.026, uTime * 0.018, -uTime * 0.013);
+  vec3 fineCoord = n * 96.0 + vec3(uTime * 0.050, uTime * 0.034, -uTime * 0.024);
 
   float convection = fbm(slowCoord);
   float cells = fbm(cellCoord);
   float fine = fbm(fineCoord);
 
-  float brightCell = smoothstep(0.42, 0.68, cells);
+  float brightCell = smoothstep(0.42, 0.70, cells);
   float darkLane = smoothstep(0.28, 0.48, 1.0 - cells);
-  float grain = 0.84 + 0.18 * convection + 0.13 * fine + 0.08 * brightCell - 0.10 * darkLane;
+
+  float granulation =
+    0.84 +
+    uGranulationStrength * (
+      0.18 * convection +
+      0.15 * fine +
+      0.10 * brightCell -
+      0.14 * darkLane
+    );
 
   vec3 base = stellarColour(uTeff);
-  vec3 photosphere = base * limb * grain;
+  vec3 photosphere = base * limb * granulation;
 
-  float edge = pow(1.0 - mu, 1.85);
-  photosphere = mix(photosphere, vec3(1.0, 0.30, 0.06) * limb, edge * 0.24);
+  float edge = pow(1.0 - mu, 1.80);
+  photosphere = mix(
+    photosphere,
+    vec3(1.0, 0.28, 0.06) * limb,
+    edge * 0.26
+  );
 
   float spotDark = 0.0;
 
   if(uSpotEnabled > 0.5){
-    float ragA = 0.88 + 0.22 * fbm(n * 105.0 + vec3(2.1, 5.3, 1.7));
-    float ragB = 0.86 + 0.24 * fbm(n * 93.0 + vec3(7.4, 2.8, 6.2));
-    float ragC = 0.84 + 0.25 * fbm(n * 117.0 + vec3(3.7, 9.1, 4.4));
+    float ragA = 0.86 + 0.24 * fbm(n * 110.0 + vec3(2.1, 5.3, 1.7));
+    float ragB = 0.84 + 0.27 * fbm(n * 96.0 + vec3(7.4, 2.8, 6.2));
+    float ragC = 0.82 + 0.28 * fbm(n * 126.0 + vec3(3.7, 9.1, 4.4));
 
-    float penA = spotMask(n, normalize(uSpotA), uSpotRadius * 0.98 * ragA, uSpotRadius * 0.30);
-    float umbA = spotMask(n, normalize(uSpotA), uSpotRadius * 0.43 * ragA, uSpotRadius * 0.18);
+    float penA = spotMask(n, normalize(uSpotA), uSpotRadius * 1.02 * ragA, uSpotRadius * 0.34);
+    float umbA = spotMask(n, normalize(uSpotA), uSpotRadius * 0.42 * ragA, uSpotRadius * 0.16);
 
-    float penB = spotMask(n, normalize(uSpotB), uSpotRadius * 0.70 * ragB, uSpotRadius * 0.28);
-    float umbB = spotMask(n, normalize(uSpotB), uSpotRadius * 0.28 * ragB, uSpotRadius * 0.16);
+    float penB = spotMask(n, normalize(uSpotB), uSpotRadius * 0.72 * ragB, uSpotRadius * 0.30);
+    float umbB = spotMask(n, normalize(uSpotB), uSpotRadius * 0.28 * ragB, uSpotRadius * 0.15);
 
-    float penC = spotMask(n, normalize(uSpotC), uSpotRadius * 0.58 * ragC, uSpotRadius * 0.25);
-    float umbC = spotMask(n, normalize(uSpotC), uSpotRadius * 0.22 * ragC, uSpotRadius * 0.15);
+    float penC = spotMask(n, normalize(uSpotC), uSpotRadius * 0.60 * ragC, uSpotRadius * 0.26);
+    float umbC = spotMask(n, normalize(uSpotC), uSpotRadius * 0.24 * ragC, uSpotRadius * 0.14);
 
     float penumbra = max(max(penA, penB * 0.78), penC * 0.65);
     float umbra = max(max(umbA, umbB * 0.86), umbC * 0.70);
 
-    spotDark = clamp(penumbra * 0.52 + umbra * 0.88, 0.0, 1.0);
+    spotDark = clamp(penumbra * 0.54 + umbra * 0.90, 0.0, 1.0);
   }
 
   float spotFactor = 1.0 - spotDark * clamp(uSpotContrast, 0.0, 0.98);
   vec3 colour = photosphere * spotFactor;
 
-  colour += vec3(1.0, 0.42, 0.10) * pow(1.0 - mu, 2.85) * 0.10;
+  colour += vec3(1.0, 0.38, 0.08) * pow(1.0 - mu, 2.75) * 0.11;
 
   gl_FragColor = vec4(max(colour, vec3(0.0)), 1.0);
 }
@@ -190,15 +208,17 @@ varying vec3 vViewNormal;
 
 uniform float uTime;
 uniform vec3 uGlowColour;
+uniform float uGlowStrength;
 
 void main(){
   float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
-  float rim = pow(1.0 - mu, 1.08);
-  float halo = pow(1.0 - mu, 3.0);
-  float pulse = 0.92 + 0.08 * sin(uTime * 0.58);
 
-  vec3 colour = uGlowColour * (0.44 * rim + 0.66 * halo) * pulse;
-  float alpha = clamp(0.20 * rim + 0.32 * halo, 0.0, 0.64);
+  float rim = pow(1.0 - mu, 1.05);
+  float halo = pow(1.0 - mu, 2.85);
+  float pulse = 0.94 + 0.06 * sin(uTime * 0.52);
+
+  vec3 colour = uGlowColour * (0.45 * rim + 0.78 * halo) * pulse * uGlowStrength;
+  float alpha = clamp((0.20 * rim + 0.34 * halo) * uGlowStrength, 0.0, 0.72);
 
   gl_FragColor = vec4(colour, alpha);
 }
@@ -215,16 +235,23 @@ varying vec3 vViewNormal;
 uniform vec3 uColour;
 uniform vec3 uRimColour;
 uniform float uAlpha;
+uniform float uPhaseTint;
 
 void main(){
   vec3 n = normalize(vNormal);
-  vec3 light = normalize(vec3(-0.58, 0.38, 0.86));
+  vec3 light = normalize(vec3(-0.62, 0.32, 0.74));
 
   float lambert = max(dot(n, light), 0.0);
-  float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
-  float rim = pow(1.0 - mu, 2.35);
+  float night = 1.0 - lambert;
 
-  vec3 colour = uColour * (0.08 + 0.92 * lambert) + uRimColour * rim * 0.36;
+  float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
+  float rim = pow(1.0 - mu, 2.18);
+
+  vec3 dayColour = uColour * (0.12 + 0.96 * lambert);
+  vec3 nightColour = vec3(0.005, 0.010, 0.018) * (0.72 + 0.28 * uPhaseTint);
+
+  vec3 colour = mix(dayColour, nightColour, night * 0.72);
+  colour += uRimColour * rim * 0.42;
 
   gl_FragColor = vec4(colour, uAlpha);
 }
@@ -261,12 +288,17 @@ attribute float aAlpha;
 uniform mat4 uView;
 uniform mat4 uProjection;
 uniform float uPixelRatio;
+uniform float uTime;
 
 varying float vAlpha;
 
 void main(){
+  vec3 p = aPosition;
+  p.x += sin(uTime * 0.012 + aPosition.z * 0.27) * 0.006;
+  p.y += cos(uTime * 0.010 + aPosition.x * 0.19) * 0.004;
+
   vAlpha = aAlpha;
-  gl_Position = uProjection * uView * vec4(aPosition, 1.0);
+  gl_Position = uProjection * uView * vec4(p, 1.0);
   gl_PointSize = aSize * uPixelRatio;
 }
 `;
@@ -280,9 +312,13 @@ void main(){
   vec2 p = gl_PointCoord - vec2(0.5);
   float d = length(p);
   float a = smoothstep(0.5, 0.0, d) * vAlpha;
-  gl_FragColor = vec4(0.78, 0.88, 1.0, a);
+  gl_FragColor = vec4(0.76, 0.88, 1.0, a);
 }
 `;
+
+/* ============================================================================
+   RENDERER
+   ============================================================================ */
 
 export class ExoSceneRenderer {
   constructor({ container, onStatus = () => {}, onWarning = () => {} } = {}) {
@@ -293,9 +329,11 @@ export class ExoSceneRenderer {
     this.canvas = null;
     this.overlay = null;
     this.gl = null;
+
     this.ready = false;
     this.programs = {};
     this.meshes = {};
+
     this.pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
 
     this.params = {
@@ -304,15 +342,19 @@ export class ExoSceneRenderer {
       inclinationDeg: 88.5,
       u1: 0.32,
       u2: 0.28,
+
       spotEnabled: false,
       spotX: 0.2,
       spotY: 0.1,
       spotRadius: 0.12,
       spotContrast: 0.55,
+
       moonEnabled: false,
       moonRadius: 0.025,
       moonDistance: 0.55,
-      moonPhaseDeg: 45
+      moonPhaseDeg: 45,
+
+      visualQuality: "balanced"
     };
 
     this.target = {
@@ -327,17 +369,19 @@ export class ExoSceneRenderer {
       revision: 0
     };
 
+    this.quality = "balanced";
     this.orbitPhase = 0.0;
     this.lastFrame = 0;
     this.frameHandle = null;
+
     this.view = mat4Identity();
     this.projection = mat4Identity();
 
     this.camera = {
-      eye: [0, 0, 5.55],
+      eye: [0, 0, 5.70],
       target: [0, 0, 0],
       up: [0, 1, 0],
-      fov: 39 * Math.PI / 180,
+      fov: 38.5 * Math.PI / 180,
       near: 0.01,
       far: 100
     };
@@ -364,16 +408,16 @@ export class ExoSceneRenderer {
     this.overlay.style.position = "absolute";
     this.overlay.style.left = "16px";
     this.overlay.style.bottom = "16px";
-    this.overlay.style.maxWidth = "760px";
+    this.overlay.style.maxWidth = "780px";
     this.overlay.style.padding = "10px 12px";
     this.overlay.style.border = "1px solid rgba(120,145,180,.38)";
     this.overlay.style.borderRadius = "14px";
-    this.overlay.style.background = "rgba(5,10,18,.46)";
+    this.overlay.style.background = "rgba(5,10,18,.48)";
     this.overlay.style.color = "#dbeafe";
     this.overlay.style.font = "12px Inter, system-ui, sans-serif";
     this.overlay.style.backdropFilter = "blur(12px)";
-    this.overlay.style.boxShadow = "0 14px 34px rgba(0,0,0,.22)";
-    this.overlay.textContent = "Theoretical CGI model · full orbit visualisation · photometric calculation handled by the worker";
+    this.overlay.style.boxShadow = "0 14px 34px rgba(0,0,0,.24)";
+    this.overlay.textContent = "Theoretical CGI model · full orbit visualisation · photometry calculated by the worker";
 
     this.container.append(this.canvas, this.overlay);
     this.initWebGL();
@@ -390,28 +434,26 @@ export class ExoSceneRenderer {
     });
 
     if (!this.gl) {
-      this.onWarning("WebGL unavailable. Scene renderer is disabled.");
       this.ready = false;
+      this.onWarning("WebGL unavailable. Scene renderer is disabled.");
       return;
     }
 
     const gl = this.gl;
 
-    this.programs.star = createProgram(gl, STAR_VERTEX_SHADER, STAR_FRAGMENT_SHADER);
-    this.programs.glow = createProgram(gl, GLOW_VERTEX_SHADER, GLOW_FRAGMENT_SHADER);
-    this.programs.body = createProgram(gl, BODY_VERTEX_SHADER, BODY_FRAGMENT_SHADER);
-    this.programs.line = createProgram(gl, LINE_VERTEX_SHADER, LINE_FRAGMENT_SHADER);
-    this.programs.starfield = createProgram(gl, STARFIELD_VERTEX_SHADER, STARFIELD_FRAGMENT_SHADER);
+    try {
+      this.programs.star = createProgram(gl, STAR_VERTEX_SHADER, STAR_FRAGMENT_SHADER);
+      this.programs.glow = createProgram(gl, GLOW_VERTEX_SHADER, GLOW_FRAGMENT_SHADER);
+      this.programs.body = createProgram(gl, BODY_VERTEX_SHADER, BODY_FRAGMENT_SHADER);
+      this.programs.line = createProgram(gl, LINE_VERTEX_SHADER, LINE_FRAGMENT_SHADER);
+      this.programs.starfield = createProgram(gl, STARFIELD_VERTEX_SHADER, STARFIELD_FRAGMENT_SHADER);
+    } catch (error) {
+      this.ready = false;
+      this.onWarning(`WebGL shader failed: ${error.message}`);
+      return;
+    }
 
-    this.meshes.sphere = createSphereMesh(gl, 96, 56);
-    this.meshes.glowSphere = createSphereMesh(gl, 80, 48);
-    this.meshes.orbit = createUnitCircleMesh(gl, 480);
-    this.meshes.moonOrbit = createUnitCircleMesh(gl, 180);
-    this.meshes.chord = createLineMesh(gl, [
-      -1.08, 0, 0.035,
-       1.08, 0, 0.035
-    ]);
-    this.meshes.starfield = createStarfieldMesh(gl, 360);
+    this.rebuildMeshesForQuality();
 
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
@@ -426,12 +468,68 @@ export class ExoSceneRenderer {
     });
 
     window.addEventListener("resize", () => this.resize(), { passive: true });
-    this.resize();
 
+    this.resize();
     this.ready = true;
-    this.onStatus("CGI WebGL scene online");
+    this.onStatus("Ultra WebGL scene online");
 
     this.frameHandle = requestAnimationFrame(time => this.loop(time));
+  }
+
+  rebuildMeshesForQuality() {
+    const gl = this.gl;
+    const quality = this.qualitySettings();
+
+    this.meshes = {
+      sphere: createSphereMesh(gl, quality.sphereSegments, quality.sphereRings),
+      glowSphere: createSphereMesh(gl, quality.glowSegments, quality.glowRings),
+      orbit: createUnitCircleMesh(gl, quality.orbitPoints),
+      moonOrbit: createUnitCircleMesh(gl, Math.max(120, Math.floor(quality.orbitPoints / 3))),
+      chord: createLineMesh(gl, [
+        -1.12, 0, 0.040,
+         1.12, 0, 0.040
+      ]),
+      starfield: createStarfieldMesh(gl, quality.starCount)
+    };
+  }
+
+  qualitySettings() {
+    if (this.quality === "low") {
+      return {
+        sphereSegments: 48,
+        sphereRings: 28,
+        glowSegments: 42,
+        glowRings: 24,
+        orbitPoints: 240,
+        starCount: 180,
+        granulationStrength: 0.70,
+        glowStrength: 0.80
+      };
+    }
+
+    if (this.quality === "ultra") {
+      return {
+        sphereSegments: 128,
+        sphereRings: 72,
+        glowSegments: 104,
+        glowRings: 58,
+        orbitPoints: 720,
+        starCount: 640,
+        granulationStrength: 1.20,
+        glowStrength: 1.20
+      };
+    }
+
+    return {
+      sphereSegments: 88,
+      sphereRings: 52,
+      glowSegments: 76,
+      glowRings: 44,
+      orbitPoints: 480,
+      starCount: 360,
+      granulationStrength: 1.00,
+      glowStrength: 1.00
+    };
   }
 
   dispose() {
@@ -445,10 +543,20 @@ export class ExoSceneRenderer {
 
   updateState({ params = null, target = null, model = null } = {}) {
     if (params) {
+      const nextQuality = params.visualQuality || this.params.visualQuality || "balanced";
+
       this.params = {
         ...this.params,
-        ...params
+        ...params,
+        visualQuality: nextQuality
       };
+
+      if (nextQuality !== this.quality) {
+        this.quality = nextQuality;
+        if (this.gl) {
+          this.rebuildMeshesForQuality();
+        }
+      }
     }
 
     if (target) {
@@ -472,8 +580,10 @@ export class ExoSceneRenderer {
     const host = this.target?.hostname || "host star";
     const spot = this.params.spotEnabled ? "starspot hypothesis active" : "starspot off";
     const moon = this.params.moonEnabled ? "exomoon hypothesis active" : "moon off";
+    const quality = this.quality || "balanced";
 
-    this.overlay.textContent = `${name} around ${host} · full-orbit theoretical visual · ${spot} · ${moon}`;
+    this.overlay.textContent =
+      `${name} around ${host} · full-orbit CGI model · ${spot} · ${moon} · ${quality} visual quality`;
   }
 
   resize() {
@@ -502,7 +612,8 @@ export class ExoSceneRenderer {
     const dt = Math.min(0.05, Math.max(0, (time - this.lastFrame) / 1000 || 0));
     this.lastFrame = time;
 
-    this.orbitPhase = wrap01(this.orbitPhase + dt * 0.055);
+    const speed = this.quality === "low" ? 0.045 : 0.052;
+    this.orbitPhase = wrap01(this.orbitPhase + dt * speed);
 
     this.render(seconds);
     this.frameHandle = requestAnimationFrame(next => this.loop(next));
@@ -513,6 +624,7 @@ export class ExoSceneRenderer {
     if (!gl) return;
 
     this.resize();
+
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     const teff = numberOr(this.target.st_teff, 5772);
@@ -549,32 +661,27 @@ export class ExoSceneRenderer {
 
   computeBodyPositions() {
     const p = this.params;
+
     const radius = clamp(numberOr(p.rpRs, 0.1), 0.01, 0.28);
     const inclination = numberOr(p.inclinationDeg, 88.5) * Math.PI / 180;
 
     const theta = this.orbitPhase * TWO_PI;
-    const orbitRadius = 1.72;
-    const flatten = Math.max(0.12, Math.abs(Math.cos(inclination)) * 3.3);
-
-    /*
-      Full orbit geometry:
-      theta = 0       : planet centred in front of star, transit-like position
-      theta = pi      : planet behind star
-      z >= 0          : draw after star, visually in front
-      z < 0           : draw before star, visually behind
-    */
+    const orbitRadius = 1.74;
+    const flatten = Math.max(0.12, Math.abs(Math.cos(inclination)) * 3.35);
 
     const x = orbitRadius * Math.sin(theta);
     const y = -orbitRadius * Math.cos(theta) * flatten;
-    const z = 1.05 * Math.cos(theta) * Math.sin(inclination);
+    const z = 1.08 * Math.cos(theta) * Math.sin(inclination);
 
     const planet = {
       position: [x, y, z],
       radius,
-      front: z >= 0
+      front: z >= 0,
+      phaseTint: 0.5 + 0.5 * Math.cos(theta)
     };
 
     const moonEnabled = Boolean(p.moonEnabled);
+
     const moonPhase =
       numberOr(p.moonPhaseDeg, 45) * Math.PI / 180 +
       this.orbitPhase * TWO_PI * 5.0;
@@ -590,7 +697,8 @@ export class ExoSceneRenderer {
       enabled: moonEnabled,
       position: [mx, my, mz],
       radius: moonRadius,
-      front: mz >= 0
+      front: mz >= 0,
+      phaseTint: 0.5 + 0.5 * Math.sin(moonPhase)
     };
 
     return { planet, moon };
@@ -619,6 +727,7 @@ export class ExoSceneRenderer {
     setMat4(gl, loc.uView, this.view);
     setMat4(gl, loc.uProjection, this.projection);
     setUniform(gl, loc.uPixelRatio, this.pixelRatio);
+    setUniform(gl, loc.uTime, time);
 
     gl.drawArrays(gl.POINTS, 0, this.meshes.starfield.vertexCount);
 
@@ -629,6 +738,7 @@ export class ExoSceneRenderer {
   drawStar(time, teff) {
     const p = this.params;
     const spotBasis = computeSpotBasis(p);
+    const quality = this.qualitySettings();
 
     const model = mat4RotateY(mat4Identity(), time * 0.018);
 
@@ -641,6 +751,7 @@ export class ExoSceneRenderer {
         uU1: numberOr(p.u1, 0.32),
         uU2: numberOr(p.u2, 0.28),
         uTeff: teff,
+        uGranulationStrength: quality.granulationStrength,
         uSpotEnabled: p.spotEnabled ? 1 : 0,
         uSpotA: spotBasis.a,
         uSpotB: spotBasis.b,
@@ -653,6 +764,7 @@ export class ExoSceneRenderer {
 
   drawStarGlow(time, glowColour) {
     const gl = this.gl;
+    const quality = this.qualitySettings();
 
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
@@ -662,10 +774,11 @@ export class ExoSceneRenderer {
     this.drawSphere({
       program: this.programs.glow,
       mesh: this.meshes.glowSphere,
-      model: mat4Scale(mat4Identity(), [1.25, 1.25, 1.25]),
+      model: mat4Scale(mat4Identity(), [1.27, 1.27, 1.27]),
       uniforms: {
         uTime: time,
-        uGlowColour: glowColour
+        uGlowColour: glowColour,
+        uGlowStrength: quality.glowStrength
       },
       transparent: true
     });
@@ -676,7 +789,7 @@ export class ExoSceneRenderer {
   }
 
   drawPlanet(body) {
-    this.drawBody(body, [0.032, 0.046, 0.064], [0.28, 0.58, 0.72], 1);
+    this.drawBody(body, [0.026, 0.044, 0.064], [0.30, 0.64, 0.78], 1);
   }
 
   drawMoon(body) {
@@ -697,7 +810,8 @@ export class ExoSceneRenderer {
       uniforms: {
         uColour: colour,
         uRimColour: rim,
-        uAlpha: alpha
+        uAlpha: alpha,
+        uPhaseTint: body.phaseTint || 0.5
       }
     });
   }
@@ -705,8 +819,8 @@ export class ExoSceneRenderer {
   drawOrbitGuides() {
     const p = this.params;
     const inclination = numberOr(p.inclinationDeg, 88.5) * Math.PI / 180;
-    const orbitRadius = 1.72;
-    const flatten = Math.max(0.12, Math.abs(Math.cos(inclination)) * 3.3);
+    const orbitRadius = 1.74;
+    const flatten = Math.max(0.12, Math.abs(Math.cos(inclination)) * 3.35);
 
     const gl = this.gl;
 
@@ -717,7 +831,7 @@ export class ExoSceneRenderer {
     let model = mat4RotateX(mat4Identity(), Math.PI / 2);
     model = mat4Scale(model, [orbitRadius, orbitRadius, flatten]);
 
-    this.drawLineMesh(this.meshes.orbit, model, [0.24, 0.68, 0.88], 0.25);
+    this.drawLineMesh(this.meshes.orbit, model, [0.30, 0.72, 0.96], 0.28);
 
     gl.depthMask(true);
     gl.disable(gl.BLEND);
@@ -730,7 +844,7 @@ export class ExoSceneRenderer {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     gl.depthMask(false);
 
-    this.drawLineMesh(this.meshes.chord, mat4Identity(), [0.92, 0.58, 0.18], 0.22);
+    this.drawLineMesh(this.meshes.chord, mat4Identity(), [0.98, 0.63, 0.22], 0.20);
 
     gl.depthMask(true);
     gl.disable(gl.BLEND);
@@ -749,7 +863,7 @@ export class ExoSceneRenderer {
     let model = mat4Translate(mat4Identity(), planet.position);
     model = mat4Scale(model, [distance, distance * 0.52, distance * 0.58]);
 
-    this.drawLineMesh(this.meshes.moonOrbit, model, [0.90, 0.63, 0.23], 0.24);
+    this.drawLineMesh(this.meshes.moonOrbit, model, [0.95, 0.67, 0.24], 0.24);
 
     gl.depthMask(true);
     gl.disable(gl.BLEND);
@@ -816,15 +930,15 @@ function computeSpotBasis(params) {
 }
 
 function stellarGlowColour(teff) {
-  if (teff < 3600) return [1.00, 0.20, 0.05];
-  if (teff < 5200) return [1.00, 0.33, 0.06];
+  if (teff < 3600) return [1.00, 0.19, 0.05];
+  if (teff < 5200) return [1.00, 0.32, 0.06];
   if (teff < 6500) return [1.00, 0.50, 0.09];
   if (teff < 8500) return [0.48, 0.74, 1.00];
   return [0.28, 0.52, 1.00];
 }
 
 /* ============================================================================
-   WEBGL SETUP
+   WEBGL UTILITIES
    ============================================================================ */
 
 function createProgram(gl, vertexSource, fragmentSource) {
@@ -966,17 +1080,17 @@ function createStarfieldMesh(gl, count) {
     const w = seededRandom(i * 29.67 + 5.9);
 
     const theta = TWO_PI * u;
-    const radius = 2.9 + 2.8 * v;
-    const y = -1.8 + 3.6 * w;
+    const radius = 2.9 + 2.9 * v;
+    const y = -1.9 + 3.8 * w;
 
     positions.push(
       radius * Math.cos(theta),
       y,
-      -2.8 - radius * Math.sin(theta) * 0.35
+      -2.9 - radius * Math.sin(theta) * 0.38
     );
 
-    sizes.push(1.0 + 2.2 * seededRandom(i * 7.77 + 8.4));
-    alphas.push(0.22 + 0.55 * seededRandom(i * 5.45 + 4.2));
+    sizes.push(0.9 + 2.5 * seededRandom(i * 7.77 + 8.4));
+    alphas.push(0.20 + 0.60 * seededRandom(i * 5.45 + 4.2));
   }
 
   return {
@@ -1111,19 +1225,6 @@ function mat4Scale(m, v) {
   return mat4Multiply(m, s);
 }
 
-function mat4RotateX(m, angle) {
-  const c = Math.cos(angle);
-  const s = Math.sin(angle);
-  const r = mat4Identity();
-
-  r[5] = c;
-  r[6] = s;
-  r[9] = -s;
-  r[10] = c;
-
-  return mat4Multiply(m, r);
-}
-
 function mat4RotateY(m, angle) {
   const c = Math.cos(angle);
   const s = Math.sin(angle);
@@ -1132,6 +1233,19 @@ function mat4RotateY(m, angle) {
   r[0] = c;
   r[2] = -s;
   r[8] = s;
+  r[10] = c;
+
+  return mat4Multiply(m, r);
+}
+
+function mat4RotateX(m, angle) {
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  const r = mat4Identity();
+
+  r[5] = c;
+  r[6] = s;
+  r[9] = -s;
   r[10] = c;
 
   return mat4Multiply(m, r);
@@ -1172,7 +1286,7 @@ function normalMatrix(m) {
 }
 
 /* ============================================================================
-   VECTOR + NUMERIC HELPERS
+   NUMERIC HELPERS
    ============================================================================ */
 
 function sub3(a, b) {
