@@ -16,6 +16,18 @@ export class PrimeHUD {
     this.lightcurveContext = this.lightcurveCanvas ? this.lightcurveCanvas.getContext("2d") : null;
     this.diagnosticNodes = {};
     this.lastDiagnostics = null;
+    this.liveReadouts = {
+      orbitPhase: null,
+      transitPhase: null,
+      totalDepthPpm: null,
+      planetDepthPpm: null,
+      moonDepthPpm: null,
+      spotBoostPpm: null,
+      flux: null,
+      impact: null,
+      moon: "DISABLED",
+      fps: null
+    };
 
     this.controls = {
       rpRs: this.$("control-rp-rs"),
@@ -147,10 +159,19 @@ export class PrimeHUD {
     section.className = "research-diagnostics";
     section.innerHTML = `
       <div class="diagnostics-title">
-        <strong>Observed-Light-Curve Diagnostics</strong>
-        <span>candidate morphology only · not a discovery claim</span>
+        <strong>Coupled Physics Diagnostics</strong>
+        <span>scene · model · marker use one state vector</span>
       </div>
       <div class="diagnostics-grid">
+        <div><span>Live Orbit Phase</span><strong id="diagnostic-live-orbit">—</strong></div>
+        <div><span>Live Transit Phase</span><strong id="diagnostic-live-transit">—</strong></div>
+        <div><span>Live Flux</span><strong id="diagnostic-live-flux">—</strong></div>
+        <div><span>Total Depth</span><strong id="diagnostic-live-depth">—</strong></div>
+        <div><span>Planet Depth</span><strong id="diagnostic-planet-depth">—</strong></div>
+        <div><span>Moon Depth</span><strong id="diagnostic-moon-depth">—</strong></div>
+        <div><span>Spot Boost</span><strong id="diagnostic-spot-boost">—</strong></div>
+        <div><span>Geometry Source</span><strong id="diagnostic-state-source">physics.js state</strong></div>
+
         <div><span>Period</span><strong id="diagnostic-period">—</strong></div>
         <div><span>Transit Duration</span><strong id="diagnostic-duration">—</strong></div>
         <div><span>Duration Phase</span><strong id="diagnostic-duration-phase">—</strong></div>
@@ -167,6 +188,8 @@ export class PrimeHUD {
         <div><span>Saved Phase Window</span><strong id="diagnostic-lc-phase-window">—</strong></div>
         <div><span>Colab Phase Shift</span><strong id="diagnostic-lc-clean-shift">—</strong></div>
         <div><span>LC Schema</span><strong id="diagnostic-lc-schema">—</strong></div>
+        <div><span>Max Moon Signal</span><strong id="diagnostic-max-moon-signal">—</strong></div>
+        <div><span>Max Spot Signal</span><strong id="diagnostic-max-spot-signal">—</strong></div>
         <div class="diagnostic-wide"><span>Processing Provenance</span><strong id="diagnostic-lc-processing">—</strong></div>
         <div class="diagnostic-wide"><span>Exomoon Status</span><strong id="diagnostic-exomoon-status">simulation only unless externally confirmed</strong></div>
       </div>
@@ -258,6 +281,11 @@ export class PrimeHUD {
         text-shadow:0 0 8px rgba(255,49,73,.22);
       }
 
+      .diagnostics-grid strong.good{
+        color:#63ff9f;
+        text-shadow:0 0 8px rgba(99,255,159,.20);
+      }
+
       .diagnostics-grid strong.provenance{
         color:#ffd078;
         text-shadow:0 0 8px rgba(255,176,0,.18);
@@ -267,6 +295,15 @@ export class PrimeHUD {
     document.head.appendChild(style);
 
     this.diagnosticNodes = {
+      liveOrbit: this.$("diagnostic-live-orbit"),
+      liveTransit: this.$("diagnostic-live-transit"),
+      liveFlux: this.$("diagnostic-live-flux"),
+      liveDepth: this.$("diagnostic-live-depth"),
+      planetDepth: this.$("diagnostic-planet-depth"),
+      moonDepth: this.$("diagnostic-moon-depth"),
+      spotBoost: this.$("diagnostic-spot-boost"),
+      stateSource: this.$("diagnostic-state-source"),
+
       period: this.$("diagnostic-period"),
       duration: this.$("diagnostic-duration"),
       durationPhase: this.$("diagnostic-duration-phase"),
@@ -283,6 +320,8 @@ export class PrimeHUD {
       lcPhaseWindow: this.$("diagnostic-lc-phase-window"),
       lcCleanShift: this.$("diagnostic-lc-clean-shift"),
       lcSchema: this.$("diagnostic-lc-schema"),
+      maxMoonSignal: this.$("diagnostic-max-moon-signal"),
+      maxSpotSignal: this.$("diagnostic-max-spot-signal"),
       lcProcessing: this.$("diagnostic-lc-processing"),
       exomoonStatus: this.$("diagnostic-exomoon-status")
     };
@@ -516,7 +555,7 @@ export class PrimeHUD {
       title.textContent = target.pl_name || "Unknown Planet";
 
       badge.className = target.lightcurve_available ? "lc-badge real" : "lc-badge model";
-      badge.textContent = target.lightcurve_available ? "REAL LC" : "MODEL";
+      badge.textContent = target.lightcurve_available ? "OBS LC" : "MODEL";
 
       meta.textContent = [
         target.hostname || "Unknown Host",
@@ -751,13 +790,13 @@ export class PrimeHUD {
     ctx.fillStyle = "rgba(0,0,0,.42)";
     ctx.strokeStyle = "rgba(255,176,0,.25)";
     ctx.lineWidth = 1 * dpr;
-    ctx.fillRect(x, y, 350 * dpr, 34 * dpr);
-    ctx.strokeRect(x, y, 350 * dpr, 34 * dpr);
+    ctx.fillRect(x, y, 390 * dpr, 34 * dpr);
+    ctx.strokeRect(x, y, 390 * dpr, 34 * dpr);
     ctx.fillStyle = "#ffb000";
     ctx.font = `${10 * dpr}px JetBrains Mono, monospace`;
-    ctx.fillText("NO LOCAL REAL LIGHT CURVE FOR THIS TARGET", x + 10 * dpr, y + 14 * dpr);
+    ctx.fillText("NO LOCAL OBSERVED LIGHT CURVE FOR THIS TARGET", x + 10 * dpr, y + 14 * dpr);
     ctx.fillStyle = "#7d8993";
-    ctx.fillText("Search “real lc” to select targets with MAST photometry.", x + 10 * dpr, y + 27 * dpr);
+    ctx.fillText("Search “real lc” or “obs lc” to select targets with MAST photometry.", x + 10 * dpr, y + 27 * dpr);
     ctx.restore();
   }
 
@@ -890,21 +929,45 @@ export class PrimeHUD {
   }
 
   setFluxSummary(summary = {}) {
+    this.cachedSummary = summary || {};
+
     setText(this.$("flux-min-chip"), finite(summary.minFlux) ? `MIN ${fmt(summary.minFlux, 6)}` : "MIN —");
     setText(this.$("model-depth-chip"), finite(summary.depthPpm) ? `MODEL ${Math.round(summary.depthPpm)} PPM` : "MODEL — PPM");
     setText(this.$("scene-depth-readout"), finite(summary.depthPpm) ? `${Math.round(summary.depthPpm)} ppm` : "— ppm");
     setText(this.$("ttv-chip"), this.controls.ttvEnabled?.checked ? "TTV ON" : "TTV OFF");
+
     this.updateDiagnostics();
   }
 
   setSceneReadouts(readouts = {}) {
-    setText(this.$("phase-readout"), finite(readouts.phase) ? fmt(readouts.phase, 4) : "0.0000");
+    const totalDepth = firstFinite(readouts.depthPpm, readouts.totalDepthPpm);
+    const transitPhase = firstFinite(readouts.transitPhase, readouts.phase);
+    const orbitPhase = firstFinite(readouts.orbitPhase, readouts.rawOrbitPhase);
+    const flux = firstFinite(readouts.flux, finite(totalDepth) ? 1 - totalDepth / 1e6 : null);
+
+    this.liveReadouts = {
+      ...this.liveReadouts,
+      orbitPhase,
+      transitPhase,
+      totalDepthPpm: totalDepth,
+      planetDepthPpm: firstFinite(readouts.planetDepthPpm, readouts.planetDepth),
+      moonDepthPpm: firstFinite(readouts.moonDepthPpm, readouts.moonDepth),
+      spotBoostPpm: firstFinite(readouts.spotBoostPpm, readouts.spotBoost),
+      flux,
+      impact: firstFinite(readouts.impact, null),
+      moon: readouts.moon || this.liveReadouts.moon || "DISABLED",
+      fps: firstFinite(readouts.fps, null)
+    };
+
+    setText(this.$("phase-readout"), finite(transitPhase) ? fmt(transitPhase, 4) : "0.0000");
     setText(this.$("impact-readout"), finite(readouts.impact) ? fmt(readouts.impact, 3) : "—");
     setText(this.$("moon-transform-readout"), readouts.moon || "DISABLED");
-    setText(this.$("scene-depth-readout"), finite(readouts.depthPpm) ? `${Math.round(readouts.depthPpm)} ppm` : "— ppm");
+    setText(this.$("scene-depth-readout"), finite(totalDepth) ? `${Math.round(totalDepth)} ppm` : "— ppm");
     setText(this.$("fps-chip"), finite(readouts.fps) ? `${Math.round(readouts.fps)} FPS` : "-- FPS");
     setText(this.$("footer-fps"), finite(readouts.fps) ? `${Math.round(readouts.fps)}` : "--");
-    setText(this.$("scene-state-chip"), "SCENE ONLINE");
+    setText(this.$("scene-state-chip"), "COUPLED STATE");
+
+    this.updateDiagnostics();
   }
 
   updateDiagnostics() {
@@ -916,9 +979,18 @@ export class PrimeHUD {
     const model = this.cachedModelCurve || [];
     const observed = this.cachedObservedCurve || [];
     const controls = this.readControls();
-    const diagnostics = computeDiagnostics(target, model, observed, controls);
+    const diagnostics = computeDiagnostics(target, model, observed, controls, this.cachedSummary);
 
     this.lastDiagnostics = diagnostics;
+
+    setText(this.diagnosticNodes.liveOrbit, finite(this.liveReadouts.orbitPhase) ? fmt(this.liveReadouts.orbitPhase, 4) : "—");
+    setText(this.diagnosticNodes.liveTransit, finite(this.liveReadouts.transitPhase) ? signed(this.liveReadouts.transitPhase, 4) : "—");
+    setText(this.diagnosticNodes.liveFlux, finite(this.liveReadouts.flux) ? fmt(this.liveReadouts.flux, 7) : "—");
+    setText(this.diagnosticNodes.liveDepth, finite(this.liveReadouts.totalDepthPpm) ? `${Math.round(this.liveReadouts.totalDepthPpm)} ppm` : "—");
+    setText(this.diagnosticNodes.planetDepth, finite(this.liveReadouts.planetDepthPpm) ? `${Math.round(this.liveReadouts.planetDepthPpm)} ppm` : "—");
+    setText(this.diagnosticNodes.moonDepth, finite(this.liveReadouts.moonDepthPpm) ? `${Math.round(this.liveReadouts.moonDepthPpm)} ppm` : controls.moonEnabled ? "0 ppm" : "disabled");
+    setText(this.diagnosticNodes.spotBoost, finite(this.liveReadouts.spotBoostPpm) ? `${Math.round(this.liveReadouts.spotBoostPpm)} ppm` : controls.spotEnabled ? "0 ppm" : "disabled");
+    setText(this.diagnosticNodes.stateSource, "physics.js state vector");
 
     setText(this.diagnosticNodes.period, finite(diagnostics.periodDays) ? `${fmt(diagnostics.periodDays, 6)} d` : "—");
     setText(this.diagnosticNodes.duration, finite(diagnostics.durationHours) ? `${fmt(diagnostics.durationHours, 3)} h` : "—");
@@ -936,14 +1008,20 @@ export class PrimeHUD {
     setText(this.diagnosticNodes.lcPhaseWindow, finite(diagnostics.lcPhaseWindow) ? `±${fmt(diagnostics.lcPhaseWindow, 5)}` : "—");
     setText(this.diagnosticNodes.lcCleanShift, finite(diagnostics.lcCleanShift) ? signed(diagnostics.lcCleanShift, 5) : "—");
     setText(this.diagnosticNodes.lcSchema, diagnostics.lcSchema || "—");
+    setText(this.diagnosticNodes.maxMoonSignal, finite(diagnostics.maxMoonSignalPpm) ? `${Math.round(diagnostics.maxMoonSignalPpm)} ppm` : "—");
+    setText(this.diagnosticNodes.maxSpotSignal, finite(diagnostics.maxSpotSignalPpm) ? `${Math.round(diagnostics.maxSpotSignalPpm)} ppm` : "—");
     setText(this.diagnosticNodes.lcProcessing, diagnostics.lcProcessing || "—");
 
     const moonText = controls.moonEnabled
-      ? "simulation enabled · observed feature not confirmed moon"
-      : "simulation off · observed feature not confirmed moon";
+      ? "simulation enabled · moon flux term is computed by physics.js · observed feature not confirmed moon"
+      : "simulation off · observed secondary feature is not a moon claim";
 
     setText(this.diagnosticNodes.exomoonStatus, moonText);
 
+    setDiagnosticClass(this.diagnosticNodes.stateSource, "good");
+    setDiagnosticClass(this.diagnosticNodes.liveDepth, (this.liveReadouts.totalDepthPpm || 0) > 0 ? "good" : "");
+    setDiagnosticClass(this.diagnosticNodes.moonDepth, controls.moonEnabled && (this.liveReadouts.moonDepthPpm || diagnostics.maxMoonSignalPpm || 0) > 0 ? "warn" : "");
+    setDiagnosticClass(this.diagnosticNodes.spotBoost, controls.spotEnabled && (this.liveReadouts.spotBoostPpm || diagnostics.maxSpotSignalPpm || 0) > 0 ? "warn" : "");
     setDiagnosticClass(this.diagnosticNodes.phaseOffset, Math.abs(diagnostics.phaseOffset || 0) > 0.01 ? "warn" : "");
     setDiagnosticClass(this.diagnosticNodes.secondary, diagnostics.secondaryRisk === "possible" ? "warn" : diagnostics.secondaryRisk === "strong" ? "bad" : "");
     setDiagnosticClass(this.diagnosticNodes.residualScatter, diagnostics.residualScatterPpm > 3000 ? "warn" : "");
@@ -1014,7 +1092,7 @@ export class PrimeHUD {
   }
 }
 
-function computeDiagnostics(target, model, observed, controls) {
+function computeDiagnostics(target, model, observed, controls, summary = {}) {
   const periodDays = finiteNumber(target.pl_orbper, controls.periodDays);
   const durationHours = finiteNumber(target.pl_trandur, null);
 
@@ -1090,6 +1168,14 @@ function computeDiagnostics(target, model, observed, controls) {
       ? "local-json"
       : "";
 
+  const maxMoonSignalPpm = finite(summary.maxMoonDepthPpm)
+    ? summary.maxMoonDepthPpm
+    : maxFromCurve(model, "moonDepthPpm");
+
+  const maxSpotSignalPpm = finite(summary.maxSpotBoostPpm)
+    ? summary.maxSpotBoostPpm
+    : maxFromCurve(model, "spotBoostPpm");
+
   return {
     periodDays,
     durationHours,
@@ -1108,7 +1194,9 @@ function computeDiagnostics(target, model, observed, controls) {
     lcPhaseWindow: finiteNumber(target.lc_phase_window_used, null),
     lcCleanShift: finiteNumber(target.lc_phase_shift_applied, null),
     lcProcessing,
-    lcSchema
+    lcSchema,
+    maxMoonSignalPpm,
+    maxSpotSignalPpm
   };
 }
 
@@ -1281,10 +1369,32 @@ function robustSigma(values) {
   return 1.4826 * mad;
 }
 
+function maxFromCurve(curve, key) {
+  if (!Array.isArray(curve) || !curve.length) return null;
+
+  let best = 0;
+
+  for (const point of curve) {
+    const value = Number(point?.[key]);
+    if (Number.isFinite(value) && value > best) best = value;
+  }
+
+  return best;
+}
+
+function firstFinite(...values) {
+  for (const value of values) {
+    const number = Number(value);
+    if (Number.isFinite(number)) return number;
+  }
+
+  return null;
+}
+
 function setDiagnosticClass(node, className) {
   if (!node) return;
 
-  node.classList.remove("warn", "bad", "provenance");
+  node.classList.remove("warn", "bad", "good", "provenance");
 
   if (className) {
     node.classList.add(className);
