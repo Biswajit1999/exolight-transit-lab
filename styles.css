@@ -2,28 +2,34 @@
    ExoIntel-Prime
    Global Base Styles
    --------------------------------------------------------------------------
-   The main application interface is generated and styled by src/app.js.
-   This file provides stable document-level defaults, boot-screen styling,
-   accessibility fallbacks, no-script layout, and clean scrollbar behaviour.
+   Main UI styles are injected by src/app.js after boot.
+   This file controls:
+   - first loading screen
+   - no-script fallback
+   - global document defaults
+   - scrollbars
+   - accessibility focus states
    ========================================================================== */
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  --bg: #f5f7fb;
-  --surface: #ffffff;
-  --surface-soft: #f8fafc;
-  --line: #d9e0ea;
-  --line-strong: #b8c3d2;
-  --text: #17202a;
-  --muted: #637083;
-  --accent: #1b64d8;
-  --model: #c47a00;
-  --data: #176b87;
-  --danger: #b42318;
-  --ok: #0f7b4f;
+  --bg: #060b13;
+  --bg-soft: #0b1220;
+  --surface: #101827;
+  --surface-2: #0d1524;
+  --line: #243247;
+  --line-strong: #40516b;
+  --text: #edf4ff;
+  --muted: #9ba9bd;
+  --muted-2: #75859a;
+  --accent: #63a7ff;
+  --model: #ffb547;
+  --data: #50c6df;
+  --danger: #ff8a80;
 
-  --shadow: 0 16px 42px rgba(22, 34, 51, 0.10);
+  --shadow: 0 18px 48px rgba(0, 0, 0, 0.38);
+
   --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   --mono: "SFMono-Regular", "Cascadia Mono", "Roboto Mono", Consolas, monospace;
 }
@@ -48,9 +54,10 @@ body {
   min-height: 100%;
   margin: 0;
   background:
-    radial-gradient(circle at 18% 0%, rgba(27, 100, 216, 0.075), transparent 34%),
-    radial-gradient(circle at 82% 5%, rgba(196, 122, 0, 0.055), transparent 30%),
-    linear-gradient(180deg, #fbfcfe 0%, #eef3f9 100%);
+    radial-gradient(circle at 20% -8%, rgba(99, 167, 255, 0.14), transparent 35%),
+    radial-gradient(circle at 82% 0%, rgba(255, 181, 71, 0.08), transparent 30%),
+    radial-gradient(circle at 50% 38%, rgba(80, 198, 223, 0.055), transparent 35%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 100%);
   color: var(--text);
   font-family: var(--font);
 }
@@ -73,11 +80,11 @@ a {
 }
 
 a:hover {
-  color: #123f87;
+  color: #8fc0ff;
 }
 
 ::selection {
-  background: rgba(27, 100, 216, 0.18);
+  background: rgba(99, 167, 255, 0.24);
   color: var(--text);
 }
 
@@ -85,39 +92,78 @@ a:hover {
   min-height: 100vh;
 }
 
+/* --------------------------------------------------------------------------
+   Boot screen
+   -------------------------------------------------------------------------- */
+
 .boot-screen {
   min-height: 100vh;
   display: grid;
   place-items: center;
   padding: 24px;
   background:
-    radial-gradient(circle at 20% 0%, rgba(27, 100, 216, 0.07), transparent 32%),
-    linear-gradient(180deg, #fbfcfe 0%, #eef3f9 100%);
+    radial-gradient(circle at 50% 38%, rgba(255, 181, 71, 0.11), transparent 26%),
+    radial-gradient(circle at 25% 15%, rgba(99, 167, 255, 0.12), transparent 32%),
+    radial-gradient(circle at 75% 22%, rgba(80, 198, 223, 0.07), transparent 28%),
+    linear-gradient(180deg, #060b13 0%, #0b1220 100%);
 }
 
 .boot-card {
-  width: min(520px, calc(100vw - 32px));
-  padding: 24px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.88);
+  width: min(560px, calc(100vw - 32px));
+  padding: 28px;
+  border: 1px solid rgba(64, 81, 107, 0.9);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(16, 24, 39, 0.90), rgba(13, 21, 36, 0.82));
   box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.boot-mark {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(99, 167, 255, 0.42);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 181, 71, 0.50), transparent 28%),
+    radial-gradient(circle at 50% 50%, rgba(99, 167, 255, 0.38), transparent 58%),
+    linear-gradient(135deg, #101827, #142033);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 34px rgba(99, 167, 255, 0.18),
+    0 12px 32px rgba(0, 0, 0, 0.32);
 }
 
 .boot-card h1 {
   margin: 0;
   color: var(--text);
-  font-size: 18px;
-  font-weight: 850;
+  font-size: 22px;
+  font-weight: 900;
   letter-spacing: 0.01em;
 }
 
 .boot-card p {
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   color: var(--muted);
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 1.5;
 }
+
+.boot-card small {
+  display: block;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(64, 81, 107, 0.75);
+  color: var(--muted-2);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+/* --------------------------------------------------------------------------
+   No-script fallback
+   -------------------------------------------------------------------------- */
 
 noscript {
   display: block;
@@ -125,7 +171,7 @@ noscript {
   margin: 48px auto;
   padding: 24px;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 18px;
   background: var(--surface);
   box-shadow: var(--shadow);
   color: var(--text);
@@ -136,10 +182,13 @@ noscript strong {
   color: var(--danger);
 }
 
-/* Clean scrollbars for the generated app panels */
+/* --------------------------------------------------------------------------
+   Scrollbars
+   -------------------------------------------------------------------------- */
+
 * {
   scrollbar-width: thin;
-  scrollbar-color: #b8c3d2 transparent;
+  scrollbar-color: var(--line-strong) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -154,18 +203,21 @@ noscript strong {
 *::-webkit-scrollbar-thumb {
   border: 3px solid transparent;
   border-radius: 999px;
-  background: #b8c3d2;
+  background: var(--line-strong);
   background-clip: padding-box;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: #9eacbd;
+  background: #5b6f8d;
   background-clip: padding-box;
 }
 
-/* Accessibility helpers */
+/* --------------------------------------------------------------------------
+   Accessibility
+   -------------------------------------------------------------------------- */
+
 :focus-visible {
-  outline: 3px solid rgba(27, 100, 216, 0.34);
+  outline: 3px solid rgba(99, 167, 255, 0.40);
   outline-offset: 2px;
 }
 
@@ -180,19 +232,29 @@ noscript strong {
   }
 }
 
-/* Print fallback for documentation screenshots */
+/* --------------------------------------------------------------------------
+   Print fallback
+   -------------------------------------------------------------------------- */
+
 @media print {
-  body {
-    background: #ffffff;
+  :root {
+    color-scheme: light;
   }
 
-  .boot-screen,
-  #app {
+  body {
+    background: #ffffff;
+    color: #111827;
+  }
+
+  .boot-screen {
     min-height: auto;
+    background: #ffffff;
   }
 
   .boot-card,
   noscript {
     box-shadow: none;
+    background: #ffffff;
+    color: #111827;
   }
 }
