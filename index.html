@@ -3,456 +3,103 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>ExoIntel-Prime | ExoLight Transit Lab</title>
+
   <meta
     name="description"
-    content="ExoIntel-Prime is a zero-dependency browser-based exoplanet transit photometry laboratory with real observed light curves, a coupled physics engine, and a WebGL observatory dashboard."
+    content="ExoIntel-Prime is a browser-based exoplanet transit photometry laboratory with archival light curves, worker-backed theoretical modelling, and WebGL scientific visualisation."
   />
   <meta
     name="keywords"
-    content="exoplanet, transit photometry, WebGL, astrophysics, light curve, TESS, Kepler, MAST, NASA Exoplanet Archive"
+    content="exoplanet, transit photometry, light curve, WebGL, TESS, Kepler, MAST, NASA Exoplanet Archive, astrophysics"
   />
   <meta name="author" content="Biswajit Jana" />
-  <meta property="og:title" content="ExoIntel-Prime | Exoplanet Transit Laboratory" />
+  <meta name="theme-color" content="#f5f7fb" />
+
+  <meta property="og:title" content="ExoIntel-Prime | Exoplanet Transit Photometry Lab" />
   <meta
     property="og:description"
-    content="A coupled exoplanet transit simulation and observed-light-curve dashboard running with plain HTML, CSS, and JavaScript."
+    content="A zero-dependency web laboratory for comparing archival exoplanet transit photometry with worker-computed theoretical models."
   />
   <meta property="og:type" content="website" />
-  <meta name="theme-color" content="#050505" />
-  <title>ExoIntel-Prime | ExoLight Transit Lab</title>
-  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      background: #f5f7fb;
+      color: #17202a;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    noscript {
+      display: block;
+      max-width: 720px;
+      margin: 48px auto;
+      padding: 24px;
+      border: 1px solid #d9e0ea;
+      border-radius: 16px;
+      background: #ffffff;
+      box-shadow: 0 16px 42px rgba(22, 34, 51, 0.10);
+      line-height: 1.5;
+    }
+
+    #app {
+      min-height: 100vh;
+    }
+
+    .boot-screen {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(27, 100, 216, 0.07), transparent 32%),
+        linear-gradient(180deg, #fbfcfe 0%, #eef3f9 100%);
+    }
+
+    .boot-card {
+      width: min(520px, calc(100vw - 32px));
+      padding: 24px;
+      border: 1px solid #d9e0ea;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 16px 42px rgba(22, 34, 51, 0.10);
+    }
+
+    .boot-card h1 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0.01em;
+    }
+
+    .boot-card p {
+      margin: 8px 0 0;
+      color: #637083;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+  </style>
 </head>
 
 <body>
-  <main id="app" class="app-shell" aria-label="ExoIntel-Prime exoplanet transit laboratory">
-    <header class="top-bar">
-      <section class="brand" aria-label="Application identity">
-        <div class="brand-mark" aria-hidden="true"></div>
-        <div>
-          <h1>ExoIntel-Prime</h1>
-          <span>ExoLight Transit Lab · Coupled Physics Observatory</span>
-        </div>
-      </section>
+  <noscript>
+    <strong>JavaScript is required.</strong><br />
+    ExoIntel-Prime runs its transit model through browser JavaScript and a Web Worker.
+    Please enable JavaScript to use the interactive photometry laboratory.
+  </noscript>
 
-      <section class="status-strip" aria-label="System status telemetry">
-        <div class="status-tile">
-          <span>Runtime</span>
-          <strong id="runtime-status">BOOTING</strong>
-        </div>
-        <div class="status-tile">
-          <span>Data</span>
-          <strong id="data-link-status">CACHE LOAD</strong>
-        </div>
-        <div class="status-tile">
-          <span>Solver</span>
-          <strong id="solver-status">COUPLED</strong>
-        </div>
-        <div class="status-tile">
-          <span>Render</span>
-          <strong id="render-layer-status">WEBGL INIT</strong>
-        </div>
-        <div id="tap-warning-tile" class="status-tile">
-          <span>TAP</span>
-          <strong id="tap-channel-status">CACHE-FIRST</strong>
-        </div>
-      </section>
-
-      <section class="header-actions" aria-label="Header actions">
-        <div class="status-chip">
-          <span>UTC</span>
-          <strong id="utc-clock">--:--:-- UTC</strong>
-        </div>
-        <div class="status-chip">
-          <span>FPS</span>
-          <strong id="fps-chip">-- FPS</strong>
-        </div>
-        <button id="cache-reload-button" type="button">Reload Cache</button>
-      </section>
-    </header>
-
-    <section class="main-grid">
-      <aside class="left-stack" aria-label="Target selection and scientific diagnostics">
-        <section class="target-panel panel">
-          <div class="panel-header">
-            <h2>Target Catalogue</h2>
-            <span id="target-count-chip">—</span>
-          </div>
-
-          <div class="target-search-row">
-            <input
-              id="target-search"
-              type="search"
-              autocomplete="off"
-              spellcheck="false"
-              placeholder="Search target, host, real lc, obs lc, binary, multi planet..."
-              aria-label="Search exoplanet targets"
-            />
-          </div>
-
-          <div id="target-list" class="target-list" aria-live="polite"></div>
-        </section>
-
-        <section class="dossier-panel panel">
-          <div class="panel-header">
-            <h2>Target Astro-Dossier</h2>
-            <span id="dossier-lock-chip">NO LOCK</span>
-          </div>
-
-          <div class="dossier-grid">
-            <div>
-              <span>Planet</span>
-              <strong id="dossier-planet">—</strong>
-            </div>
-            <div>
-              <span>Host Star</span>
-              <strong id="dossier-host">—</strong>
-            </div>
-            <div>
-              <span>Stellar Class</span>
-              <strong id="dossier-stellar-class">—</strong>
-            </div>
-            <div>
-              <span>Effective Temperature</span>
-              <strong id="dossier-teff">— K</strong>
-            </div>
-            <div>
-              <span>System Scale</span>
-              <strong id="dossier-a-rs">—</strong>
-            </div>
-            <div>
-              <span>Radius Ratio</span>
-              <strong id="dossier-rp-rs">—</strong>
-            </div>
-            <div>
-              <span>Mass Ratio</span>
-              <strong id="dossier-mp-ms">—</strong>
-            </div>
-            <div>
-              <span>Transit Probability</span>
-              <strong id="dossier-transit-probability">— %</strong>
-            </div>
-            <div>
-              <span>HZ Proximity</span>
-              <strong id="dossier-hz-index">—</strong>
-            </div>
-            <div>
-              <span>Ingress / Egress</span>
-              <strong id="dossier-ingress">— min</strong>
-            </div>
-          </div>
-        </section>
-
-        <section class="compact-panel">
-          <div class="panel-header">
-            <h2>Scientific Kernel</h2>
-            <span id="observation-status-chip">WAITING</span>
-          </div>
-
-          <div class="telemetry-table">
-            <div>
-              <span>Polar Rings</span>
-              <strong id="kernel-rings">82</strong>
-            </div>
-            <div>
-              <span>Azimuth Samples</span>
-              <strong id="kernel-azimuth">150</strong>
-            </div>
-            <div>
-              <span>Surface Samples</span>
-              <strong id="kernel-samples">12,300</strong>
-            </div>
-            <div>
-              <span>Exomoon Module</span>
-              <strong id="kernel-moon-state">OFF</strong>
-            </div>
-            <div>
-              <span>Starspot Module</span>
-              <strong id="kernel-spot-state">OFF</strong>
-            </div>
-            <div>
-              <span>Observed Data</span>
-              <strong id="kernel-observation-state">WAITING</strong>
-            </div>
-          </div>
-        </section>
-      </aside>
-
-      <section class="center-stack" aria-label="WebGL observatory and photometry plot">
-        <section class="scene-panel panel">
-          <div class="panel-header">
-            <h2>WebGL Observatory</h2>
-            <span id="scene-state-chip">SCENE INIT</span>
-          </div>
-
-          <div class="scene-wrap">
-            <canvas id="scene-canvas" aria-label="Coupled 3D star planet moon transit scene"></canvas>
-
-            <div class="scene-overlay">
-              <div class="scene-chip-row">
-                <div class="status-chip">
-                  <span>Transit Phase</span>
-                  <strong id="phase-readout">0.0000</strong>
-                </div>
-                <div class="status-chip">
-                  <span>Impact</span>
-                  <strong id="impact-readout">—</strong>
-                </div>
-                <div class="status-chip">
-                  <span>Total Depth</span>
-                  <strong id="scene-depth-readout">— ppm</strong>
-                </div>
-                <div class="status-chip">
-                  <span>Moon Geometry</span>
-                  <strong id="moon-transform-readout">DISABLED</strong>
-                </div>
-              </div>
-
-              <div></div>
-
-              <p class="scene-note">
-                <strong>COUPLED FULL-ORBIT RENDERING</strong> · planet, moon, starspot map,
-                model flux, and phase marker are driven by the same
-                <strong>physics.js state vector</strong>.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section class="curve-panel panel">
-          <div class="panel-header">
-            <h2>Observed Photometry + Forward Model</h2>
-            <span id="ttv-chip">TTV OFF</span>
-          </div>
-
-          <canvas
-            id="lightcurve-canvas"
-            class="lightcurve-canvas"
-            aria-label="Transit light curve showing observed cyan data and amber model line"
-          ></canvas>
-
-          <div class="curve-toolbar">
-            <div class="status-chip">
-              <span>Observed Layer</span>
-              <strong>Cyan Micro-Dots</strong>
-            </div>
-            <div class="status-chip">
-              <span>Physics Model</span>
-              <strong>Amber Coupled Line</strong>
-            </div>
-            <div class="status-chip">
-              <span>Flux Minimum</span>
-              <strong id="flux-min-chip">MIN —</strong>
-            </div>
-            <div class="status-chip">
-              <span>Model Depth</span>
-              <strong id="model-depth-chip">MODEL — PPM</strong>
-            </div>
-          </div>
-        </section>
-      </section>
-
-      <aside class="right-stack" aria-label="Controls, TAP console, and telemetry log">
-        <section class="control-panel panel">
-          <div class="panel-header">
-            <h2>Model Control Matrix</h2>
-            <button id="reset-controls-button" type="button">Reset</button>
-          </div>
-
-          <div class="control-body">
-            <section class="control-section">
-              <h3>Planet + Orbit</h3>
-
-              <div class="control-row">
-                <label for="control-rp-rs">Radius Ratio Rp/R*</label>
-                <input id="control-rp-rs" type="range" min="0.005" max="0.28" step="0.001" value="0.100" />
-                <output id="output-rp-rs">0.100</output>
-              </div>
-
-              <div class="control-row">
-                <label for="control-a-rs">Scale a/R*</label>
-                <input id="control-a-rs" type="range" min="1.5" max="80" step="0.1" value="12.0" />
-                <output id="output-a-rs">12.0</output>
-              </div>
-
-              <div class="control-row">
-                <label for="control-inclination">Inclination</label>
-                <input id="control-inclination" type="range" min="70" max="90" step="0.01" value="88.50" />
-                <output id="output-inclination">88.50°</output>
-              </div>
-
-              <div class="control-row">
-                <label for="control-period">Period</label>
-                <input id="control-period" type="range" min="0.1" max="50" step="0.1" value="4.0" />
-                <output id="output-period">4.0 d</output>
-              </div>
-
-              <div class="control-row">
-                <label for="control-eccentricity">Eccentricity</label>
-                <input id="control-eccentricity" type="range" min="0" max="0.95" step="0.01" value="0.00" />
-                <output id="output-eccentricity">0.00</output>
-              </div>
-            </section>
-
-            <section class="control-section">
-              <h3>Limb Darkening</h3>
-
-              <div class="control-row">
-                <label for="control-u1">Quadratic u1</label>
-                <input id="control-u1" type="range" min="0" max="1" step="0.01" value="0.32" />
-                <output id="output-u1">0.32</output>
-              </div>
-
-              <div class="control-row">
-                <label for="control-u2">Quadratic u2</label>
-                <input id="control-u2" type="range" min="0" max="1" step="0.01" value="0.28" />
-                <output id="output-u2">0.28</output>
-              </div>
-            </section>
-
-            <section class="control-section">
-              <h3>Exomoon Simulation</h3>
-
-              <div class="toggle-row">
-                <label for="control-moon-enabled">Enable Moon Flux Term</label>
-                <input id="control-moon-enabled" type="checkbox" />
-              </div>
-
-              <div class="control-row">
-                <label for="control-moon-radius">Moon Radius</label>
-                <input id="control-moon-radius" type="range" min="0.004" max="0.08" step="0.001" value="0.025" />
-                <output id="output-moon-radius">0.025</output>
-              </div>
-
-              <div class="control-row">
-                <label for="control-moon-distance">Moon Distance</label>
-                <input id="control-moon-distance" type="range" min="0.05" max="2.50" step="0.01" value="0.55" />
-                <output id="output-moon-distance">0.55 R*</output>
-              </div>
-
-              <div class="control-row">
-                <label for="control-moon-phase">Moon Phase</label>
-                <input id="control-moon-phase" type="range" min="0" max="360" step="1" value="45" />
-                <output id="output-moon-phase">45°</output>
-              </div>
-
-              <div class="control-row">
-                <label for="control-moon-inclination">Moon Inclination</label>
-                <input id="control-moon-inclination" type="range" min="0" max="90" step="1" value="12" />
-                <output id="output-moon-inclination">12°</output>
-              </div>
-
-              <div class="control-row">
-                <label for="control-moon-node">Moon Node</label>
-                <input id="control-moon-node" type="range" min="0" max="360" step="1" value="35" />
-                <output id="output-moon-node">35°</output>
-              </div>
-            </section>
-
-            <section class="control-section">
-              <h3>Physics-Owned Starspot</h3>
-
-              <div class="toggle-row">
-                <label for="control-spot-enabled">Enable Spot Flux Coupling</label>
-                <input id="control-spot-enabled" type="checkbox" />
-              </div>
-
-              <div class="control-row">
-                <label for="control-spot-x">Spot X</label>
-                <input id="control-spot-x" type="range" min="-0.9" max="0.9" step="0.01" value="0.18" />
-                <output id="output-spot-x">0.18</output>
-              </div>
-
-              <div class="control-row">
-                <label for="control-spot-y">Spot Y</label>
-                <input id="control-spot-y" type="range" min="-0.9" max="0.9" step="0.01" value="0.08" />
-                <output id="output-spot-y">0.08</output>
-              </div>
-
-              <div class="control-row">
-                <label for="control-spot-radius">Spot Radius</label>
-                <input id="control-spot-radius" type="range" min="0.02" max="0.24" step="0.01" value="0.09" />
-                <output id="output-spot-radius">0.09</output>
-              </div>
-
-              <div class="control-row">
-                <label for="control-spot-contrast">Spot Contrast</label>
-                <input id="control-spot-contrast" type="range" min="0.05" max="0.97" step="0.01" value="0.78" />
-                <output id="output-spot-contrast">0.78</output>
-              </div>
-            </section>
-
-            <section class="control-section">
-              <h3>Transit Timing Variation</h3>
-
-              <div class="toggle-row">
-                <label for="control-ttv-enabled">Enable TTV</label>
-                <input id="control-ttv-enabled" type="checkbox" />
-              </div>
-
-              <div class="control-row">
-                <label for="control-ttv-amplitude">TTV Amplitude</label>
-                <input id="control-ttv-amplitude" type="range" min="0" max="0.05" step="0.001" value="0.010" />
-                <output id="output-ttv-amplitude">0.010 phase</output>
-              </div>
-
-              <div class="control-row">
-                <label for="control-ttv-period">TTV Period</label>
-                <input id="control-ttv-period" type="range" min="2" max="80" step="1" value="16" />
-                <output id="output-ttv-period">16 epochs</output>
-              </div>
-            </section>
-          </div>
-        </section>
-
-        <section id="tap-panel" class="tap-panel panel">
-          <div class="panel-header">
-            <h2>NASA TAP / ADQL Console</h2>
-            <button id="tap-expand-button" type="button">Expand</button>
-          </div>
-
-          <div class="tap-editor-wrap">
-            <textarea
-              id="adql-editor"
-              spellcheck="false"
-              aria-label="NASA Exoplanet Archive ADQL query editor"
-            ></textarea>
-          </div>
-
-          <div class="tap-actions">
-            <button id="tap-cache-button" type="button">Use Local Cache</button>
-            <button id="tap-run-button" type="button">Run TAP Query</button>
-          </div>
-        </section>
-
-        <section class="log-panel panel">
-          <div class="panel-header">
-            <h2>Runtime Telemetry</h2>
-            <span id="log-count-chip">0</span>
-          </div>
-
-          <div id="telemetry-log" class="telemetry-log" aria-live="polite"></div>
-        </section>
-      </aside>
+  <main id="app" aria-label="ExoIntel-Prime exoplanet transit photometry laboratory">
+    <section class="boot-screen">
+      <div class="boot-card">
+        <h1>ExoIntel-Prime</h1>
+        <p>Loading worker-backed transit photometry laboratory...</p>
+      </div>
     </section>
-
-    <footer class="app-footer">
-      <div>
-        <strong>UTC:</strong>
-        <span id="footer-utc-mirror">LIVE</span>
-        <strong> // FPS:</strong>
-        <span id="footer-fps">--</span>
-      </div>
-
-      <div id="footer-data-status" class="footer-center">
-        DATA INGESTION STATUS: INITIALISING // TARGET CATALOG: AWAITING CACHE
-      </div>
-
-      <div class="footer-right">
-        SYSTEM OPERATOR: BISWAJIT JANA // MISSION OPTICAL OPERATIONS DIVISION // COPYRIGHT © 2026 ALL RIGHTS RESERVED
-      </div>
-    </footer>
   </main>
 
-  <script type="module" src="src/app.js"></script>
+  <script type="module" src="./src/app.js"></script>
 </body>
 </html>
