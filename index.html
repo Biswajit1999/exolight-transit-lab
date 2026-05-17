@@ -39,7 +39,7 @@
 
   <link
     rel="stylesheet"
-    href="./styles.css?v=20260517-final-entry-05"
+    href="./styles.css?v=20260517-cinematic-boot-01"
   />
 </head>
 
@@ -130,9 +130,20 @@
           <h1>ExoIntel-Prime</h1>
 
           <p class="boot-description">
-            Loading archival photometry, worker-backed transit physics, and the
-            WebGL theoretical model viewport.
+            Preparing the transit laboratory, loading archival photometry, and
+            building the theoretical star–planet system.
           </p>
+
+          <div class="boot-status-wrap" aria-live="polite">
+            <p id="boot-status" class="boot-status">
+              Initialising observatory systems...
+            </p>
+
+            <div class="boot-percent-row">
+              <span class="boot-percent-label">Progress</span>
+              <span id="boot-percent" class="boot-percent-value">0%</span>
+            </div>
+          </div>
 
           <div class="boot-metrics" aria-hidden="true">
             <span>Quadratic limb darkening</span>
@@ -141,7 +152,7 @@
           </div>
 
           <div class="boot-progress" aria-hidden="true">
-            <span></span>
+            <span id="boot-progress-bar"></span>
           </div>
 
           <small>
@@ -154,7 +165,7 @@
 
   <script
     type="module"
-    src="./src/app.js?v=20260517-app-worker-sync-04"
+    src="./src/app.js?v=20260517-cinematic-boot-01"
   ></script>
 </body>
 </html>
