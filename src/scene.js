@@ -1,3 +1,5 @@
+const TWO_PI = Math.PI * 2;
+
 const VERTEX_SHADER = `
 attribute vec3 aPosition;
 attribute vec3 aNormal;
@@ -30,6 +32,7 @@ uniform float uTime;
 uniform float uU1;
 uniform float uU2;
 uniform float uTeffNorm;
+uniform float uGranulationAmp;
 uniform vec3 uHotColor;
 uniform vec3 uCoolColor;
 
@@ -44,57 +47,60 @@ float noise(vec3 p){
   vec3 f = fract(p);
   f = f * f * (3.0 - 2.0 * f);
 
-  return mix(
-    mix(
-      mix(hash(i + vec3(0.0,0.0,0.0)), hash(i + vec3(1.0,0.0,0.0)), f.x),
-      mix(hash(i + vec3(0.0,1.0,0.0)), hash(i + vec3(1.0,1.0,0.0)), f.x),
-      f.y
-    ),
-    mix(
-      mix(hash(i + vec3(0.0,0.0,1.0)), hash(i + vec3(1.0,0.0,1.0)), f.x),
-      mix(hash(i + vec3(0.0,1.0,1.0)), hash(i + vec3(1.0,1.0,1.0)), f.x),
-      f.y
-    ),
-    f.z
-  );
+  float n000 = hash(i + vec3(0.0, 0.0, 0.0));
+  float n100 = hash(i + vec3(1.0, 0.0, 0.0));
+  float n010 = hash(i + vec3(0.0, 1.0, 0.0));
+  float n110 = hash(i + vec3(1.0, 1.0, 0.0));
+  float n001 = hash(i + vec3(0.0, 0.0, 1.0));
+  float n101 = hash(i + vec3(1.0, 0.0, 1.0));
+  float n011 = hash(i + vec3(0.0, 1.0, 1.0));
+  float n111 = hash(i + vec3(1.0, 1.0, 1.0));
+
+  float nx00 = mix(n000, n100, f.x);
+  float nx10 = mix(n010, n110, f.x);
+  float nx01 = mix(n001, n101, f.x);
+  float nx11 = mix(n011, n111, f.x);
+
+  float nxy0 = mix(nx00, nx10, f.y);
+  float nxy1 = mix(nx01, nx11, f.y);
+
+  return mix(nxy0, nxy1, f.z);
 }
 
 float fbm(vec3 p){
-  float v = 0.0;
-  float a = 0.52;
+  float value = 0.0;
+  float amp = 0.55;
 
-  for(int i = 0; i < 3; i++){
-    v += a * noise(p);
-    p = p * 2.07 + vec3(7.1, 3.7, 5.2);
-    a *= 0.50;
+  for(int i = 0; i < 4; i++){
+    value += amp * noise(p);
+    p = p * 2.04 + vec3(3.7, 7.1, 5.3);
+    amp *= 0.48;
   }
 
-  return v;
+  return value;
 }
 
 void main(){
   vec3 n = normalize(vNormal);
-
   float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
   float q = 1.0 - mu;
 
   float limb = max(0.0, 1.0 - uU1 * q - uU2 * q * q);
 
-  float granulation = fbm(n * 24.0 + vec3(uTime * 0.035, -uTime * 0.025, uTime * 0.018));
-  float magnetic = fbm(n * 8.0 + vec3(-uTime * 0.012, uTime * 0.017, uTime * 0.008));
+  float granLarge = fbm(n * 13.0 + vec3(uTime * 0.018, -uTime * 0.012, uTime * 0.010));
+  float granFine = fbm(n * 42.0 + vec3(-uTime * 0.030, uTime * 0.021, -uTime * 0.016));
+  float cells = 0.62 * granLarge + 0.38 * granFine;
 
-  float spotMask = smoothstep(0.62, 0.88, magnetic) * (1.0 - smoothstep(0.74, 1.0, mu));
-  float flare = pow(max(0.0, sin(uTime * 1.4 + atan(n.z, n.x) * 4.0)), 12.0) * smoothstep(0.65, 0.95, granulation);
+  float lane = smoothstep(0.34, 0.60, cells);
+  float grain = 1.0 + uGranulationAmp * ((cells - 0.5) * 1.15 + (lane - 0.5) * 0.32);
 
   vec3 base = mix(uCoolColor, uHotColor, clamp(uTeffNorm, 0.0, 1.0));
-  vec3 color = mix(base, vec3(1.0, 0.58, 0.08), 0.18 + 0.16 * granulation);
+  vec3 warmPhotosphere = mix(base, vec3(1.0, 0.62, 0.18), 0.16 + 0.10 * granLarge);
+  vec3 edgeColor = mix(warmPhotosphere, vec3(0.95, 0.24, 0.055), pow(1.0 - mu, 1.8) * 0.42);
 
-  color *= limb * (0.82 + 0.26 * granulation);
-  color = mix(color, color * 0.42, spotMask * 0.55);
-  color += vec3(1.0, 0.50, 0.08) * flare * 0.35;
-
-  float rim = pow(1.0 - mu, 2.25);
-  color += vec3(1.0, 0.42, 0.06) * rim * 0.28;
+  vec3 color = edgeColor * limb * grain;
+  color += vec3(1.0, 0.42, 0.08) * pow(1.0 - mu, 2.4) * 0.16;
+  color = max(color, vec3(0.0));
 
   gl_FragColor = vec4(color, 1.0);
 }`;
@@ -109,9 +115,14 @@ uniform vec3 uGlowColor;
 
 void main(){
   float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
-  float rim = pow(1.0 - mu, 1.55);
-  float pulse = 0.84 + 0.16 * sin(uTime * 1.25);
-  gl_FragColor = vec4(uGlowColor * (0.70 + 0.30 * pulse), rim * 0.48 * pulse);
+  float rim = pow(1.0 - mu, 1.35);
+  float outer = pow(1.0 - mu, 3.10);
+  float pulse = 0.90 + 0.10 * sin(uTime * 0.65);
+
+  vec3 color = uGlowColor * (0.55 + 0.45 * outer) * pulse;
+  float alpha = clamp((rim * 0.34 + outer * 0.28) * pulse, 0.0, 0.70);
+
+  gl_FragColor = vec4(color, alpha);
 }`;
 
 const BODY_FRAGMENT_SHADER = `
@@ -123,6 +134,7 @@ varying vec3 vViewNormal;
 uniform vec3 uColor;
 uniform vec3 uRimColor;
 uniform float uDarkness;
+uniform float uAlpha;
 
 void main(){
   vec3 n = normalize(vNormal);
@@ -134,7 +146,7 @@ void main(){
 
   vec3 color = uColor * (0.08 + 0.92 * lambert) * (1.0 - uDarkness) + uRimColor * rim * 0.45;
 
-  gl_FragColor = vec4(color, 1.0);
+  gl_FragColor = vec4(color, uAlpha);
 }`;
 
 const LINE_VERTEX_SHADER = `
@@ -218,15 +230,13 @@ export class ObservatoryScene {
     this.programs.body = createProgram(gl, VERTEX_SHADER, BODY_FRAGMENT_SHADER);
     this.programs.line = createProgram(gl, LINE_VERTEX_SHADER, LINE_FRAGMENT_SHADER);
 
-    this.meshes.sphere = createSphereMesh(gl, 72, 42);
+    this.meshes.sphere = createSphereMesh(gl, 80, 48);
     this.meshes.glowSphere = createSphereMesh(gl, 72, 42);
-    this.meshes.orbit = createUnitCircleMesh(gl, 320);
+    this.meshes.orbit = createUnitCircleMesh(gl, 360);
     this.meshes.moonOrbit = createUnitCircleMesh(gl, 180);
-    this.meshes.crosshair = createLineMesh(gl, [
-      -1.20, 0.00, 0.00,
-       1.20, 0.00, 0.00,
-       0.00,-1.20, 0.00,
-       0.00, 1.20, 0.00
+    this.meshes.transitChord = createLineMesh(gl, [
+      -1.08, 0.0, 0.022,
+       1.08, 0.0, 0.022
     ]);
 
     gl.enable(gl.DEPTH_TEST);
@@ -239,8 +249,14 @@ export class ObservatoryScene {
 
     window.addEventListener("resize", () => this.resize(), { passive: true });
 
+    this.canvas.addEventListener("webglcontextlost", event => {
+      event.preventDefault();
+      this.ready = false;
+      this.onWarn("WebGL context lost. Reloading the page will reinitialise the GPU resources.");
+    });
+
     this.ready = true;
-    this.onStatus("Native WebGL observatory ready: depth-aware orbit, moon occlusion, and irregular starspot rendering enabled.");
+    this.onStatus("Native WebGL observatory ready: renderer now consumes the shared physics state vector.");
   }
 
   resize() {
@@ -270,7 +286,16 @@ export class ObservatoryScene {
     return this.fps;
   }
 
-  render({ time = 0, phase = 0, visualPhase = 0, params = {}, sample = {}, moonState = {}, target = null } = {}) {
+  render({
+    time = 0,
+    phase = 0,
+    visualPhase = 0,
+    params = {},
+    sample = {},
+    moonState = {},
+    target = null,
+    systemState = null
+  } = {}) {
     if (!this.ready) return;
 
     this.frameCounter += 1;
@@ -283,8 +308,10 @@ export class ObservatoryScene {
       this.lastFpsTime = now;
     }
 
+    const state = systemState || this.makeFallbackSystemState(visualPhase, phase, params, sample, moonState);
+
     if (this.safe2d) {
-      this.render2DSafe({ time, visualPhase, params });
+      this.render2DSafe({ time, params, systemState: state });
       return;
     }
 
@@ -295,114 +322,154 @@ export class ObservatoryScene {
 
     const teff = Number.isFinite(target?.st_teff) ? target.st_teff : 5772;
     const colors = stellarColors(teff);
-    const planet = this.computeVisualPlanet(visualPhase, params);
-    const moon = this.computeVisualMoon(visualPhase, planet, params);
 
-    this.drawBackgroundFrame();
+    const planetDisplay = this.projectPlanetToDisplay(state.planet, params);
+    const moonDisplay = this.projectMoonToDisplay(state.moon, planetDisplay, params);
 
-    const rearBodies = [];
-    const frontBodies = [];
-
-    const planetBody = {
-      position: planet.position,
-      radius: planet.radius,
-      color: [0.014, 0.030, 0.045],
-      rim: [0.0, 0.92, 1.0],
-      darkness: 0.08,
-      front: planet.front
-    };
-
-    if (planet.front) {
-      frontBodies.push(planetBody);
-    } else {
-      rearBodies.push(planetBody);
-    }
-
-    if (params.moonEnabled) {
-      const moonBody = {
-        position: moon.position,
-        radius: moon.radius,
-        color: [0.105, 0.118, 0.13],
-        rim: [1.0, 0.68, 0.08],
-        darkness: 0.03,
-        front: moon.front
-      };
-
-      if (moon.front) {
-        frontBodies.push(moonBody);
-      } else {
-        rearBodies.push(moonBody);
-      }
-    }
-
-    rearBodies
-      .sort((a, b) => a.position[2] - b.position[2])
-      .forEach(body => this.drawBody(body));
+    this.drawBackgroundFrame(params, state);
+    this.drawRearBodies(planetDisplay, moonDisplay, params);
 
     this.drawStarSolid(time, params, teff, colors);
+    this.drawSpotComponents(state.spotComponents || []);
     this.drawStarGlow(time, colors);
 
-    this.drawDepthAwareGuides(planet, moon, params);
-
-    if (params.spotEnabled) {
-      this.drawStarspot(params);
-    }
-
-    frontBodies
-      .sort((a, b) => a.position[2] - b.position[2])
-      .forEach(body => this.drawBody(body));
+    this.drawDepthAwareGuides(planetDisplay, moonDisplay, params, state);
+    this.drawFrontBodies(planetDisplay, moonDisplay, params);
   }
 
-  computeVisualPlanet(visualPhase, params) {
-    const theta = Math.PI * 2 * visualPhase;
+  makeFallbackSystemState(visualPhase, phase, params, sample, moonState) {
+    const orbitPhase = wrap01(Number.isFinite(visualPhase) ? visualPhase : 0);
+    const theta = TWO_PI * orbitPhase;
     const inc = (params.inclinationDeg ?? 88.5) * Math.PI / 180;
-    const a = 1.28;
-    const yFlatten = Math.max(0.07, Math.abs(Math.cos(inc)));
+    const aRs = Math.max(1.5, params.aRs || 12);
 
-    const x = a * Math.sin(theta);
-    const y = -a * Math.cos(theta) * yFlatten;
-    const z = 0.95 * Math.cos(theta) * Math.sin(inc);
+    const planet = {
+      x: aRs * Math.sin(theta),
+      y: -aRs * Math.cos(theta) * Math.cos(inc),
+      z: aRs * Math.cos(theta) * Math.sin(inc),
+      radius: clamp(params.rpRs ?? 0.1, 0.005, 0.28),
+      front: Math.cos(theta) >= 0,
+      theta,
+      orbitPhase,
+      distanceRs: aRs
+    };
+
+    const moon = {
+      enabled: !!params.moonEnabled,
+      x: moonState?.x ?? planet.x,
+      y: moonState?.y ?? planet.y,
+      z: moonState?.z ?? planet.z - 1,
+      radius: clamp(params.moonRadius ?? 0.025, 0.004, 0.08),
+      front: !!moonState?.front,
+      label: moonState?.label || "DISABLED",
+      vector: moonState?.vector || [0, 0, 0],
+      orbitPhase
+    };
 
     return {
-      position: [x, y, z],
-      radius: clamp(params.rpRs ?? 0.1, 0.025, 0.23),
-      front: z >= 0
+      phase,
+      transitPhase: phase,
+      orbitPhase,
+      rawOrbitPhase: orbitPhase,
+      depthPpm: sample?.depthPpm || 0,
+      planet,
+      moon,
+      spotComponents: []
     };
   }
 
-  computeVisualMoon(visualPhase, planet, params) {
-    const moonPhase =
-      (params.moonPhaseDeg ?? 45) * Math.PI / 180 +
-      Math.PI * 2 * visualPhase * (params.moonAngularRate ?? 8);
-
-    const node = (params.moonNodeDeg ?? 35) * Math.PI / 180;
-    const inc = (params.moonInclinationDeg ?? 12) * Math.PI / 180;
-    const distance = (params.moonDistance ?? 0.55) * 0.34;
-
-    let local = [
-      distance * Math.cos(moonPhase),
-      distance * Math.sin(moonPhase),
-      0
+  projectPlanetToDisplay(planet = {}, params = {}) {
+    const orbitPhase = wrap01(planet.orbitPhase ?? 0);
+    const theta = Number.isFinite(planet.theta) ? planet.theta : TWO_PI * orbitPhase;
+    const inc = (params.inclinationDeg ?? 88.5) * Math.PI / 180;
+    const orbitRadius = 1.56;
+    const visualFlatten = Math.max(0.13, Math.abs(Math.cos(inc)) * 3.2);
+    const schematic = [
+      orbitRadius * Math.sin(theta),
+      -orbitRadius * Math.cos(theta) * visualFlatten,
+      0.95 * Math.cos(theta) * Math.sin(inc)
     ];
 
-    local = rotateX(local, inc);
-    local = rotateZ(local, node);
-
-    const position = [
-      planet.position[0] + local[0],
-      planet.position[1] + local[1],
-      planet.position[2] + local[2] * 0.72
+    const radius = clamp(planet.radius ?? params.rpRs ?? 0.1, 0.005, 0.30);
+    const physical = [
+      finite(planet.x) ? planet.x : schematic[0],
+      finite(planet.y) ? planet.y : schematic[1],
+      schematic[2]
     ];
+
+    const proximity = Math.max(
+      Math.abs(physical[0]) / Math.max(1e-6, 1.16 + radius),
+      Math.abs(physical[1]) / Math.max(1e-6, 1.10 + radius)
+    );
+
+    const blend = smoothstep(0.95, 1.55, proximity);
+    const position = mix3(physical, schematic, blend);
 
     return {
       position,
-      radius: clamp(params.moonRadius ?? 0.025, 0.010, 0.080),
-      front: position[2] >= 0,
-      local
+      physicalPosition: physical,
+      schematicPosition: schematic,
+      radius,
+      front: planet.front !== undefined ? !!planet.front : schematic[2] >= 0,
+      theta,
+      orbitPhase,
+      source: planet
     };
   }
 
-  drawBackgroundFrame() {
+  projectMoonToDisplay(moon = {}, planetDisplay, params = {}) {
+    const enabled = !!moon.enabled || !!params.moonEnabled;
+    const radius = enabled ? clamp(moon.radius ?? params.moonRadius ?? 0.025, 0.004, 0.09) : 0;
+
+    if (!enabled || radius <= 0) {
+      return {
+        enabled: false,
+        position: [0, 0, -1],
+        radius: 0,
+        front: false,
+        source: moon
+      };
+    }
+
+    const vector = Array.isArray(moon.vector) ? moon.vector : [0, 0, 0];
+    const scaledVector = [
+      vector[0] * 0.34,
+      vector[1] * 0.34,
+      vector[2] * 0.34
+    ];
+
+    const schematic = [
+      planetDisplay.position[0] + scaledVector[0],
+      planetDisplay.position[1] + scaledVector[1],
+      planetDisplay.position[2] + scaledVector[2]
+    ];
+
+    const physical = [
+      finite(moon.x) ? moon.x : schematic[0],
+      finite(moon.y) ? moon.y : schematic[1],
+      finite(moon.z) ? clamp(moon.z / Math.max(1.0, params.aRs || 12), -1.1, 1.1) : schematic[2]
+    ];
+
+    const proximity = Math.max(
+      Math.abs(physical[0]) / Math.max(1e-6, 1.20 + radius),
+      Math.abs(physical[1]) / Math.max(1e-6, 1.15 + radius)
+    );
+
+    const blend = smoothstep(0.98, 1.62, proximity);
+    const position = mix3(physical, schematic, blend);
+
+    return {
+      enabled: true,
+      position,
+      physicalPosition: physical,
+      schematicPosition: schematic,
+      radius,
+      front: moon.front !== undefined ? !!moon.front : position[2] >= 0,
+      source: moon
+    };
+  }
+
+  drawBackgroundFrame(params, state) {
     const gl = this.gl;
 
     gl.enable(gl.BLEND);
@@ -410,19 +477,85 @@ export class ObservatoryScene {
     gl.depthMask(false);
 
     this.drawLineMesh(
-      this.meshes.crosshair,
-      mat4Scale(mat4Identity(), [1.45, 1.45, 1]),
+      this.meshes.transitChord,
+      mat4Translate(mat4Identity(), [0, this.computeTransitChordY(params), 0.040]),
       [0.0, 0.94, 1.0],
-      0.045
+      0.055
     );
 
     gl.depthMask(true);
     gl.disable(gl.BLEND);
   }
 
+  computeTransitChordY(params) {
+    const inc = (params.inclinationDeg ?? 88.5) * Math.PI / 180;
+    const aRs = Math.max(1.5, params.aRs || 12);
+    return clamp(-aRs * Math.cos(inc), -1.0, 1.0);
+  }
+
+  drawRearBodies(planet, moon, params) {
+    const rear = [];
+
+    if (!planet.front) {
+      rear.push({
+        position: planet.position,
+        radius: planet.radius,
+        color: [0.014, 0.030, 0.045],
+        rim: [0.0, 0.92, 1.0],
+        darkness: 0.08,
+        alpha: 1
+      });
+    }
+
+    if (moon.enabled && !moon.front) {
+      rear.push({
+        position: moon.position,
+        radius: moon.radius,
+        color: [0.105, 0.118, 0.13],
+        rim: [1.0, 0.68, 0.08],
+        darkness: 0.03,
+        alpha: 1
+      });
+    }
+
+    rear
+      .sort((a, b) => a.position[2] - b.position[2])
+      .forEach(body => this.drawBody(body));
+  }
+
+  drawFrontBodies(planet, moon, params) {
+    const front = [];
+
+    if (planet.front) {
+      front.push({
+        position: planet.position,
+        radius: planet.radius,
+        color: [0.014, 0.030, 0.045],
+        rim: [0.0, 0.92, 1.0],
+        darkness: 0.08,
+        alpha: 1
+      });
+    }
+
+    if (moon.enabled && moon.front) {
+      front.push({
+        position: moon.position,
+        radius: moon.radius,
+        color: [0.105, 0.118, 0.13],
+        rim: [1.0, 0.68, 0.08],
+        darkness: 0.03,
+        alpha: 1
+      });
+    }
+
+    front
+      .sort((a, b) => a.position[2] - b.position[2])
+      .forEach(body => this.drawBody(body));
+  }
+
   drawStarSolid(time, params, teff, colors) {
     const model = mat4Scale(
-      mat4RotateY(mat4Identity(), time * 0.035),
+      mat4RotateY(mat4Identity(), time * 0.026),
       [1, 1, 1]
     );
 
@@ -435,6 +568,7 @@ export class ObservatoryScene {
         uU1: params.u1 ?? 0.32,
         uU2: params.u2 ?? 0.28,
         uTeffNorm: clamp((teff - 2500) / 8500, 0, 1),
+        uGranulationAmp: 0.18,
         uHotColor: colors.hot,
         uCoolColor: colors.cool
       }
@@ -452,7 +586,7 @@ export class ObservatoryScene {
     this.drawSphere({
       program: this.programs.glow,
       mesh: this.meshes.glowSphere,
-      model: mat4Scale(mat4Identity(), [1.20, 1.20, 1.20]),
+      model: mat4Scale(mat4Identity(), [1.23, 1.23, 1.23]),
       uniforms: {
         uTime: time,
         uGlowColor: colors.glow
@@ -465,7 +599,58 @@ export class ObservatoryScene {
     gl.disable(gl.BLEND);
   }
 
-  drawDepthAwareGuides(planet, moon, params) {
+  drawSpotComponents(components = []) {
+    if (!Array.isArray(components) || !components.length) return;
+
+    const gl = this.gl;
+
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+    for (const component of components) {
+      const x = clamp(component.x ?? 0, -0.985, 0.985);
+      const y = clamp(component.y ?? 0, -0.985, 0.985);
+      const z = Math.sqrt(Math.max(0, 1 - x * x - y * y));
+
+      if (z <= 0) continue;
+
+      const kind = String(component.kind || "");
+      const opacity = clamp(component.opacity ?? 0.35, 0.04, 0.92);
+      const isUmbra = kind.includes("umbra");
+      const color = isUmbra
+        ? [0.018, 0.008, 0.004]
+        : [0.070, 0.030, 0.012];
+
+      const rim = isUmbra
+        ? [0.10, 0.025, 0.008]
+        : [0.38, 0.10, 0.025];
+
+      let model = mat4Translate(mat4Identity(), [x, y, z + (component.lift ?? 0.014)]);
+      model = mat4RotateZ(model, component.angle ?? 0);
+      model = mat4Scale(model, [
+        Math.max(0.002, component.rx ?? 0.05),
+        Math.max(0.002, component.ry ?? 0.03),
+        0.004
+      ]);
+
+      this.drawSphere({
+        program: this.programs.body,
+        mesh: this.meshes.sphere,
+        model,
+        uniforms: {
+          uColor: color,
+          uRimColor: rim,
+          uDarkness: 0.0,
+          uAlpha: opacity
+        },
+        transparent: true
+      });
+    }
+
+    gl.disable(gl.BLEND);
+  }
+
+  drawDepthAwareGuides(planet, moon, params, state) {
     const gl = this.gl;
 
     gl.enable(gl.DEPTH_TEST);
@@ -475,12 +660,10 @@ export class ObservatoryScene {
 
     this.drawOrbitGuide(params);
 
-    if (params.moonEnabled) {
+    if (moon.enabled) {
       this.drawMoonOrbitGuide(planet, params);
       this.drawHierarchyArm(planet.position, moon.position);
     }
-
-    this.drawCrosshair();
 
     gl.depthMask(true);
     gl.disable(gl.BLEND);
@@ -499,146 +682,33 @@ export class ObservatoryScene {
       uniforms: {
         uColor: body.color,
         uRimColor: body.rim,
-        uDarkness: body.darkness
-      }
+        uDarkness: body.darkness,
+        uAlpha: body.alpha ?? 1
+      },
+      transparent: body.alpha !== undefined && body.alpha < 1
     });
-  }
-
-  drawStarspot(params) {
-    const baseX = clamp(params.spotX ?? 0.2, -0.88, 0.88);
-    const baseY = clamp(params.spotY ?? 0.1, -0.88, 0.88);
-    const baseZ = Math.sqrt(Math.max(0, 1 - baseX * baseX - baseY * baseY));
-
-    if (baseZ <= 0) return;
-
-    const radius = clamp(params.spotRadius ?? 0.12, 0.025, 0.32);
-    const contrast = clamp(params.spotContrast ?? 0.55, 0.05, 0.95);
-    const seed = Math.floor((baseX + 1.3) * 1000 + (baseY + 1.7) * 1700 + radius * 9000);
-
-    const drawSpotPatch = (dx, dy, rx, ry, darkness, color, rim, zLift = 0.014) => {
-      const x = clamp(baseX + dx, -0.96, 0.96);
-      const y = clamp(baseY + dy, -0.96, 0.96);
-      const z = Math.sqrt(Math.max(0, 1 - x * x - y * y));
-
-      if (z <= 0) return;
-
-      let model = mat4Translate(mat4Identity(), [x, y, z + zLift]);
-      model = mat4RotateZ(model, 0.45 + 2.1 * spotHash(seed + Math.floor(dx * 10000)));
-      model = mat4Scale(model, [rx, ry, 0.004]);
-
-      this.drawSphere({
-        program: this.programs.body,
-        mesh: this.meshes.sphere,
-        model,
-        uniforms: {
-          uColor: color,
-          uRimColor: rim,
-          uDarkness: darkness
-        }
-      });
-    };
-
-    const penumbraColor = [
-      0.105 * (1.0 - 0.55 * contrast),
-      0.045 * (1.0 - 0.45 * contrast),
-      0.018 * (1.0 - 0.35 * contrast)
-    ];
-
-    const umbraColor = [
-      0.020 * (1.0 - 0.25 * contrast),
-      0.010 * (1.0 - 0.20 * contrast),
-      0.006 * (1.0 - 0.15 * contrast)
-    ];
-
-    const warmRim = [
-      0.55 + 0.15 * contrast,
-      0.18 + 0.04 * contrast,
-      0.045
-    ];
-
-    drawSpotPatch(
-      0,
-      0,
-      radius * 1.18,
-      radius * 0.76,
-      0.04,
-      penumbraColor,
-      warmRim,
-      0.010
-    );
-
-    drawSpotPatch(
-      radius * 0.12,
-      -radius * 0.03,
-      radius * 0.72,
-      radius * 0.44,
-      0.10,
-      umbraColor,
-      [0.18, 0.06, 0.018],
-      0.016
-    );
-
-    for (let i = 0; i < 11; i++) {
-      const a = spotHash(seed + i * 31) * Math.PI * 2;
-      const d = radius * (0.16 + 0.66 * spotHash(seed + i * 47));
-      const dx = Math.cos(a) * d * 0.72;
-      const dy = Math.sin(a) * d * 0.50;
-      const rx = radius * (0.14 + 0.20 * spotHash(seed + i * 71));
-      const ry = radius * (0.07 + 0.18 * spotHash(seed + i * 89));
-      const dark = 0.05 + 0.10 * spotHash(seed + i * 113);
-
-      const mixedColor = i % 3 === 0
-        ? umbraColor
-        : [
-            penumbraColor[0] * (0.72 + 0.18 * spotHash(seed + i)),
-            penumbraColor[1] * (0.72 + 0.16 * spotHash(seed + i + 4)),
-            penumbraColor[2] * (0.72 + 0.14 * spotHash(seed + i + 8))
-          ];
-
-      drawSpotPatch(
-        dx,
-        dy,
-        rx,
-        ry,
-        dark,
-        mixedColor,
-        [0.24, 0.08, 0.018],
-        0.018 + 0.002 * i
-      );
-    }
   }
 
   drawOrbitGuide(params) {
     const inc = (params.inclinationDeg ?? 88.5) * Math.PI / 180;
+    const orbitRadius = 1.56;
+    const visualFlatten = Math.max(0.13, Math.abs(Math.cos(inc)) * 3.2);
 
     let model = mat4RotateX(mat4Identity(), Math.PI / 2);
-    model = mat4Scale(model, [
-      1.28,
-      1.28,
-      Math.max(0.07, Math.abs(Math.cos(inc)))
-    ]);
+    model = mat4Scale(model, [orbitRadius, orbitRadius, visualFlatten]);
 
-    this.drawLineMesh(this.meshes.orbit, model, [0.0, 0.94, 1.0], 0.22);
+    this.drawLineMesh(this.meshes.orbit, model, [0.0, 0.94, 1.0], 0.18);
   }
 
   drawMoonOrbitGuide(planet, params) {
-    const distance = (params.moonDistance ?? 0.55) * 0.34;
+    const distance = clamp(params.moonDistance ?? 0.55, 0.05, 2.5) * 0.34;
 
     let model = mat4Translate(mat4Identity(), planet.position);
     model = mat4RotateZ(model, (params.moonNodeDeg ?? 35) * Math.PI / 180);
     model = mat4RotateX(model, (params.moonInclinationDeg ?? 12) * Math.PI / 180);
     model = mat4Scale(model, [distance, distance, distance]);
 
-    this.drawLineMesh(this.meshes.moonOrbit, model, [1.0, 0.69, 0.0], 0.34);
-  }
-
-  drawCrosshair() {
-    this.drawLineMesh(
-      this.meshes.crosshair,
-      mat4Identity(),
-      [0.0, 0.94, 1.0],
-      0.10
-    );
+    this.drawLineMesh(this.meshes.moonOrbit, model, [1.0, 0.69, 0.0], 0.30);
   }
 
   drawHierarchyArm(a, b) {
@@ -647,7 +717,7 @@ export class ObservatoryScene {
       b[0], b[1], b[2]
     ]);
 
-    this.drawLineMesh(mesh, mat4Identity(), [1.0, 0.69, 0.0], 0.38);
+    this.drawLineMesh(mesh, mat4Identity(), [1.0, 0.69, 0.0], 0.22);
     this.gl.deleteBuffer(mesh.position);
   }
 
@@ -694,7 +764,7 @@ export class ObservatoryScene {
     gl.drawArrays(gl.LINES, 0, mesh.vertexCount);
   }
 
-  render2DSafe({ time, visualPhase, params }) {
+  render2DSafe({ time, params, systemState }) {
     const ctx = this.ctx2d;
     const w = this.canvas.width;
     const h = this.canvas.height;
@@ -724,16 +794,16 @@ export class ObservatoryScene {
     ctx.arc(cx, cy, r * 1.18, 0, Math.PI * 2);
     ctx.fill();
 
-    const p = this.computeVisualPlanet(visualPhase, params);
+    const planet = this.projectPlanetToDisplay(systemState?.planet, params);
 
     ctx.fillStyle = "#02070a";
     ctx.strokeStyle = "#00f0ff";
     ctx.lineWidth = 2 * this.pixelRatio;
     ctx.beginPath();
     ctx.arc(
-      cx + p.position[0] * r,
-      cy - p.position[1] * r,
-      Math.max(5, p.radius * r),
+      cx + planet.position[0] * r,
+      cy - planet.position[1] * r,
+      Math.max(5, planet.radius * r),
       0,
       Math.PI * 2
     );
@@ -858,7 +928,7 @@ function createSphereMesh(gl, segments = 64, rings = 32) {
 
     for (let x = 0; x <= segments; x++) {
       const u = x / segments;
-      const theta = u * Math.PI * 2;
+      const theta = u * TWO_PI;
 
       const nx = Math.cos(theta) * sinPhi;
       const ny = cosPhi;
@@ -891,8 +961,8 @@ function createUnitCircleMesh(gl, points = 256) {
   const data = [];
 
   for (let i = 0; i < points; i++) {
-    const a = i / points * Math.PI * 2;
-    const b = (i + 1) / points * Math.PI * 2;
+    const a = i / points * TWO_PI;
+    const b = (i + 1) / points * TWO_PI;
 
     data.push(
       Math.cos(a), Math.sin(a), 0,
@@ -1104,28 +1174,6 @@ function normalMatrix(m) {
   ]);
 }
 
-function rotateX(v, angle) {
-  const c = Math.cos(angle);
-  const s = Math.sin(angle);
-
-  return [
-    v[0],
-    v[1] * c - v[2] * s,
-    v[1] * s + v[2] * c
-  ];
-}
-
-function rotateZ(v, angle) {
-  const c = Math.cos(angle);
-  const s = Math.sin(angle);
-
-  return [
-    v[0] * c - v[1] * s,
-    v[0] * s + v[1] * c,
-    v[2]
-  ];
-}
-
 function sub3(a, b) {
   return [
     a[0] - b[0],
@@ -1156,9 +1204,32 @@ function normalize3(v) {
   ];
 }
 
-function spotHash(value) {
-  const x = Math.sin(value * 12.9898) * 43758.5453123;
-  return x - Math.floor(x);
+function mix3(a, b, t) {
+  return [
+    a[0] + (b[0] - a[0]) * t,
+    a[1] + (b[1] - a[1]) * t,
+    a[2] + (b[2] - a[2]) * t
+  ];
+}
+
+function smoothstep(edge0, edge1, x) {
+  const t = clamp((x - edge0) / Math.max(1e-9, edge1 - edge0), 0, 1);
+  return t * t * (3 - 2 * t);
+}
+
+function wrap01(value) {
+  let phase = Number(value) || 0;
+  phase %= 1;
+
+  if (phase < 0) {
+    phase += 1;
+  }
+
+  return phase;
+}
+
+function finite(value) {
+  return Number.isFinite(value);
 }
 
 function clamp(value, min, max) {
