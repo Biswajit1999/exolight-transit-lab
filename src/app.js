@@ -1,11 +1,11 @@
-import { ExoSceneRenderer } from "./scene.js?v=20260517-plot-fix-v13";
+import { ExoSceneRenderer } from "./scene.js?v=20260517-plot-clean-v14";
 
 /* ============================================================================
    ExoIntel-Prime Main Thread Orchestrator - Physics Visibility v11
    ============================================================================ */
 
 const APP_NAME = "ExoIntel-Prime";
-const WORKER_URL = new URL("./transitWorker.js?v=20260517-plot-fix-v13", import.meta.url);
+const WORKER_URL = new URL("./transitWorker.js?v=20260517-plot-clean-v14", import.meta.url);
 const TARGET_CACHE_URL = "./data/exoplanets.json";
 const LIGHTCURVE_BASE_URL = "./data/lightcurves/";
 const THEME_STORAGE_KEY = "exointel-prime-theme-v5";
@@ -616,11 +616,20 @@ function drawPlotGrid(ctx, box, scale, dpr, colours) {
     ctx.fillText(formatNumber(flux, 5), box.left - 10 * dpr, y);
   }
 
-  ctx.textAlign = "left";
-  ctx.textBaseline = "bottom";
+  /*
+    v14: The top-left "Flux" label previously collided with the legend
+    ("archival photometry"). Keep the legend above the panel and move the
+    y-axis title into the left margin as a compact rotated label.
+  */
+  ctx.save();
+  ctx.translate(box.left - 58 * dpr, box.top + height / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
   ctx.fillStyle = colours.text;
-  ctx.font = `${11 * dpr}px Inter, system-ui, sans-serif`;
-  ctx.fillText("Flux", box.left, box.top - 7 * dpr);
+  ctx.font = `${10.5 * dpr}px Inter, system-ui, sans-serif`;
+  ctx.fillText("Flux", 0, 0);
+  ctx.restore();
 
   ctx.restore();
 }
@@ -708,7 +717,7 @@ function drawDifferencePanel(ctx, model, xMap, box, dpr, colours) {
   ctx.restore();
 }
 
-function drawLegend(ctx,pad,dpr,c){ctx.save();ctx.font=`${12*dpr}px Inter, system-ui, sans-serif`;ctx.textBaseline="middle";const y=pad.top-10*dpr,x0=pad.left;ctx.fillStyle=c.data;ctx.beginPath();ctx.arc(x0,y,4*dpr,0,Math.PI*2);ctx.fill();ctx.fillStyle=c.text;ctx.fillText("archival photometry",x0+10*dpr,y);const x1=x0+172*dpr;ctx.strokeStyle=c.model;ctx.lineWidth=3*dpr;ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x1+22*dpr,y);ctx.stroke();ctx.fillStyle=c.text;ctx.fillText("active model",x1+32*dpr,y);const x2=x1+150*dpr;ctx.strokeStyle=alphaColour(c.muted,.72);ctx.setLineDash([6*dpr,4*dpr]);ctx.beginPath();ctx.moveTo(x2,y);ctx.lineTo(x2+22*dpr,y);ctx.stroke();ctx.setLineDash([]);ctx.fillText("planet-only",x2+32*dpr,y);ctx.restore();}
+function drawLegend(ctx,pad,dpr,c){ctx.save();ctx.font=`${11*dpr}px Inter, system-ui, sans-serif`;ctx.textBaseline="middle";const y=pad.top-11*dpr,x0=pad.left+8*dpr;ctx.fillStyle=c.data;ctx.beginPath();ctx.arc(x0,y,3.5*dpr,0,Math.PI*2);ctx.fill();ctx.fillStyle=c.text;ctx.fillText("archival photometry",x0+10*dpr,y);const x1=x0+164*dpr;ctx.strokeStyle=c.model;ctx.lineWidth=2.5*dpr;ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x1+22*dpr,y);ctx.stroke();ctx.fillStyle=c.text;ctx.fillText("active model",x1+30*dpr,y);const x2=x1+138*dpr;ctx.strokeStyle=alphaColour(c.muted,.72);ctx.setLineDash([6*dpr,4*dpr]);ctx.beginPath();ctx.moveTo(x2,y);ctx.lineTo(x2+22*dpr,y);ctx.stroke();ctx.setLineDash([]);ctx.fillText("planet-only",x2+30*dpr,y);ctx.restore();}
 function serialiseTarget(t){return{pl_name:t.pl_name,hostname:t.hostname,pl_orbper:numberValue(t.pl_orbper,3),pl_trandur:numberValue(t.pl_trandur,2.5),pl_trandep:numberValue(t.pl_trandep,10000),pl_orbeccen:numberValue(t.pl_orbeccen,0),pl_orblper:numberValue(t.pl_orblper,90),st_teff:numberValue(t.st_teff,5772),st_rad:numberValue(t.st_rad,1),st_mass:numberValue(t.st_mass,1)};}
 function toCamel(id){return id.replace(/-([a-z])/g,(_,c)=>c.toUpperCase());}
 function normaliseDegrees(deg){let v=Number(deg);if(!Number.isFinite(v))return 0;v%=360;if(v<0)v+=360;return v;}
