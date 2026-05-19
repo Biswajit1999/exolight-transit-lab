@@ -3,7 +3,7 @@
    src/scene.js
    ---------------------------------------------------------------------------
    Ultra-realistic WebGL scene renderer for the ExoLight Transit Lab.
-   v17: dark transit silhouettes + cleaner moon occultation.
+   v18: magnetic-field / plasma visual layer + dark transit silhouettes.
 
    This version is intentionally heavier than the recovery Canvas renderer:
    - true WebGL sphere rendering
@@ -11,6 +11,7 @@
    - animated rotating photosphere
    - temperature-based stellar colour
    - subtle non-flat coronal atmosphere / glow shell
+   - dipole-inspired magnetic loops and plasma field-line arcs
    - shaded planet and moon spheres
    - no cartoon orbit rings or dotted moon guides
    - stable public API for the current src/app.js
@@ -488,21 +489,21 @@ export class ExoSceneRenderer {
     window.addEventListener("resize", () => this.resize(), { passive: true });
     this.resize();
     this.ready = true;
-    this.onStatus("Ultra flagship stellar renderer online");
+    this.onStatus("Ultra stellar renderer + magnetic plasma layer online");
     this.frameHandle = requestAnimationFrame(time => this.loop(time));
   }
 
   qualitySettings() {
     if (this.quality === "ultra") {
-      return { sphereSegments: 320, sphereRings: 184, starCount: 2600, quality: 1.92, glow: 1.78 };
+      return { sphereSegments: 320, sphereRings: 184, starCount: 2600, quality: 1.92, glow: 1.78, magnetic: 0.115 };
     }
     if (this.quality === "high") {
-      return { sphereSegments: 220, sphereRings: 126, starCount: 1450, quality: 1.28, glow: 1.30 };
+      return { sphereSegments: 220, sphereRings: 126, starCount: 1450, quality: 1.28, glow: 1.30, magnetic: 0.072 };
     }
     if (this.quality === "low") {
-      return { sphereSegments: 72, sphereRings: 42, starCount: 320, quality: 0.42, glow: 0.70 };
+      return { sphereSegments: 72, sphereRings: 42, starCount: 320, quality: 0.42, glow: 0.70, magnetic: 0.0 };
     }
-    return { sphereSegments: 132, sphereRings: 78, starCount: 760, quality: 0.78, glow: 0.96 };
+    return { sphereSegments: 132, sphereRings: 78, starCount: 760, quality: 0.78, glow: 0.96, magnetic: 0.036 };
   }
 
   rebuildMeshes() {
@@ -512,6 +513,7 @@ export class ExoSceneRenderer {
     this.meshes.glowSphere = createSphereMesh(gl, Math.max(48, Math.floor(q.sphereSegments * 0.75)), Math.max(28, Math.floor(q.sphereRings * 0.75)));
     this.meshes.starfield = createStarfieldMesh(gl, q.starCount);
     this.meshes.chord = createLineMesh(gl, [-2.55, 0.0, 0.05, 2.55, 0.0, 0.05]);
+    this.meshes.magnetic = createMagneticFieldMesh(gl, this.quality);
   }
 
   dispose() {
@@ -580,6 +582,7 @@ export class ExoSceneRenderer {
 
     this.drawStar(time, teff, colours, q);
     this.drawGlow(time, colours.glow, q);
+    this.drawMagneticField(time, colours, q);
 
     if (geom.planet.front) this.drawPlanet(geom.planet, time);
     if (geom.moon.enabled && geom.moon.front) this.drawMoon(geom.moon, time);
@@ -705,6 +708,38 @@ export class ExoSceneRenderer {
     });
 
     gl.enable(gl.CULL_FACE);
+    gl.depthMask(true);
+    gl.disable(gl.BLEND);
+  }
+
+
+  drawMagneticField(time, colours, q) {
+    if (!this.meshes.magnetic || !q.magnetic) return;
+
+    const gl = this.gl;
+    const loc = useProgram(gl, this.programs.line);
+    const teff = numberOr(this.target.st_teff, 5772);
+    const hotStar = clamp((teff - 5200) / 4200, 0, 1);
+    const coolStar = clamp((5200 - teff) / 2500, 0, 1);
+    const fieldColour = mix3(
+      mix3([0.30, 0.93, 1.00], [0.62, 0.72, 1.35], hotStar),
+      [1.00, 0.40, 0.16],
+      coolStar * 0.38
+    );
+
+    // Illustrative stellar-activity overlay: dipole-like field lines, not a magnetic-field measurement.
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+    gl.depthMask(false);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.meshes.magnetic.position);
+    enableAttrib(gl, loc.aPosition, 3);
+    const spin = mat4RotateY(mat4Identity(), time * (this.quality === "ultra" ? 0.085 : 0.052));
+    setMat4(gl, loc.uModel, spin);
+    setMat4(gl, loc.uView, this.view);
+    setMat4(gl, loc.uProjection, this.projection);
+    setUniform(gl, loc.uColour, fieldColour);
+    setUniform(gl, loc.uAlpha, q.magnetic * (0.82 + 0.18 * Math.sin(time * 0.75)));
+    gl.drawArrays(gl.LINES, 0, this.meshes.magnetic.vertexCount);
     gl.depthMask(true);
     gl.disable(gl.BLEND);
   }
@@ -992,6 +1027,86 @@ function createStarfieldMesh(gl, count) {
     alpha: bufferData(gl, gl.ARRAY_BUFFER, new Float32Array(alphas)),
     vertexCount: count
   };
+}
+
+
+function createMagneticFieldMesh(gl, quality = "balanced") {
+  const vertices = [];
+  const starRadius = quality === "ultra" ? 1.62 : 1.56;
+  const qualityScale = quality === "ultra" ? 1.0 : quality === "high" ? 0.74 : quality === "balanced" ? 0.46 : 0.0;
+  if (qualityScale <= 0.0) {
+    return { position: bufferData(gl, gl.ARRAY_BUFFER, new Float32Array([])), vertexCount: 0 };
+  }
+
+  const longitudes = [];
+  const longitudeCount = quality === "ultra" ? 14 : quality === "high" ? 10 : 6;
+  for (let i = 0; i < longitudeCount; i++) longitudes.push((i / longitudeCount) * TWO_PI);
+
+  const shells = quality === "ultra" ? [2.04, 2.22, 2.45, 2.74, 3.04] : quality === "high" ? [2.08, 2.35, 2.72] : [2.15, 2.60];
+  const segments = quality === "ultra" ? 70 : quality === "high" ? 50 : 34;
+
+  const tiltX = 0.34;
+  const tiltZ = -0.18;
+
+  for (const phi0 of longitudes) {
+    for (const shell of shells) {
+      const thetaMin = Math.asin(Math.sqrt(clamp(starRadius / shell, 0.08, 0.96)));
+      let previous = null;
+      for (let i = 0; i <= segments; i++) {
+        const theta = thetaMin + (Math.PI - 2 * thetaMin) * (i / segments);
+        const wobble = 0.030 * Math.sin(3.0 * theta + phi0 * 2.0);
+        const phi = phi0 + wobble;
+        const r = shell * Math.sin(theta) * Math.sin(theta);
+        const local = [
+          r * Math.sin(theta) * Math.cos(phi),
+          r * Math.cos(theta),
+          r * Math.sin(theta) * Math.sin(phi)
+        ];
+        const tilted = rotatePointZ(rotatePointX(local, tiltX), tiltZ);
+        if (previous) vertices.push(previous[0], previous[1], previous[2], tilted[0], tilted[1], tilted[2]);
+        previous = tilted;
+      }
+    }
+  }
+
+  // A few open polar streamers give the corona a plasma-like high-energy look.
+  const streamerCount = quality === "ultra" ? 18 : quality === "high" ? 12 : 6;
+  for (let i = 0; i < streamerCount; i++) {
+    const phi = (i / streamerCount) * TWO_PI + 0.16 * Math.sin(i * 2.1);
+    const sign = i % 2 === 0 ? 1 : -1;
+    let previous = null;
+    for (let j = 0; j <= segments; j++) {
+      const t = j / segments;
+      const radius = starRadius * (1.02 + 0.95 * t);
+      const polarAngle = 0.16 + 0.56 * t;
+      const twist = phi + sign * (0.42 * t + 0.13 * Math.sin(t * TWO_PI));
+      const local = [
+        radius * Math.sin(polarAngle) * Math.cos(twist),
+        sign * radius * Math.cos(polarAngle),
+        radius * Math.sin(polarAngle) * Math.sin(twist)
+      ];
+      const tilted = rotatePointZ(rotatePointX(local, tiltX), tiltZ);
+      if (previous) vertices.push(previous[0], previous[1], previous[2], tilted[0], tilted[1], tilted[2]);
+      previous = tilted;
+    }
+  }
+
+  return {
+    position: bufferData(gl, gl.ARRAY_BUFFER, new Float32Array(vertices)),
+    vertexCount: vertices.length / 3
+  };
+}
+
+function rotatePointX(p, angle) {
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  return [p[0], c * p[1] - s * p[2], s * p[1] + c * p[2]];
+}
+
+function rotatePointZ(p, angle) {
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  return [c * p[0] - s * p[1], s * p[0] + c * p[1], p[2]];
 }
 
 function createLineMesh(gl, data) {

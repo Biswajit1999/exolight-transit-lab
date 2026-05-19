@@ -1,11 +1,11 @@
-import { ExoSceneRenderer } from "./scene.js?v=20260517-silhouette-v17";
+import { ExoSceneRenderer } from "./scene.js?v=20260519-magnetic-v18";
 
 /* ============================================================================
    ExoIntel-Prime Main Thread Orchestrator - Physics Visibility v11
    ============================================================================ */
 
 const APP_NAME = "ExoIntel-Prime";
-const WORKER_URL = new URL("./transitWorker.js?v=20260517-silhouette-v17", import.meta.url);
+const WORKER_URL = new URL("./transitWorker.js?v=20260519-magnetic-v18", import.meta.url);
 const TARGET_CACHE_URL = "./data/exoplanets.json";
 const LIGHTCURVE_BASE_URL = "./data/lightcurves/";
 const THEME_STORAGE_KEY = "exointel-prime-theme-v5";
@@ -549,7 +549,7 @@ async function playCinematicBootSequence() {
   if (!bootScreen || !statusEl || !percentEl || !barEl) { await wait(1500); return; }
   const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
   const minimumBootTimeMs = reducedMotion ? 900 : 4600; const startTime = performance.now();
-  const steps = [{target:6,text:"Initialising observatory systems..."},{target:14,text:"Opening the ExoLight transit laboratory..."},{target:24,text:"Loading the exoplanet target archive..."},{target:35,text:"Reading stellar and planetary parameters..."},{target:47,text:"Loading archived photometry..."},{target:58,text:"Preparing the transit physics engine..."},{target:70,text:"Rendering the stellar photosphere..."},{target:82,text:"Synchronising orbit geometry and flux model..."},{target:92,text:"Tighten your seatbelt — we are travelling to another star system..."},{target:98,text:"Finalising the scientific interface..."},{target:100,text:"ExoIntel-Prime is ready."}];
+  const steps = [{target:6,text:"Initialising observatory systems..."},{target:14,text:"Opening the ExoLight transit laboratory..."},{target:24,text:"Loading the exoplanet target archive..."},{target:35,text:"Reading stellar and planetary parameters..."},{target:47,text:"Loading archived photometry..."},{target:58,text:"Preparing the transit physics engine..."},{target:70,text:"Rendering the stellar photosphere and magnetic field layer..."},{target:82,text:"Synchronising orbit geometry and flux model..."},{target:92,text:"Tighten your seatbelt — we are travelling to another star system..."},{target:98,text:"Finalising the scientific interface..."},{target:100,text:"ExoIntel-Prime is ready."}];
   let current = 0; const update = (value,text) => { current = Math.max(current, Math.min(100,value)); percentEl.textContent = `${Math.round(current)}%`; barEl.style.width = `${current}%`; if (text) statusEl.textContent = text; };
   update(0,"Initialising observatory systems...");
   for (const step of steps) { const start = current; const end = step.target; const frames = reducedMotion ? 2 : Math.max(10, Math.round((end - start) * 1.55)); for (let i=1;i<=frames;i++) { const t=i/frames; const eased = 1 - Math.pow(1-t,2.2); update(start + (end-start)*eased, step.text); await wait(reducedMotion ? 20 : 36); } }
