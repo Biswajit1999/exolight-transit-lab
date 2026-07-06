@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://biswajit1999.github.io/exolight-transit-lab/data/schema/target.schema.json",
+  "title": "ExoLight Phase III Target Record",
+  "type": "object",
+  "required": ["pl_name", "hostname", "pl_orbper"],
+  "properties": {
+    "id": { "type": "string", "description": "Stable local identifier used by the UI." },
+    "pl_name": { "type": "string", "description": "Planet name." },
+    "hostname": { "type": "string", "description": "Host star name." },
+    "pl_orbper": { "type": "number", "exclusiveMinimum": 0, "description": "Orbital period in days." },
+    "pl_trandep": { "type": ["number", "null"], "minimum": 0, "description": "Transit depth in ppm." },
+    "pl_ratror": { "type": ["number", "null"], "exclusiveMinimum": 0, "description": "Radius ratio Rp/Rstar." },
+    "pl_orbsmax": { "type": ["number", "null"], "exclusiveMinimum": 0, "description": "Semi-major axis in AU." },
+    "pl_orbincl": { "type": ["number", "null"], "minimum": 0, "maximum": 90, "description": "Orbital inclination in degrees." },
+    "pl_orbeccen": { "type": ["number", "null"], "minimum": 0, "exclusiveMaximum": 1, "description": "Orbital eccentricity." },
+    "pl_orblper": { "type": ["number", "null"], "description": "Argument of periastron in degrees." },
+    "st_rad": { "type": ["number", "null"], "exclusiveMinimum": 0, "description": "Stellar radius in solar radii." },
+    "st_mass": { "type": ["number", "null"], "exclusiveMinimum": 0, "description": "Stellar mass in solar masses." },
+    "st_teff": { "type": ["number", "null"], "exclusiveMinimum": 0, "description": "Stellar effective temperature in kelvin." },
+    "lightcurve_available": { "type": "boolean", "description": "Whether a local light-curve file exists." },
+    "lightcurve_file": { "type": "string", "description": "Relative filename under data/lightcurves/." },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "catalogue": { "type": "string" },
+        "retrieved_utc": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "anyOf": [
+    { "required": ["pl_ratror"] },
+    { "required": ["pl_trandep"] }
+  ],
+  "additionalProperties": true
+}
