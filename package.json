@@ -1,0 +1,19 @@
+{
+  "name": "exolight-transit-lab",
+  "version": "0.3.0-phase-iii",
+  "private": true,
+  "type": "module",
+  "description": "Zero-dependency browser exoplanet transit photometry lab evolving into a modular research toolkit.",
+  "scripts": {
+    "validate:physics": "node scripts/validate-physics.mjs"
+  },
+  "keywords": [
+    "exoplanet",
+    "transit-photometry",
+    "astronomy",
+    "research-toolkit",
+    "zero-dependency"
+  ],
+  "author": "Biswajit Jana",
+  "license": "MIT"
+}
