@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use ExoIntel-Prime in teaching, demonstrations, research communication or derivative software, please cite this repository."
+title: "ExoIntel-Prime: Interactive Exoplanet Transit Photometry Laboratory"
+type: software
+authors:
+  - family-names: Jana
+    given-names: Biswajit
+repository-code: "https://github.com/Biswajit1999/exolight-transit-lab"
+url: "https://biswajit1999.github.io/exolight-transit-lab/"
+license: MIT
+keywords:
+  - exoplanets
+  - transit photometry
+  - scientific visualisation
+  - astronomy education
+  - WebGL
+  - JavaScript
+abstract: >-
+  ExoIntel-Prime is a browser-based exoplanet transit photometry laboratory
+  combining locally cached archival light curves, a worker-computed theoretical
+  transit model and an interactive WebGL star-planet visualisation. It is
+  designed for scientific visualisation, education and research communication,
+  not as a formal professional fitting or detection pipeline.
