@@ -1,0 +1,69 @@
+name: Bug report
+description: Report a reproducible problem in the interface, data loading, model controls or visualisation.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping improve ExoIntel-Prime. Please separate browser/interface problems from scientific-model questions where possible.
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: "Chrome 150, Firefox 142, Safari 19..."
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and operating system
+      placeholder: "Windows 11 laptop, macOS desktop, Android tablet..."
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the visible problem and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Open target...
+        2. Change control...
+        3. Observe...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Target archive or data loading
+        - Transit model or worker calculation
+        - Light-curve plot or residuals
+        - WebGL star-planet scene
+        - Controls or accessibility
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots, console output or sample data
+      description: Remove personal or sensitive information before attaching files.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I tested with a hard refresh and the problem remains.
+          required: true
+        - label: I have not described a visual demonstration as a confirmed detection or fitted physical result.
+          required: true

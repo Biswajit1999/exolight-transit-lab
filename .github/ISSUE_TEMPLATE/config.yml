@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Live ExoIntel-Prime application
+    url: https://biswajit1999.github.io/exolight-transit-lab/
+    about: Open the public browser laboratory before reporting a problem.
+  - name: Contribution guide
+    url: https://github.com/Biswajit1999/exolight-transit-lab/blob/main/CONTRIBUTING.md
+    about: Read the scientific-integrity, provenance and pull-request requirements.
