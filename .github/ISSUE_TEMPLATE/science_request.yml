@@ -1,0 +1,55 @@
+name: Science or feature request
+description: Propose a target, dataset, modelling improvement, validation check or interface feature.
+title: "[Request]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ExoIntel-Prime welcomes scientifically grounded requests. Please distinguish measured data, catalogue metadata, theoretical modelling and hypothesis demonstrations.
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: Request type
+      options:
+        - Add an exoplanet target
+        - Add or improve a light curve
+        - Improve the transit model
+        - Add an independent validation check
+        - Improve visualisation or accessibility
+        - Improve documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Scientific or user motivation
+      description: Explain the question or audience need this would address.
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Data source or technical reference
+      description: Provide a catalogue, archive, paper, DOI or authoritative documentation where relevant.
+      placeholder: "NASA Exoplanet Archive, MAST/TESS, published paper, official API documentation..."
+  - type: textarea
+    id: scope
+    attributes:
+      label: Proposed scope
+      description: Describe the smallest useful implementation and any known limitations.
+    validations:
+      required: true
+  - type: checkboxes
+    id: integrity
+    attributes:
+      label: Scientific-integrity checks
+      options:
+        - label: I will preserve provenance for any supplied data.
+          required: true
+        - label: I understand that starspot and exomoon modes are hypothesis demonstrations, not detection claims.
+          required: true
+        - label: I will not present a visual match as a validated parameter fit.
+          required: true
