@@ -1,6 +1,7 @@
 /* ============================================================================
    ExoLight Phase III - Tabbed diagnostic shell
    Keeps the default model view light while preserving all advanced layers.
+   v02: compact tab pages with no stretched empty diagnostic cards.
    ============================================================================ */
 
 .exolight-tab-bar {
@@ -9,10 +10,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  min-height: 46px;
-  padding: 8px 10px;
+  min-height: 42px;
+  padding: 6px 8px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 16px;
   background:
     radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 48%),
     linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, transparent), color-mix(in srgb, var(--surface-2) 98%, transparent));
@@ -35,16 +36,16 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  min-height: 30px;
-  padding: 0 11px;
+  min-height: 28px;
+  padding: 0 10px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: color-mix(in srgb, var(--surface-2) 86%, transparent);
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 900;
-  letter-spacing: .06em;
+  letter-spacing: .055em;
   text-transform: uppercase;
   transition: border-color .14s ease, color .14s ease, background .14s ease, transform .14s ease;
 }
@@ -63,11 +64,11 @@
 }
 
 .exolight-tab-status {
-  flex: 0 0 auto;
-  max-width: 310px;
+  flex: 0 1 360px;
+  max-width: 360px;
   overflow: hidden;
   color: var(--muted-2);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 740;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -130,7 +131,10 @@ body[data-exolight-tab="mission"] .main-panel,
 body[data-exolight-tab="observatory"] .main-panel,
 body[data-exolight-tab="residuals"] .main-panel,
 body[data-exolight-tab="evidence"] .main-panel {
-  grid-template-rows: minmax(0, 1fr) !important;
+  grid-template-rows: auto !important;
+  align-content: start;
+  overflow: auto;
+  padding-right: 2px;
 }
 
 body[data-exolight-tab="mission"] #mission-control-shell,
@@ -138,21 +142,18 @@ body[data-exolight-tab="observatory"] #observatory-deck-shell,
 body[data-exolight-tab="residuals"] #residual-inspector-shell,
 body[data-exolight-tab="evidence"] #evidence-cockpit-shell {
   display: block !important;
+  align-self: start;
   min-height: 0;
+  height: auto;
+  max-height: calc(100vh - 178px);
+  overflow: auto;
 }
 
 body[data-exolight-tab="mission"] .mission-control-card,
 body[data-exolight-tab="observatory"] .observatory-deck-shell,
 body[data-exolight-tab="residuals"] .residual-inspector-card,
 body[data-exolight-tab="evidence"] .evidence-cockpit-card {
-  min-height: 100%;
-}
-
-body[data-exolight-tab="mission"] .main-panel,
-body[data-exolight-tab="observatory"] .main-panel,
-body[data-exolight-tab="residuals"] .main-panel,
-body[data-exolight-tab="evidence"] .main-panel {
-  overflow: auto;
+  min-height: auto;
 }
 
 body[data-exolight-tab="mission"] .scene-stage canvas,
@@ -185,6 +186,13 @@ body[data-exolight-tab="evidence"] .scene-stage canvas {
   body[data-exolight-tab="residuals"] .main-panel,
   body[data-exolight-tab="evidence"] .main-panel {
     grid-template-rows: auto !important;
+  }
+
+  body[data-exolight-tab="mission"] #mission-control-shell,
+  body[data-exolight-tab="observatory"] #observatory-deck-shell,
+  body[data-exolight-tab="residuals"] #residual-inspector-shell,
+  body[data-exolight-tab="evidence"] #evidence-cockpit-shell {
+    max-height: none;
   }
 }
 
