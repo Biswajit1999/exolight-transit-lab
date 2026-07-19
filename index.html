@@ -4,16 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ExoIntel-Prime | ExoLight Transit Lab</title>
-  <meta name="description" content="ExoIntel-Prime is an interactive exoplanet transit photometry laboratory with archival light curves, worker-backed theoretical modelling, finite-exposure integration, eccentric orbit geometry, modular Phase III physics validation, and cinematic visualisation." />
+  <meta name="description" content="ExoIntel-Prime is an interactive exoplanet transit photometry laboratory with archival light curves, worker-backed theoretical modelling, finite-exposure integration, eccentric orbit geometry, modular Phase III physics validation, Mission Control target audits, and cinematic visualisation." />
   <meta name="keywords" content="exoplanet, transit photometry, light curve, WebGL, TESS, Kepler, K2, MAST, NASA Exoplanet Archive, astrophysics, exomoon, starspot, magnetic field, plasma, limb darkening, transit modelling" />
   <meta name="author" content="Biswajit Jana" />
   <meta name="theme-color" content="#060b13" />
   <meta name="color-scheme" content="dark light" />
   <meta property="og:title" content="ExoIntel-Prime | Exoplanet Transit Photometry Lab" />
-  <meta property="og:description" content="A browser-based exoplanet transit laboratory comparing archival photometry with worker-computed theoretical models and a modular Phase III physics toolkit." />
+  <meta property="og:description" content="A browser-based exoplanet transit laboratory comparing archival photometry with worker-computed theoretical models and a modular Phase III Mission Control audit layer." />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="ExoIntel-Prime" />
   <link rel="stylesheet" href="./styles.css?v=20260519-magnetic-v18" />
+  <link rel="stylesheet" href="./src/ui/missionControl.css?v=20260719-mission-control-v01" />
 </head>
 <body>
   <noscript>
@@ -70,7 +71,7 @@
             <span>Quadratic limb darkening</span>
             <span>Finite exposure model</span>
             <span>Eccentric geometry</span>
-            <span>Phase III validation</span>
+            <span>Mission Control audits</span>
           </div>
           <div class="boot-progress" aria-hidden="true">
             <span id="boot-progress-bar"></span>
@@ -83,5 +84,6 @@
 
   <script type="module" src="./src/app.js?v=20260519-magnetic-v18"></script>
   <script type="module" src="./src/toolkitBadge.js?v=20260706-phaseiii-v01"></script>
+  <script type="module" src="./src/missionControlRuntime.js?v=20260719-mission-control-v01"></script>
 </body>
 </html>
