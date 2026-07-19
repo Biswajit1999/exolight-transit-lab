@@ -6,6 +6,10 @@ let targets = [];
 let mounted = false;
 let lastSignature = "";
 
+function isActiveTab() {
+  return document.body.dataset.exolightTab === "evidence";
+}
+
 function byId(id) {
   return document.getElementById(id);
 }
@@ -97,9 +101,11 @@ function buildState() {
 }
 
 function ensureContainer() {
+  if (!isActiveTab()) return null;
   const mainPanel = document.querySelector(".main-panel");
   const plotCard = document.querySelector(".plot-card");
   if (!mainPanel || !plotCard) return null;
+  mainPanel.style.gridTemplateRows = "minmax(0, 1fr)";
 
   let shell = byId("evidence-cockpit-shell");
   if (!shell) {
@@ -114,6 +120,7 @@ function ensureContainer() {
 }
 
 function updateEvidenceCockpit() {
+  if (!isActiveTab()) return;
   const container = ensureContainer();
   if (!container) return;
 
@@ -144,10 +151,13 @@ async function loadTargets() {
 }
 
 function watchDashboard() {
-  const observer = new MutationObserver(() => window.requestAnimationFrame(updateEvidenceCockpit));
+  const observer = new MutationObserver(() => {
+    if (isActiveTab()) window.requestAnimationFrame(updateEvidenceCockpit);
+  });
   observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true });
   window.addEventListener("resize", updateEvidenceCockpit);
-  window.setInterval(updateEvidenceCockpit, 1500);
+  window.addEventListener("exolight:tab-change", updateEvidenceCockpit);
+  window.setInterval(() => { if (isActiveTab()) updateEvidenceCockpit(); }, 1500);
 }
 
 async function bootEvidenceCockpit() {
