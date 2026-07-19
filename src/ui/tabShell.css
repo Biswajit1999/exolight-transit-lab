@@ -1,0 +1,201 @@
+/* ============================================================================
+   ExoLight Phase III - Tabbed diagnostic shell
+   Keeps the default model view light while preserving all advanced layers.
+   ============================================================================ */
+
+.exolight-tab-bar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 46px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 48%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, transparent), color-mix(in srgb, var(--surface-2) 98%, transparent));
+  box-shadow: var(--shadow);
+}
+
+.exolight-tab-group {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.exolight-tab-group::-webkit-scrollbar { display: none; }
+
+.exolight-tab-button {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-2) 86%, transparent);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  transition: border-color .14s ease, color .14s ease, background .14s ease, transform .14s ease;
+}
+
+.exolight-tab-button:hover {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-2));
+}
+
+.exolight-tab-button[aria-selected="true"] {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--model) 70%, var(--line));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--model) 18%, var(--surface)), color-mix(in srgb, var(--surface-2) 96%, transparent));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 10%, transparent);
+}
+
+.exolight-tab-status {
+  flex: 0 0 auto;
+  max-width: 310px;
+  overflow: hidden;
+  color: var(--muted-2);
+  font-size: 11px;
+  font-weight: 740;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+body.exolight-tabs-active .workspace {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+body.exolight-tabs-active .left-panel,
+body.exolight-tabs-active .main-panel,
+body.exolight-tabs-active .right-panel {
+  grid-row: 2;
+}
+
+body[data-exolight-tab="model"] #observatory-deck-shell,
+body[data-exolight-tab="model"] #mission-control-shell,
+body[data-exolight-tab="model"] #residual-inspector-shell,
+body[data-exolight-tab="model"] #evidence-cockpit-shell {
+  display: none !important;
+}
+
+body[data-exolight-tab="mission"] .scene-panel,
+body[data-exolight-tab="mission"] .plot-card,
+body[data-exolight-tab="mission"] #observatory-deck-shell,
+body[data-exolight-tab="mission"] #residual-inspector-shell,
+body[data-exolight-tab="mission"] #evidence-cockpit-shell {
+  display: none !important;
+}
+
+body[data-exolight-tab="observatory"] .scene-panel,
+body[data-exolight-tab="observatory"] .plot-card,
+body[data-exolight-tab="observatory"] #mission-control-shell,
+body[data-exolight-tab="observatory"] #residual-inspector-shell,
+body[data-exolight-tab="observatory"] #evidence-cockpit-shell {
+  display: none !important;
+}
+
+body[data-exolight-tab="residuals"] .scene-panel,
+body[data-exolight-tab="residuals"] .plot-card,
+body[data-exolight-tab="residuals"] #observatory-deck-shell,
+body[data-exolight-tab="residuals"] #mission-control-shell,
+body[data-exolight-tab="residuals"] #evidence-cockpit-shell {
+  display: none !important;
+}
+
+body[data-exolight-tab="evidence"] .scene-panel,
+body[data-exolight-tab="evidence"] .plot-card,
+body[data-exolight-tab="evidence"] #observatory-deck-shell,
+body[data-exolight-tab="evidence"] #mission-control-shell,
+body[data-exolight-tab="evidence"] #residual-inspector-shell {
+  display: none !important;
+}
+
+body[data-exolight-tab="model"] .main-panel {
+  grid-template-rows: minmax(335px, 1fr) 330px !important;
+}
+
+body[data-exolight-tab="mission"] .main-panel,
+body[data-exolight-tab="observatory"] .main-panel,
+body[data-exolight-tab="residuals"] .main-panel,
+body[data-exolight-tab="evidence"] .main-panel {
+  grid-template-rows: minmax(0, 1fr) !important;
+}
+
+body[data-exolight-tab="mission"] #mission-control-shell,
+body[data-exolight-tab="observatory"] #observatory-deck-shell,
+body[data-exolight-tab="residuals"] #residual-inspector-shell,
+body[data-exolight-tab="evidence"] #evidence-cockpit-shell {
+  display: block !important;
+  min-height: 0;
+}
+
+body[data-exolight-tab="mission"] .mission-control-card,
+body[data-exolight-tab="observatory"] .observatory-deck-shell,
+body[data-exolight-tab="residuals"] .residual-inspector-card,
+body[data-exolight-tab="evidence"] .evidence-cockpit-card {
+  min-height: 100%;
+}
+
+body[data-exolight-tab="mission"] .main-panel,
+body[data-exolight-tab="observatory"] .main-panel,
+body[data-exolight-tab="residuals"] .main-panel,
+body[data-exolight-tab="evidence"] .main-panel {
+  overflow: auto;
+}
+
+body[data-exolight-tab="mission"] .scene-stage canvas,
+body[data-exolight-tab="observatory"] .scene-stage canvas,
+body[data-exolight-tab="residuals"] .scene-stage canvas,
+body[data-exolight-tab="evidence"] .scene-stage canvas {
+  visibility: hidden;
+}
+
+@media (max-width: 1180px) {
+  body.exolight-tabs-active .workspace {
+    grid-template-rows: auto auto auto auto;
+  }
+
+  body.exolight-tabs-active .left-panel,
+  body.exolight-tabs-active .main-panel,
+  body.exolight-tabs-active .right-panel {
+    grid-row: auto;
+  }
+
+  .exolight-tab-bar {
+    position: sticky;
+    top: 0;
+    z-index: 12;
+  }
+
+  body[data-exolight-tab="model"] .main-panel,
+  body[data-exolight-tab="mission"] .main-panel,
+  body[data-exolight-tab="observatory"] .main-panel,
+  body[data-exolight-tab="residuals"] .main-panel,
+  body[data-exolight-tab="evidence"] .main-panel {
+    grid-template-rows: auto !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .exolight-tab-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .exolight-tab-status {
+    max-width: none;
+    white-space: normal;
+  }
+}
