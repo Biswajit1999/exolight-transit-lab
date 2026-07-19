@@ -97,10 +97,20 @@ function buildState() {
   };
 }
 
+function reserveMissionControlSpace(mainPanel) {
+  const compact = window.matchMedia("(max-width: 1180px)").matches;
+  mainPanel.classList.add("mission-control-mounted");
+  mainPanel.style.gridTemplateRows = compact
+    ? "420px minmax(220px, auto) 320px"
+    : "minmax(255px, 1fr) minmax(210px, auto) 300px";
+}
+
 function ensureContainer() {
   const mainPanel = document.querySelector(".main-panel");
   const plotCard = document.querySelector(".plot-card");
   if (!mainPanel || !plotCard) return null;
+
+  reserveMissionControlSpace(mainPanel);
 
   let shell = document.getElementById("mission-control-shell");
   if (!shell) {
@@ -147,7 +157,11 @@ async function loadTargets() {
 function watchDashboard() {
   const observer = new MutationObserver(() => window.requestAnimationFrame(updateMissionControl));
   observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true });
-  window.addEventListener("resize", updateMissionControl);
+  window.addEventListener("resize", () => {
+    const mainPanel = document.querySelector(".main-panel");
+    if (mainPanel) reserveMissionControlSpace(mainPanel);
+    updateMissionControl();
+  });
   window.setInterval(updateMissionControl, 1500);
 }
 
