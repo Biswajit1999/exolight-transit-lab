@@ -1,0 +1,249 @@
+/* ============================================================================
+   ExoLight Phase III - False-positive evidence cockpit
+   ============================================================================ */
+
+.evidence-cockpit-shell {
+  min-height: 0;
+}
+
+.evidence-cockpit-card {
+  min-height: 100%;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--warn) 12%, transparent), transparent 44%),
+    radial-gradient(circle at 100% 10%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 46%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 95%, transparent), color-mix(in srgb, var(--surface-2) 98%, transparent));
+  box-shadow: var(--shadow);
+  overflow: auto;
+}
+
+.evidence-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.evidence-eyebrow {
+  margin: 0 0 5px;
+  color: var(--model);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.evidence-header h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(20px, 2.2vw, 32px);
+  line-height: 1.02;
+  letter-spacing: -.03em;
+}
+
+.evidence-header span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.evidence-score {
+  width: 112px;
+  min-height: 112px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  border: 1px solid color-mix(in srgb, var(--model) 70%, var(--line));
+  border-radius: 30px;
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--model) 17%, transparent), transparent 68%),
+    linear-gradient(180deg, var(--surface-3), var(--surface-2));
+}
+
+.evidence-score strong {
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 32px;
+  font-weight: 950;
+  line-height: .95;
+}
+
+.evidence-score span,
+.evidence-score small {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 850;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.evidence-summary {
+  margin-bottom: 13px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--surface-glass) 82%, transparent);
+}
+
+.evidence-summary strong {
+  display: block;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.evidence-summary p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.48;
+}
+
+.evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.evidence-card {
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--surface-2) 86%, transparent);
+}
+
+.evidence-card.pass { border-color: color-mix(in srgb, var(--ok) 58%, var(--line)); }
+.evidence-card.caution { border-color: color-mix(in srgb, var(--warn) 48%, var(--line)); }
+.evidence-card.warn,
+.evidence-card.fail { border-color: color-mix(in srgb, var(--danger) 58%, var(--line)); }
+.evidence-card.unknown { border-color: color-mix(in srgb, var(--muted) 55%, var(--line)); }
+
+.evidence-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.evidence-card-head strong {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.evidence-card-head span {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  background: var(--surface);
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 950;
+}
+
+.evidence-card.pass .evidence-card-head span { color: var(--ok); border-color: var(--ok); }
+.evidence-card.caution .evidence-card-head span { color: var(--warn); border-color: var(--warn); }
+.evidence-card.warn .evidence-card-head span,
+.evidence-card.fail .evidence-card-head span { color: var(--danger); border-color: var(--danger); }
+
+.evidence-card p {
+  min-height: 48px;
+  margin: 8px 0 9px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.42;
+}
+
+.evidence-card dl {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.evidence-card dt {
+  color: var(--muted-2);
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.evidence-card dd {
+  margin: 2px 0 0;
+  color: var(--text);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.evidence-provenance {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.evidence-provenance summary {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.evidence-provenance pre {
+  max-height: 260px;
+  overflow: auto;
+  margin: 10px 0 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-2) 90%, black 8%);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.evidence-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.evidence-actions span {
+  color: var(--muted-2);
+  font-size: 10px;
+  text-align: right;
+}
+
+@media (max-width: 1380px) {
+  .evidence-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  .evidence-header,
+  .evidence-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .evidence-score {
+    width: 100%;
+    min-height: 78px;
+    border-radius: 18px;
+  }
+
+  .evidence-grid { grid-template-columns: 1fr; }
+  .evidence-actions span { text-align: left; }
+}
