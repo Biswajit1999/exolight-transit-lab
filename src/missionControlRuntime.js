@@ -6,6 +6,10 @@ let targets = [];
 let mounted = false;
 let lastSignature = "";
 
+function isActiveTab() {
+  return document.body.dataset.exolightTab === "mission";
+}
+
 function numberFromText(text) {
   const clean = String(text ?? "").replace(/,/g, "");
   const match = clean.match(/[-+]?\d*\.?\d+(?:e[-+]?\d+)?/i);
@@ -98,40 +102,13 @@ function buildState() {
 }
 
 function reserveMissionControlSpace(mainPanel) {
-  const compact = window.matchMedia("(max-width: 1180px)").matches;
-  const hasDeck = Boolean(document.getElementById("observatory-deck-shell"));
-  const hasResidual = Boolean(document.getElementById("residual-inspector-shell"));
+  if (!isActiveTab()) return;
   mainPanel.classList.add("mission-control-mounted");
-
-  if (hasDeck) mainPanel.classList.add("observatory-main-panel");
-
-  if (hasDeck && hasResidual) {
-    mainPanel.style.gridTemplateRows = compact
-      ? "minmax(320px, auto) 420px minmax(220px, auto) minmax(190px, auto) 320px"
-      : "minmax(250px, auto) minmax(255px, 1fr) minmax(210px, auto) minmax(175px, auto) 300px";
-    return;
-  }
-
-  if (hasDeck) {
-    mainPanel.style.gridTemplateRows = compact
-      ? "minmax(320px, auto) 420px minmax(220px, auto) 320px"
-      : "minmax(250px, auto) minmax(255px, 1fr) minmax(210px, auto) 300px";
-    return;
-  }
-
-  if (hasResidual) {
-    mainPanel.style.gridTemplateRows = compact
-      ? "420px minmax(220px, auto) minmax(190px, auto) 320px"
-      : "minmax(255px, 1fr) minmax(210px, auto) minmax(175px, auto) 300px";
-    return;
-  }
-
-  mainPanel.style.gridTemplateRows = compact
-    ? "420px minmax(220px, auto) 320px"
-    : "minmax(255px, 1fr) minmax(210px, auto) 300px";
+  mainPanel.style.gridTemplateRows = "minmax(0, 1fr)";
 }
 
 function ensureContainer() {
+  if (!isActiveTab()) return null;
   const mainPanel = document.querySelector(".main-panel");
   const plotCard = document.querySelector(".plot-card");
   if (!mainPanel || !plotCard) return null;
@@ -152,6 +129,7 @@ function ensureContainer() {
 }
 
 function updateMissionControl() {
+  if (!isActiveTab()) return;
   const container = ensureContainer();
   if (!container) return;
 
@@ -182,14 +160,18 @@ async function loadTargets() {
 }
 
 function watchDashboard() {
-  const observer = new MutationObserver(() => window.requestAnimationFrame(updateMissionControl));
+  const observer = new MutationObserver(() => {
+    if (isActiveTab()) window.requestAnimationFrame(updateMissionControl);
+  });
   observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true });
   window.addEventListener("resize", () => {
+    if (!isActiveTab()) return;
     const mainPanel = document.querySelector(".main-panel");
     if (mainPanel) reserveMissionControlSpace(mainPanel);
     updateMissionControl();
   });
-  window.setInterval(updateMissionControl, 1500);
+  window.addEventListener("exolight:tab-change", updateMissionControl);
+  window.setInterval(() => { if (isActiveTab()) updateMissionControl(); }, 1500);
 }
 
 async function bootMissionControl() {
