@@ -100,13 +100,29 @@ function buildState() {
 function reserveMissionControlSpace(mainPanel) {
   const compact = window.matchMedia("(max-width: 1180px)").matches;
   const hasDeck = Boolean(document.getElementById("observatory-deck-shell"));
+  const hasResidual = Boolean(document.getElementById("residual-inspector-shell"));
   mainPanel.classList.add("mission-control-mounted");
 
+  if (hasDeck) mainPanel.classList.add("observatory-main-panel");
+
+  if (hasDeck && hasResidual) {
+    mainPanel.style.gridTemplateRows = compact
+      ? "minmax(320px, auto) 420px minmax(220px, auto) minmax(190px, auto) 320px"
+      : "minmax(250px, auto) minmax(255px, 1fr) minmax(210px, auto) minmax(175px, auto) 300px";
+    return;
+  }
+
   if (hasDeck) {
-    mainPanel.classList.add("observatory-main-panel");
     mainPanel.style.gridTemplateRows = compact
       ? "minmax(320px, auto) 420px minmax(220px, auto) 320px"
       : "minmax(250px, auto) minmax(255px, 1fr) minmax(210px, auto) 300px";
+    return;
+  }
+
+  if (hasResidual) {
+    mainPanel.style.gridTemplateRows = compact
+      ? "420px minmax(220px, auto) minmax(190px, auto) 320px"
+      : "minmax(255px, 1fr) minmax(210px, auto) minmax(175px, auto) 300px";
     return;
   }
 
@@ -128,7 +144,8 @@ function ensureContainer() {
     shell.className = "card mission-control-shell";
     shell.id = "mission-control-shell";
     shell.innerHTML = `<div id="mission-control" aria-live="polite"></div>`;
-    mainPanel.insertBefore(shell, plotCard);
+    const residualShell = document.getElementById("residual-inspector-shell");
+    mainPanel.insertBefore(shell, residualShell || plotCard);
   }
 
   return document.getElementById("mission-control");
