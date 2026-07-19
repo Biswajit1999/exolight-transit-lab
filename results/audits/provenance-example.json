@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "exolight-provenance-v1",
+  "target": {
+    "planet": "HD 189733 b",
+    "host": "HD 189733"
+  },
+  "completeness": "partial",
+  "events": [
+    {
+      "schemaVersion": "exolight-provenance-v1",
+      "field": "pl_orbper",
+      "source": "NASA Exoplanet Archive",
+      "dataset": "Planetary Systems Composite Parameters",
+      "identifier": "HD 189733 b",
+      "retrievedUtc": "unknown",
+      "version": "local-static-cache",
+      "transform": "displayed directly",
+      "notes": "Example only. Production exports should record the real retrieval date."
+    },
+    {
+      "schemaVersion": "exolight-provenance-v1",
+      "field": "lightcurve",
+      "source": "MAST / local processed light-curve cache",
+      "dataset": "data/lightcurves/hd-189733-b.json",
+      "identifier": "HD 189733 b",
+      "retrievedUtc": "unknown",
+      "version": "local-static-cache",
+      "transform": "phase-folded normalised JSON",
+      "notes": "Example only. Future manifests should include mission, sector, product ID, and processing notes."
+    },
+    {
+      "schemaVersion": "exolight-provenance-v1",
+      "field": "neighbour_context",
+      "source": "Gaia DR3 planned layer",
+      "dataset": "not yet attached",
+      "identifier": "HD 189733 field",
+      "retrievedUtc": "unknown",
+      "version": "planned",
+      "transform": "not yet computed",
+      "notes": "Neighbour context is required for stronger dilution and contamination evidence."
+    }
+  ]
+}
