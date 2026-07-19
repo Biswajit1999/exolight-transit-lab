@@ -8,6 +8,10 @@ let targets = [];
 let mounted = false;
 let lastSignature = "";
 
+function isActiveTab() {
+  return document.body.dataset.exolightTab === "observatory";
+}
+
 function numberFromText(text) {
   const clean = String(text ?? "").replace(/,/g, "");
   const match = clean.match(/[-+]?\d*\.?\d+(?:e[-+]?\d+)?/i);
@@ -99,6 +103,7 @@ function buildState() {
 }
 
 function ensureDeck() {
+  if (!isActiveTab()) return null;
   const workspace = document.querySelector(".workspace");
   const mainPanel = document.querySelector(".main-panel");
   const scenePanel = document.querySelector(".scene-panel");
@@ -107,6 +112,7 @@ function ensureDeck() {
   document.body.classList.add("observatory-deck-active");
   workspace.classList.add("observatory-workspace");
   mainPanel.classList.add("observatory-main-panel");
+  mainPanel.style.gridTemplateRows = "minmax(0, 1fr)";
 
   let shell = document.getElementById("observatory-deck-shell");
   if (!shell) {
@@ -135,6 +141,7 @@ function ensureDeck() {
 }
 
 function renderDeck() {
+  if (!isActiveTab()) return;
   const shell = ensureDeck();
   if (!shell) return;
 
@@ -174,10 +181,13 @@ async function loadTargets() {
 }
 
 function watchDashboard() {
-  const observer = new MutationObserver(() => window.requestAnimationFrame(renderDeck));
+  const observer = new MutationObserver(() => {
+    if (isActiveTab()) window.requestAnimationFrame(renderDeck);
+  });
   observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true });
   window.addEventListener("resize", renderDeck);
-  window.setInterval(renderDeck, 1500);
+  window.addEventListener("exolight:tab-change", renderDeck);
+  window.setInterval(() => { if (isActiveTab()) renderDeck(); }, 1500);
 }
 
 async function bootObservatoryDeck() {
