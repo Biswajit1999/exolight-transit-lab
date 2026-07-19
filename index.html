@@ -4,21 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ExoIntel-Prime | ExoLight Transit Lab</title>
-  <meta name="description" content="ExoIntel-Prime is an interactive exoplanet transit photometry laboratory with archival light curves, worker-backed theoretical modelling, finite-exposure integration, eccentric orbit geometry, modular Phase III physics validation, Mission Control target audits, Observatory Deck visual diagnostics, Residual Intelligence, and cinematic visualisation." />
-  <meta name="keywords" content="exoplanet, transit photometry, light curve, WebGL, TESS, Kepler, K2, MAST, NASA Exoplanet Archive, astrophysics, exomoon, starspot, magnetic field, plasma, limb darkening, transit modelling" />
+  <meta name="description" content="ExoIntel-Prime is an interactive exoplanet transit photometry laboratory with archival light curves, worker-backed theoretical modelling, finite-exposure integration, eccentric orbit geometry, modular Phase III physics validation, lazy-loaded diagnostic tabs, Mission Control audits, Observatory Deck visual diagnostics, Residual Intelligence, false-positive evidence checks, and cinematic visualisation." />
+  <meta name="keywords" content="exoplanet, transit photometry, light curve, WebGL, TESS, Kepler, K2, MAST, NASA Exoplanet Archive, astrophysics, exomoon, starspot, magnetic field, plasma, limb darkening, transit modelling, false positives, provenance" />
   <meta name="author" content="Biswajit Jana" />
   <meta name="theme-color" content="#060b13" />
   <meta name="color-scheme" content="dark light" />
   <meta property="og:title" content="ExoIntel-Prime | Exoplanet Transit Photometry Lab" />
-  <meta property="og:description" content="A browser-based exoplanet transit laboratory comparing archival photometry with worker-computed theoretical models, Mission Control audits, Observatory Deck visual diagnostics, and residual diagnostics." />
+  <meta property="og:description" content="A browser-based exoplanet transit laboratory comparing archival photometry with worker-computed theoretical models, lazy-loaded diagnostic tabs, Mission Control audits, Observatory Deck visual diagnostics, residual analysis, and false-positive evidence checks." />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="ExoIntel-Prime" />
   <link rel="stylesheet" href="./styles.css?v=20260519-magnetic-v18" />
-  <link rel="stylesheet" href="./src/ui/missionControl.css?v=20260719-mission-control-v01" />
-  <link rel="stylesheet" href="./src/ui/observatoryDeck.css?v=20260719-observatory-deck-v01" />
-  <link rel="stylesheet" href="./src/ui/residualInspector.css?v=20260719-residual-v01" />
+  <link rel="stylesheet" href="./src/ui/tabShell.css?v=20260720-tabs-v01" />
 </head>
-<body>
+<body data-exolight-tab="model">
   <noscript>
     <strong>JavaScript is required.</strong><br />
     ExoIntel-Prime uses browser JavaScript, ES modules, Canvas/WebGL-capable rendering, and a Web Worker to calculate and display exoplanet transit models.
@@ -73,7 +71,7 @@
             <span>Quadratic limb darkening</span>
             <span>Finite exposure model</span>
             <span>Eccentric geometry</span>
-            <span>Residual Intelligence</span>
+            <span>Lazy diagnostic tabs</span>
           </div>
           <div class="boot-progress" aria-hidden="true">
             <span id="boot-progress-bar"></span>
@@ -86,8 +84,6 @@
 
   <script type="module" src="./src/app.js?v=20260519-magnetic-v18"></script>
   <script type="module" src="./src/toolkitBadge.js?v=20260706-phaseiii-v01"></script>
-  <script type="module" src="./src/observatoryDeckRuntime.js?v=20260719-observatory-deck-v01"></script>
-  <script type="module" src="./src/missionControlRuntime.js?v=20260719-mission-control-v03"></script>
-  <script type="module" src="./src/residualInspectorRuntime.js?v=20260719-residual-v01"></script>
+  <script type="module" src="./src/tabShellRuntime.js?v=20260720-tabs-v01"></script>
 </body>
 </html>
