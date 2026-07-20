@@ -4,10 +4,8 @@
 }
 
 .residual-inspector-card {
-  height: 100%;
   min-height: 172px;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 10px;
   padding: 13px;
   background:
@@ -35,7 +33,7 @@
 
 .residual-header h2 {
   margin: 0;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 950;
   letter-spacing: -.01em;
 }
@@ -48,45 +46,6 @@
   font-weight: 760;
 }
 
-.residual-score {
-  min-width: 90px;
-  padding: 9px 10px;
-  border: 1px solid var(--line);
-  border-radius: 15px;
-  background: var(--surface);
-  text-align: right;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
-}
-
-.residual-score strong {
-  color: var(--text);
-  font-family: var(--mono);
-  font-size: 24px;
-  font-weight: 950;
-  line-height: 1;
-}
-
-.residual-score span {
-  color: var(--muted);
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.residual-score small {
-  display: block;
-  margin-top: 2px;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 850;
-  text-transform: uppercase;
-}
-
-.residual-inspector-card.stable .residual-score { border-color: color-mix(in srgb, var(--ok) 55%, var(--line)); }
-.residual-inspector-card.watch .residual-score { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
-.residual-inspector-card.caution .residual-score { border-color: color-mix(in srgb, var(--warn) 65%, var(--line)); }
-.residual-inspector-card.poor .residual-score { border-color: color-mix(in srgb, var(--danger) 55%, var(--line)); }
-
 .residual-grid {
   min-height: 0;
   display: grid;
@@ -95,18 +54,18 @@
 }
 
 .residual-summary,
-.residual-regions {
+.residual-regions,
+.residual-chart-card {
   min-height: 0;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: color-mix(in srgb, var(--surface) 84%, transparent);
 }
 
-.residual-summary {
-  padding: 12px;
-}
+.residual-summary { padding: 12px; }
 
-.residual-summary h3 {
+.residual-summary h3,
+.residual-chart-head h3 {
   margin: 0 0 7px;
   color: var(--muted);
   font-size: 10px;
@@ -221,6 +180,42 @@
   font-weight: 760;
 }
 
+.residual-chart-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, .9fr) minmax(0, .9fr);
+  gap: 10px;
+}
+
+.residual-chart-card {
+  overflow: hidden;
+}
+
+.residual-chart-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 11px 0;
+}
+
+.residual-chart-head h3 { margin-bottom: 0; }
+
+.residual-chart-head span {
+  overflow: hidden;
+  color: var(--muted-2);
+  font-size: 10px;
+  font-weight: 760;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.residual-chart-canvas {
+  display: block;
+  width: 100%;
+  height: 190px;
+  margin-top: 8px;
+}
+
 .residual-footer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(220px, .8fr);
@@ -241,19 +236,13 @@
 
 @media (max-width: 1180px) {
   .residual-grid,
-  .residual-footer {
+  .residual-footer,
+  .residual-chart-grid {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 680px) {
-  .residual-regions {
-    grid-template-columns: 1fr;
-  }
-  .residual-header {
-    display: grid;
-  }
-  .residual-score {
-    text-align: left;
-  }
+  .residual-regions { grid-template-columns: 1fr; }
+  .residual-header { display: grid; }
 }
