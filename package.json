@@ -1,9 +1,9 @@
 {
   "name": "exolight-transit-lab",
-  "version": "0.3.0-phase-iii",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Zero-dependency browser exoplanet transit photometry lab evolving into a modular research toolkit.",
+  "description": "Zero-dependency browser exoplanet transit photometry lab and research toolkit: real archival light curves, a validated physics core, and a WebGL stellar renderer.",
   "scripts": {
     "validate:physics": "node scripts/validate-physics.mjs"
   },

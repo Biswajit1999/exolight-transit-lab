@@ -32,12 +32,12 @@ ExoLight keeps the baseline model smooth so the user can immediately see the dif
 
 ## Catalogue expansion strategy
 
-The original local archive contains 500 curated targets and remains the offline baseline. The Phase III expansion adds a runtime supplement from the NASA Exoplanet Archive Planetary Systems Composite Parameters table (`pscomppars`).
+The local archive (`data/exoplanets.json`, built by `tools/fetch_nasa_cache.py`) now holds 1,500+ curated targets and remains the offline baseline. It's built by taking the deepest-transit confirmed exoplanets from the NASA Exoplanet Archive up to a target count, then explicitly re-fetching by name any previously-catalogued target that would otherwise fall out of that depth ranking as the count grows — so growing the catalogue never silently drops a target a previous version already included. The Phase III expansion on top of that adds a runtime supplement from the NASA Exoplanet Archive Planetary Systems Composite Parameters table (`pscomppars`).
 
 The runtime wrapper:
 
 1. intercepts only the request for `data/exoplanets.json`;
-2. reads the local 500-target catalogue;
+2. reads the local catalogue;
 3. fetches a lightweight transiting-planet supplement from NASA TAP when the browser allows it;
 4. converts NASA transit depth from percent into ExoLight's ppm convention;
 5. deduplicates by host and planet name;

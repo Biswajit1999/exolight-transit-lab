@@ -7,6 +7,8 @@ authors:
     given-names: Biswajit
 repository-code: "https://github.com/Biswajit1999/exolight-transit-lab"
 url: "https://biswajit1999.github.io/exolight-transit-lab/"
+version: 1.0.0
+date-released: "2026-07-20"
 license: MIT
 keywords:
   - exoplanets

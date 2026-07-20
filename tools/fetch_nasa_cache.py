@@ -4,8 +4,10 @@ ExoIntel-Prime cache builder.
 
 This script performs two offline data-ingestion tasks:
 
-1. Queries the NASA Exoplanet Archive TAP service for 150 confirmed transiting
-   exoplanets with complete core orbital and stellar parameters.
+1. Queries the NASA Exoplanet Archive TAP service for the deepest-transit
+   confirmed exoplanets (TARGET_COUNT, currently 1200) with complete core
+   orbital and stellar parameters, plus any previously-catalogued targets
+   that would otherwise fall out of that ranking as TARGET_COUNT grows.
 
 2. Tries to find real MAST-hosted TESS/Kepler/K2 light-curve FITS products for
    each target, phase-folds the real photometric data, normalizes the flux, and
@@ -55,7 +57,7 @@ DATA_DIR = ROOT / "data"
 LIGHTCURVE_DIR = DATA_DIR / "lightcurves"
 EXOPLANET_CACHE_PATH = DATA_DIR / "exoplanets.json"
 
-TARGET_COUNT = 150
+TARGET_COUNT = 1200
 DEFAULT_TIMEOUT = 45
 DEFAULT_PHASE_WINDOW = 0.16
 DEFAULT_MAX_POINTS = 1800
@@ -93,7 +95,6 @@ WHERE tran_flag = 1
   AND pl_orbsmax IS NOT NULL
   AND pl_ratror IS NOT NULL
   AND pl_orbincl IS NOT NULL
-  AND pl_orbeccen IS NOT NULL
   AND st_rad IS NOT NULL
   AND st_teff IS NOT NULL
   AND pl_trandep IS NOT NULL
@@ -152,8 +153,31 @@ def percentile(values: list[float], pct: float) -> float | None:
     return clean[lo] * (1.0 - frac) + clean[hi] * frac
 
 
+def load_previously_cached_target_names() -> list[str]:
+    """Names already in data/exoplanets.json before this run, if any. Read
+    once at the start so a bigger TARGET_COUNT can grow the catalogue
+    without silently dropping targets that fall outside the new top-N
+    ordering (the archive has a huge dynamic range in transit depth, so
+    "top N by depth" alone is not a stable superset relationship as N grows)."""
+    if not EXOPLANET_CACHE_PATH.exists():
+        return []
+    try:
+        existing = json.loads(EXOPLANET_CACHE_PATH.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return []
+    targets = existing if isinstance(existing, list) else existing.get("targets", [])
+    return [t.get("pl_name") for t in targets if isinstance(t, dict) and t.get("pl_name")]
+
+
 def normalise_exoplanet_row(row: dict[str, Any]) -> dict[str, Any]:
     planet_name = clean_text(row.get("pl_name"))
+    # NASA Exoplanet Archive reports pl_trandep in PERCENT (verified directly
+    # against the archive: HD 189733 b returns 2.4, i.e. 2.4%, matching its
+    # well-documented ~24,000 ppm transit depth). ExoLight's whole frontend
+    # (physics, evidence scoring, ppm display formatting) assumes ppm, so
+    # convert here once, at the source, rather than downstream.
+    trandep_percent = as_float(row.get("pl_trandep"))
+    trandep_ppm = trandep_percent * 10000 if trandep_percent is not None else None
     return {
         "pl_name": planet_name,
         "hostname": clean_text(row.get("hostname")),
@@ -168,7 +192,7 @@ def normalise_exoplanet_row(row: dict[str, Any]) -> dict[str, Any]:
         "pl_bmasse": as_float(row.get("pl_bmasse")),
         "pl_orbincl": as_float(row.get("pl_orbincl")),
         "pl_orbeccen": as_float(row.get("pl_orbeccen")),
-        "pl_trandep": as_float(row.get("pl_trandep")),
+        "pl_trandep": trandep_ppm,
         "pl_trandur": as_float(row.get("pl_trandur")),
         "pl_tranmid": as_float(row.get("pl_tranmid")),
         "st_teff": as_float(row.get("st_teff")),
@@ -184,6 +208,11 @@ def normalise_exoplanet_row(row: dict[str, Any]) -> dict[str, Any]:
 
 
 def required_exoplanet_fields_complete(row: dict[str, Any]) -> bool:
+    # pl_orbeccen is deliberately not required: the frontend already defaults
+    # a missing eccentricity to 0 (assumed circular) in every place it's
+    # used (see numberValue(target.pl_orbeccen, 0) in src/app.js), and
+    # requiring it here excludes real, otherwise-complete targets purely
+    # because the archive hasn't measured/published that one field yet.
     required = [
         "pl_name",
         "hostname",
@@ -191,7 +220,6 @@ def required_exoplanet_fields_complete(row: dict[str, Any]) -> bool:
         "pl_orbsmax",
         "pl_ratror",
         "pl_orbincl",
-        "pl_orbeccen",
         "pl_trandep",
         "st_rad",
         "st_teff",
@@ -205,12 +233,12 @@ def post_json_form(url: str, payload: dict[str, Any], timeout: int = DEFAULT_TIM
     return response.json()
 
 
-def fetch_exoplanet_rows() -> list[dict[str, Any]]:
+def _rows_from_adql(query: str) -> list[dict[str, Any]]:
     payload = {
         "request": "doQuery",
         "lang": "ADQL",
         "format": "json",
-        "query": ADQL_QUERY,
+        "query": query,
     }
     data = post_json_form(TAP_URL, payload)
 
@@ -218,21 +246,62 @@ def fetch_exoplanet_rows() -> list[dict[str, Any]]:
         raise ValueError("NASA TAP response was not a JSON row list")
 
     rows: list[dict[str, Any]] = []
-    seen: set[tuple[str, str]] = set()
-
     for item in data:
         if not isinstance(item, dict):
             continue
-
         row = normalise_exoplanet_row(item)
+        if required_exoplanet_fields_complete(row):
+            rows.append(row)
+    return rows
 
-        if not required_exoplanet_fields_complete(row):
+
+def fetch_rows_by_name(names: list[str]) -> list[dict[str, Any]]:
+    """Fetch specific targets by name, so a catalogue refresh with a larger
+    TARGET_COUNT can't silently drop previously-included targets just
+    because the archive now has more deeper-transit rows ahead of them in
+    the ORDER BY pl_trandep ranking."""
+    if not names:
+        return []
+    columns = ADQL_QUERY.split("SELECT TOP")[1].split("FROM")[0]
+    columns = columns.split(f"{TARGET_COUNT}", 1)[1] if f"{TARGET_COUNT}" in columns else columns
+    rows: list[dict[str, Any]] = []
+    batch_size = 40
+    for i in range(0, len(names), batch_size):
+        batch = names[i:i + batch_size]
+        name_list = ", ".join("'" + n.replace("'", "''") + "'" for n in batch)
+        query = f"""
+SELECT{columns}FROM pscomppars
+WHERE pl_name IN ({name_list})
+"""
+        try:
+            rows.extend(_rows_from_adql(query))
+        except requests.RequestException:
             continue
+    return rows
 
+
+def fetch_exoplanet_rows() -> list[dict[str, Any]]:
+    preserved_names = load_previously_cached_target_names()
+    depth_ranked = _rows_from_adql(ADQL_QUERY)
+
+    seen_keys = {(r["pl_name"], r["hostname"]) for r in depth_ranked}
+    missing_names = [n for n in preserved_names if not any(r["pl_name"] == n for r in depth_ranked)]
+    if missing_names:
+        print(f"Re-fetching {len(missing_names)} previously-catalogued targets that fell outside "
+              f"the top {TARGET_COUNT} by transit depth, so they aren't silently dropped...")
+        preserved_rows = fetch_rows_by_name(missing_names)
+        for row in preserved_rows:
+            key = (row["pl_name"], row["hostname"])
+            if key not in seen_keys:
+                seen_keys.add(key)
+                depth_ranked.append(row)
+
+    rows: list[dict[str, Any]] = []
+    seen: set[tuple[str, str]] = set()
+    for row in depth_ranked:
         key = (row["pl_name"] or "", row["hostname"] or "")
         if key in seen:
             continue
-
         seen.add(key)
         rows.append(row)
 
@@ -244,7 +313,12 @@ def fetch_exoplanet_rows() -> list[dict[str, Any]]:
         reverse=True,
     )
 
-    return rows[:TARGET_COUNT]
+    # Deliberately not truncated to TARGET_COUNT here: the top-N-by-depth
+    # query is already capped at the SQL level, and any extra rows past that
+    # are previously-catalogued targets being preserved (see
+    # load_previously_cached_target_names), which should never be silently
+    # dropped just because the catalogue grew.
+    return rows
 
 
 def mast_invoke(service: str, params: dict[str, Any], timeout: int = DEFAULT_TIMEOUT) -> list[dict[str, Any]]:
@@ -1084,6 +1158,12 @@ def parse_args() -> argparse.Namespace:
         help="Only refresh data/exoplanets.json; do not query MAST light-curve products.",
     )
     parser.add_argument(
+        "--refetch-existing",
+        action="store_true",
+        help="Re-query MAST even for targets that already have a cached light-curve JSON file "
+             "(by default those are left untouched and counted as already succeeded).",
+    )
+    parser.add_argument(
         "--max-lightcurves",
         type=int,
         default=TARGET_COUNT,
@@ -1112,19 +1192,40 @@ def main() -> int:
     write_gitkeep()
 
     try:
-        print("Querying NASA Exoplanet Archive TAP for 150 confirmed transiting targets...")
+        print(f"Querying NASA Exoplanet Archive TAP for the top {TARGET_COUNT} transiting targets by depth...")
         rows = fetch_exoplanet_rows()
-
-        if len(rows) != TARGET_COUNT:
+        preserved_extra = len(rows) - TARGET_COUNT
+        if preserved_extra > 0:
+            print(f"Catalogue has {len(rows)} targets: top {TARGET_COUNT} by depth, plus {preserved_extra} "
+                  f"previously-catalogued targets outside that ranking that were preserved rather than dropped.")
+        elif len(rows) < TARGET_COUNT:
             print(f"Warning: expected {TARGET_COUNT} targets but received {len(rows)} after cleaning.", file=sys.stderr)
+
+        # Always do this pass first, regardless of --skip-lightcurves: it's a
+        # pure filesystem check, so targets that already have a cached local
+        # light curve from a previous run keep lightcurve_available=true even
+        # if this run never touches the network.
+        already_cached = 0
+        for target in rows:
+            name = target.get("pl_name") or ""
+            expected_file = target.get("lightcurve_file") or f"{slugify(name)}.json"
+            if not args.refetch_existing and (LIGHTCURVE_DIR / str(expected_file)).exists():
+                target["lightcurve_available"] = True
+                already_cached += 1
+        print(f"{already_cached}/{len(rows)} targets already have a cached local light curve.")
 
         if not args.skip_lightcurves:
             attempts = max(0, min(int(args.max_lightcurves), len(rows)))
-            print(f"Attempting real MAST light-curve pre-fetch for {attempts} targets...")
+            print(f"Attempting real MAST light-curve pre-fetch for up to {attempts} targets...")
 
             successes = 0
+            skipped_existing = 0
             for idx, target in enumerate(rows[:attempts], start=1):
                 name = target.get("pl_name") or f"target-{idx}"
+                if target.get("lightcurve_available"):
+                    skipped_existing += 1
+                    successes += 1
+                    continue
                 try:
                     ok, message = build_lightcurve_for_target(
                         target,
@@ -1142,7 +1243,7 @@ def main() -> int:
                 except Exception as exc:
                     print(f"[{idx:03d}/{attempts:03d}] {name}: failed ({exc})")
 
-            print(f"Real light-curve files saved for {successes}/{attempts} attempted targets.")
+            print(f"Real light-curve files saved for {successes}/{attempts} attempted targets ({skipped_existing} already cached, skipped).")
         else:
             print("Skipping MAST light-curve harvesting by user request.")
 
