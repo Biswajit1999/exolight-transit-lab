@@ -251,7 +251,7 @@ export class ExoSceneRenderer {
       const mu = Math.sqrt(Math.max(0, 1 - (r / radius) ** 2));
       const size = radius * (0.16 + hash(i + 61.3) * 0.16);
       const warm = hash(i + 44.9) > 0.45;
-      const alpha = (warm ? 0.22 : 0.16) * (0.55 + 0.45 * mu);
+      const alpha = (warm ? 0.15 : 0.11) * (0.55 + 0.45 * mu);
       const sg = ctx.createRadialGradient(x, y, 0, x, y, size);
       sg.addColorStop(0, warm ? `rgba(255, 214, 140, ${alpha})` : `rgba(120, 46, 16, ${alpha})`);
       sg.addColorStop(1, "rgba(0,0,0,0)");
@@ -271,7 +271,7 @@ export class ExoSceneRenderer {
       if (rr > 1) continue;
       const mu = Math.sqrt(Math.max(0, 1 - rr));
       const flicker = 0.78 + 0.22 * Math.sin(time * 0.55 + g.phase);
-      const alpha = (g.warm ? 0.20 : 0.03) * mu * flicker;
+      const alpha = (g.warm ? 0.13 : 0.025) * mu * flicker;
       const x = cx + x0 * radius;
       const y = cy + y0 * radius;
       const gr = ctx.createRadialGradient(x, y, 0, x, y, g.radius * radius * 5.4);
@@ -281,19 +281,22 @@ export class ExoSceneRenderer {
       ctx.fillRect(x - g.radius * radius * 6, y - g.radius * radius * 6, g.radius * radius * 12, g.radius * radius * 12);
     }
 
-    // Dark intergranular lanes: the thin dark network between granules is
-    // what actually sells "photosphere" over "smooth ball" at a glance.
+    // Soft dark mottling between granules: round, soft-edged shadow patches
+    // rather than elongated marks, so the surface reads as blotchy stone/
+    // marble rather than scratched.
     ctx.globalCompositeOperation = "multiply";
-    for (let i = 0; i < 90; i += 1) {
+    for (let i = 0; i < 40; i += 1) {
       const angle = hash(i + 77.4) * TWO_PI + time * 0.004;
-      const r = Math.sqrt(hash(i + 33.7)) * radius * 0.96;
+      const r = Math.sqrt(hash(i + 33.7)) * radius * 0.94;
       const x = cx + Math.cos(angle) * r;
       const y = cy + Math.sin(angle) * r;
-      const size = radius * (0.012 + hash(i + 91.2) * 0.032);
-      ctx.fillStyle = `rgba(70, 26, 10, ${0.05 + hash(i + 11.1) * 0.09})`;
-      ctx.beginPath();
-      ctx.ellipse(x, y, size * 1.35, size, angle, 0, TWO_PI);
-      ctx.fill();
+      const size = radius * (0.05 + hash(i + 91.2) * 0.07);
+      const alpha = 0.05 + hash(i + 11.1) * 0.07;
+      const lane = ctx.createRadialGradient(x, y, 0, x, y, size);
+      lane.addColorStop(0, `rgba(70, 26, 10, ${alpha})`);
+      lane.addColorStop(1, "rgba(70, 26, 10, 0)");
+      ctx.fillStyle = lane;
+      ctx.fillRect(x - size, y - size, size * 2, size * 2);
     }
 
     ctx.restore();

@@ -251,6 +251,7 @@ button { cursor: pointer; }
 }
 .scene-readiness-card:empty { display: none; }
 .scene-readiness-card .diagnostic-gauge { --gauge-size: 66px; }
+.scene-readiness-rating { margin: 0; color: #9fc4f0; font-size: 9px; font-weight: 800; letter-spacing: .03em; text-align: center; text-transform: uppercase; line-height: 1.3; }
 .scene-readiness-checklist { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; width: 100%; }
 .scene-readiness-checklist li { display: flex; align-items: center; gap: 5px; color: #dbeafe; font-size: 9.5px; font-weight: 700; line-height: 1.3; }
 .scene-readiness-checklist li span { display: inline-flex; align-items: center; justify-content: center; width: 12px; height: 12px; border-radius: 50%; font-size: 8px; font-weight: 950; flex: 0 0 auto; }
@@ -266,6 +267,8 @@ button { cursor: pointer; }
 .evidence-summary-card .card-header { min-height: 36px; }
 .evidence-summary-card .card-header span { font-size: 10px; }
 .evidence-summary-body { min-height: 0; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center; padding: 8px 14px; }
+.evidence-summary-gauge { display: grid; justify-items: center; gap: 4px; }
+.evidence-summary-gauge small { max-width: 110px; color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .03em; text-align: center; text-transform: uppercase; line-height: 1.25; }
 .evidence-summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; height: 100%; }
 .evidence-summary-tile { min-width: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; justify-content: center; }
 .evidence-summary-tile span { color: var(--muted); font-size: 9px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

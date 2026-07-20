@@ -1,7 +1,7 @@
 import { ExoSceneRenderer } from "./scene.js?v=20260519-magnetic-v18";
 import { buildTargetAudit } from "./intelligence/targetAudit.js";
 import { qualityBars } from "./intelligence/auditScore.js";
-import { diagnosticGauge } from "./ui/gauge.js";
+import { diagnosticGauge, scoreTone } from "./ui/gauge.js";
 
 /* ============================================================================
    ExoIntel-Prime Main Thread Orchestrator - Physics Visibility v11
@@ -463,8 +463,10 @@ class ExoIntelPrimeApp {
         <span>${item.value >= 70 ? "✓" : item.value >= 40 ? "•" : "!"}</span>${escapeHtml(item.label)}
       </li>
     `).join("");
+    const readyWord = { good: "Ready", watch: "Watch", caution: "Caution", poor: "Not ready" }[scoreTone(audit.audit.total)];
     this.dom.sceneReadinessCard.innerHTML = `
-      ${diagnosticGauge({ score: audit.audit.total, label: audit.audit.rating, detail: "Ready", size: "compact" })}
+      ${diagnosticGauge({ score: audit.audit.total, label: readyWord, detail: "/100", size: "compact" })}
+      <p class="scene-readiness-rating">${escapeHtml(audit.audit.rating)}</p>
       <ul class="scene-readiness-checklist">${checklist}</ul>
     `;
   }
@@ -485,7 +487,10 @@ class ExoIntelPrimeApp {
       <div class="card-header"><h2>Quick-look evidence summary</h2><span>exploratory audit, not a detection claim</span></div>
       <div class="evidence-summary-body">
         <div class="evidence-summary-grid">${tiles}</div>
-        ${diagnosticGauge({ score: audit.audit.total, label: audit.audit.rating, detail: "Global score", size: "compact" })}
+        <div class="evidence-summary-gauge">
+          ${diagnosticGauge({ score: audit.audit.total, label: "Global score", detail: "/100", size: "compact" })}
+          <small>${escapeHtml(audit.audit.rating)}</small>
+        </div>
       </div>
     `;
   }
