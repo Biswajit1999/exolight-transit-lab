@@ -61,7 +61,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "wts-2-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1030.76834437,
+      "sy_vmag": 15.954,
+      "st_spectype": "K2 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HATS-6 b",
@@ -89,7 +93,11 @@
       "disc_year": 2015,
       "discoverymethod": "Transit",
       "lightcurve_file": "hats-6-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 169.318,
+      "sy_vmag": 15.044,
+      "st_spectype": "M1 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-45 b",
@@ -117,7 +125,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-45-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 381.949,
+      "sy_vmag": 16.744,
+      "st_spectype": "M",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "CoRoT-18 b",
@@ -145,7 +157,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "corot-18-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 764.889,
+      "sy_vmag": 14.868,
+      "st_spectype": "G9 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "WASP-43 b",
@@ -173,7 +189,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "wasp-43-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 86.7467,
+      "sy_vmag": 12.305,
+      "st_spectype": "K7 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HD 189733 b",
@@ -201,7 +221,11 @@
       "disc_year": 2005,
       "discoverymethod": "Radial Velocity",
       "lightcurve_file": "hd-189733-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 19.7638,
+      "sy_vmag": 7.67,
+      "st_spectype": "K2 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-428 b",
@@ -229,7 +253,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-428-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 686.284,
+      "sy_vmag": 15.362,
+      "st_spectype": "K1 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-17 b",
@@ -257,7 +285,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-17-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 720.753,
+      "sy_vmag": 14.314,
+      "st_spectype": "G2 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HAT-P-18 b",
@@ -285,7 +317,11 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-18-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 161.4,
+      "sy_vmag": 12.597,
+      "st_spectype": "K2",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HAT-P-37 b",
@@ -313,7 +349,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-37-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 390.594,
+      "sy_vmag": 13.427,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-2406 b",
@@ -341,7 +381,11 @@
       "disc_year": 2021,
       "discoverymethod": "Transit",
       "lightcurve_file": "toi-2406-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 55.419,
+      "sy_vmag": null,
+      "st_spectype": "M4 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "WASP-67 b",
@@ -369,7 +413,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "wasp-67-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 189.469,
+      "sy_vmag": 12.537,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-75 b",
@@ -397,7 +445,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-75-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 835.356,
+      "sy_vmag": 15.414,
+      "st_spectype": "K0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "WTS-1 b",
@@ -425,7 +477,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "wts-1-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 2346.01,
+      "sy_vmag": 16.644,
+      "st_spectype": "F6 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "KOI-217 b",
@@ -453,7 +509,11 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "koi-217-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 914.699,
+      "sy_vmag": 15.257,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "WASP-23 b",
@@ -481,7 +541,11 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "wasp-23-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 207.49,
+      "sy_vmag": 12.539,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "WASP-59 b",
@@ -509,7 +573,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "wasp-59-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 115.936,
+      "sy_vmag": 12.659,
+      "st_spectype": "K5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "OGLE-TR-111 b",
@@ -537,7 +605,11 @@
       "disc_year": 2004,
       "discoverymethod": "Transit",
       "lightcurve_file": "ogle-tr-111-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1068.33,
+      "sy_vmag": 16.707,
+      "st_spectype": "K2 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-30 c",
@@ -565,7 +637,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-30-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 914.221,
+      "sy_vmag": 15.726,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "WASP-31 b",
@@ -593,7 +669,11 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "wasp-31-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 383.829,
+      "sy_vmag": 11.658,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "WASP-89 b",
@@ -621,7 +701,11 @@
       "disc_year": 2015,
       "discoverymethod": "Transit",
       "lightcurve_file": "wasp-89-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 290.946,
+      "sy_vmag": 13.21,
+      "st_spectype": "K3",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HAT-P-1 b",
@@ -649,7 +733,11 @@
       "disc_year": 2006,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-1-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 158.979,
+      "sy_vmag": 9.827,
+      "st_spectype": "G0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-425 b",
@@ -677,7 +765,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-425-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 646.647,
+      "sy_vmag": 14.845,
+      "st_spectype": "K1 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-426 b",
@@ -705,7 +797,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-426-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 843.695,
+      "sy_vmag": 15.032,
+      "st_spectype": "G1 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HAT-P-27 b",
@@ -733,7 +829,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-27-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 199.173,
+      "sy_vmag": 12.052,
+      "st_spectype": "G8",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "K2-237 b",
@@ -761,7 +861,11 @@
       "disc_year": 2018,
       "discoverymethod": "Transit",
       "lightcurve_file": "k2-237-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 314.995,
+      "sy_vmag": 11.602,
+      "st_spectype": "F9 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HAT-P-53 b",
@@ -789,7 +893,11 @@
       "disc_year": 2015,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-53-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 666.802,
+      "sy_vmag": 13.78,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "HAT-P-45 b",
@@ -817,7 +925,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-45-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 298.64,
+      "sy_vmag": 12.783,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "HATS-5 b",
@@ -845,7 +957,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "hats-5-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 246.384,
+      "sy_vmag": 12.598,
+      "st_spectype": "G",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "OGLE-TR-10 b",
@@ -873,7 +989,11 @@
       "disc_year": 2004,
       "discoverymethod": "Transit",
       "lightcurve_file": "ogle-tr-10-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1344.97,
+      "sy_vmag": 16.006,
+      "st_spectype": "G2 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "CoRoT-13 b",
@@ -901,7 +1021,11 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "corot-13-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1148.93,
+      "sy_vmag": 15.005,
+      "st_spectype": "G0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "CoRoT-11 b",
@@ -929,7 +1053,11 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "corot-11-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 655.037,
+      "sy_vmag": 12.897,
+      "st_spectype": "F6 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-41 b",
@@ -957,7 +1085,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-41-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1093.08,
+      "sy_vmag": 14.509,
+      "st_spectype": "G2 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HAT-P-22 b",
@@ -985,7 +1117,11 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-22-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 81.7647,
+      "sy_vmag": 9.763,
+      "st_spectype": "G5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HAT-P-41 b",
@@ -1013,7 +1149,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-41-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 348.185,
+      "sy_vmag": 11.365,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "WASP-21 b",
@@ -1041,7 +1181,11 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "wasp-21-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 258.426,
+      "sy_vmag": 11.59,
+      "st_spectype": "G3 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-422 b",
@@ -1069,7 +1213,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-422-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 722.795,
+      "sy_vmag": 13.524,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-412 b",
@@ -1097,7 +1245,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-412-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1086.24,
+      "sy_vmag": 14.399,
+      "st_spectype": "G3 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "WASP-83 b",
@@ -1125,7 +1277,11 @@
       "disc_year": 2015,
       "discoverymethod": "Transit",
       "lightcurve_file": "wasp-83-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 271.103,
+      "sy_vmag": 12.312,
+      "st_spectype": "G8",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "WASP-14 b",
@@ -1153,7 +1309,11 @@
       "disc_year": 2008,
       "discoverymethod": "Transit",
       "lightcurve_file": "wasp-14-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 161.997,
+      "sy_vmag": 9.745,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "WASP-24 b",
@@ -1181,7 +1341,11 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "wasp-24-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 322.114,
+      "sy_vmag": 11.219,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "HAT-P-39 b",
@@ -1209,7 +1373,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-39-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 697.004,
+      "sy_vmag": 12.282,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-77 b",
@@ -1237,7 +1405,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-77-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 639.411,
+      "sy_vmag": 14.152,
+      "st_spectype": "G5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "WASP-70 A b",
@@ -1265,7 +1437,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "wasp-70-a-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 222.355,
+      "sy_vmag": 10.786,
+      "st_spectype": "G4",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-74 b",
@@ -1293,7 +1469,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-74-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1177.55,
+      "sy_vmag": 14.487,
+      "st_spectype": "F8 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-418 b",
@@ -1321,7 +1501,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-418-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1002.53,
+      "sy_vmag": 14.824,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "HAT-P-42 b",
@@ -1349,7 +1533,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-42-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 405.238,
+      "sy_vmag": 12.125,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-46 b",
@@ -1377,7 +1565,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-46-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 777.06,
+      "sy_vmag": 15.312,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "HAT-P-13 b",
@@ -1405,7 +1597,11 @@
       "disc_year": 2009,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-13-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 246.81,
+      "sy_vmag": 10.421,
+      "st_spectype": "G4",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-44 b",
@@ -1433,7 +1629,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-44-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1188.0,
+      "sy_vmag": 14.803,
+      "st_spectype": "G2 IV",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "CoRoT-8 b",
@@ -1461,7 +1661,11 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "corot-8-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 322.037,
+      "sy_vmag": 14.792,
+      "st_spectype": "K1 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-817 b",
@@ -1489,7 +1693,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-817-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1484.46,
+      "sy_vmag": 15.967,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "HAT-P-2 b",
@@ -1517,7 +1725,11 @@
       "disc_year": 2007,
       "discoverymethod": "Transit",
       "lightcurve_file": "hat-p-2-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 127.774,
+      "sy_vmag": 8.72,
+      "st_spectype": "F8",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "KOI-94 d",
@@ -1545,7 +1757,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "koi-94-d.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 477.052,
+      "sy_vmag": 12.314,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-952 b",
@@ -1573,7 +1789,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-952-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1304.25,
+      "sy_vmag": 15.323,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-27 c",
@@ -1601,7 +1821,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-27-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1044.36,
+      "sy_vmag": 15.822,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-87 b",
@@ -1629,7 +1853,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-87-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1232.9,
+      "sy_vmag": 14.681,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "KOI-13 b",
@@ -1657,7 +1885,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "koi-13-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 519.096,
+      "sy_vmag": 9.791,
+      "st_spectype": null,
+      "st_spectype_approx": "~A (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-419 b",
@@ -1685,7 +1917,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-419-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1011.36,
+      "sy_vmag": 13.089,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "CoRoT-3 b",
@@ -1713,7 +1949,11 @@
       "disc_year": 2008,
       "discoverymethod": "Transit",
       "lightcurve_file": "corot-3-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 768.771,
+      "sy_vmag": 13.448,
+      "st_spectype": "F3 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-297 c",
@@ -1741,7 +1981,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-297-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 692.14,
+      "sy_vmag": 14.326,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-63 b",
@@ -1769,7 +2013,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-63-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 194.033,
+      "sy_vmag": 12.02,
+      "st_spectype": "G5",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-603 c",
@@ -1797,7 +2045,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-603-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1539.63,
+      "sy_vmag": 14.969,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-237 b",
@@ -1825,7 +2077,11 @@
       "disc_year": 2020,
       "discoverymethod": "Transit",
       "lightcurve_file": "toi-237-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 38.0749,
+      "sy_vmag": 16.37,
+      "st_spectype": "M4.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-18 d",
@@ -1853,7 +2109,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-18-d.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 433.047,
+      "sy_vmag": 13.771,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-27 b",
@@ -1881,7 +2141,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-27-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1044.36,
+      "sy_vmag": 15.822,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-560 b",
@@ -1909,7 +2173,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-560-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 109.308,
+      "sy_vmag": 15.66,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-396 c",
@@ -1937,7 +2205,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-396-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 223.757,
+      "sy_vmag": 12.259,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-1752 b",
@@ -1965,7 +2237,11 @@
       "disc_year": 2021,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1752-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 962.888,
+      "sy_vmag": 16.0249,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "LTT 1445 A b",
@@ -1993,7 +2269,11 @@
       "disc_year": 2019,
       "discoverymethod": "Transit",
       "lightcurve_file": "ltt-1445-a-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 6.86929,
+      "sy_vmag": 10.59,
+      "st_spectype": "M3.0",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-18 c",
@@ -2021,7 +2301,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-18-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 433.047,
+      "sy_vmag": 13.771,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-32 d",
@@ -2049,7 +2333,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-32-d.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 323.847,
+      "sy_vmag": 16.36,
+      "st_spectype": "M1 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-595 b",
@@ -2077,7 +2365,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-595-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 643.009,
+      "sy_vmag": 15.067,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "KOI-94 e",
@@ -2105,7 +2397,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "koi-94-e.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 477.052,
+      "sy_vmag": 12.314,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-31 b",
@@ -2133,7 +2429,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-31-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1664.64,
+      "sy_vmag": 15.496,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-210 b",
@@ -2161,7 +2461,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-210-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 232.75,
+      "sy_vmag": 14.126,
+      "st_spectype": "M0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-31 c",
@@ -2189,7 +2493,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-31-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1664.64,
+      "sy_vmag": 15.496,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "K2-10 b",
@@ -2217,7 +2525,11 @@
       "disc_year": 2015,
       "discoverymethod": "Transit",
       "lightcurve_file": "k2-10-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 272.36,
+      "sy_vmag": 12.429,
+      "st_spectype": "F9",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-30 b",
@@ -2245,7 +2557,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-30-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 914.221,
+      "sy_vmag": 15.726,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-318 b",
@@ -2273,7 +2589,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-318-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 489.141,
+      "sy_vmag": 13.442,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "LTT 1445 A c",
@@ -2301,7 +2621,11 @@
       "disc_year": 2022,
       "discoverymethod": "Transit",
       "lightcurve_file": "ltt-1445-a-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 6.86929,
+      "sy_vmag": 10.59,
+      "st_spectype": "M3.0",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-42 c",
@@ -2329,7 +2653,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-42-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 40.0595,
+      "sy_vmag": 16.7,
+      "st_spectype": "M",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-149 d",
@@ -2357,7 +2685,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-149-d.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 571.034,
+      "sy_vmag": 14.152,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-52 b",
@@ -2385,7 +2717,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-52-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 321.542,
+      "sy_vmag": 15.513,
+      "st_spectype": "M0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-32 c",
@@ -2413,7 +2749,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-32-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 323.847,
+      "sy_vmag": 16.36,
+      "st_spectype": "M1 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-415 c",
@@ -2441,7 +2781,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit Timing Variations",
       "lightcurve_file": "kepler-415-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 530.487,
+      "sy_vmag": 16.142,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-290 c",
@@ -2469,7 +2813,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-290-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 694.627,
+      "sy_vmag": 15.775,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-81 c",
@@ -2497,7 +2845,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-81-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 348.291,
+      "sy_vmag": 15.258,
+      "st_spectype": "M0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-199 c",
@@ -2525,7 +2877,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-199-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 521.054,
+      "sy_vmag": 13.796,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-52 c",
@@ -2553,7 +2909,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-52-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 321.542,
+      "sy_vmag": 15.513,
+      "st_spectype": "M0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-221 d",
@@ -2581,7 +2941,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-221-d.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 385.231,
+      "sy_vmag": 13.97,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-152 c",
@@ -2609,7 +2973,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-152-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 441.09,
+      "sy_vmag": 14.379,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-1068 b",
@@ -2637,7 +3005,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1068-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1473.61,
+      "sy_vmag": 16.096,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "HD 18599 b",
@@ -2665,7 +3037,11 @@
       "disc_year": 2022,
       "discoverymethod": "Transit",
       "lightcurve_file": "hd-18599-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 38.5653,
+      "sy_vmag": 8.99,
+      "st_spectype": "K2 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HD 106315 c",
@@ -2693,7 +3069,11 @@
       "disc_year": 2017,
       "discoverymethod": "Transit",
       "lightcurve_file": "hd-106315-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 109.353,
+      "sy_vmag": 8.951,
+      "st_spectype": "F5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-963 b",
@@ -2721,7 +3101,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-963-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 771.494,
+      "sy_vmag": 15.091,
+      "st_spectype": "G",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-263 c",
@@ -2749,7 +3133,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-263-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 754.747,
+      "sy_vmag": 15.435,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-150 d",
@@ -2777,7 +3165,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-150-d.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 891.092,
+      "sy_vmag": 15.161,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-937 b",
@@ -2805,7 +3197,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-937-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1571.46,
+      "sy_vmag": 15.405,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-31 d",
@@ -2833,7 +3229,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-31-d.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1664.64,
+      "sy_vmag": 15.496,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-178 d",
@@ -2861,7 +3261,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-178-d.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 716.025,
+      "sy_vmag": 14.876,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-55 b",
@@ -2889,7 +3293,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-55-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 578.796,
+      "sy_vmag": 15.746,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-1458 b",
@@ -2917,7 +3325,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1458-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 544.45,
+      "sy_vmag": 14.434,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-53 b",
@@ -2945,7 +3357,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-53-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1366.07,
+      "sy_vmag": 15.367,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-11 d",
@@ -2973,7 +3389,11 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-11-d.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 646.346,
+      "sy_vmag": 13.817,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-186 d",
@@ -3001,7 +3421,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-186-d.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 177.594,
+      "sy_vmag": 15.138,
+      "st_spectype": "M1",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-4 b",
@@ -3029,7 +3453,11 @@
       "disc_year": 2009,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-4-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 487.916,
+      "sy_vmag": 12.285,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-1740 b",
@@ -3057,7 +3485,11 @@
       "disc_year": 2021,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1740-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1061.77,
+      "sy_vmag": 15.454,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-414 c",
@@ -3085,7 +3517,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit Timing Variations",
       "lightcurve_file": "kepler-414-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 413.46,
+      "sy_vmag": 13.378,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-158 b",
@@ -3113,7 +3549,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-158-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 315.177,
+      "sy_vmag": 14.743,
+      "st_spectype": "K",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-33 d",
@@ -3141,7 +3581,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-33-d.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1209.16,
+      "sy_vmag": 14.099,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-290 b",
@@ -3169,7 +3613,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-290-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 694.627,
+      "sy_vmag": 15.775,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-314 c",
@@ -3197,7 +3645,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-314-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 268.881,
+      "sy_vmag": 12.64,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-571 b",
@@ -3225,7 +3677,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-571-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 723.875,
+      "sy_vmag": 14.951,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-158 c",
@@ -3253,7 +3709,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-158-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 315.177,
+      "sy_vmag": 14.743,
+      "st_spectype": "K",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-498 b",
@@ -3281,7 +3741,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-498-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 938.844,
+      "sy_vmag": 14.349,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-284 b",
@@ -3309,7 +3773,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-284-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1031.95,
+      "sy_vmag": 15.944,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-1101 b",
@@ -3337,7 +3805,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1101-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 742.473,
+      "sy_vmag": 15.156,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-287 c",
@@ -3365,7 +3837,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-287-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 835.86,
+      "sy_vmag": 14.952,
+      "st_spectype": "K7 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-150 e",
@@ -3393,7 +3869,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-150-e.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 891.092,
+      "sy_vmag": 15.161,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-1208 b",
@@ -3421,7 +3901,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1208-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 825.176,
+      "sy_vmag": 16.256,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-1549 b",
@@ -3449,7 +3933,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1549-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 803.052,
+      "sy_vmag": 15.353,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-865 b",
@@ -3477,7 +3965,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-865-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 586.137,
+      "sy_vmag": 14.635,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-288 c",
@@ -3505,7 +3997,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-288-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1194.15,
+      "sy_vmag": 15.283,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-96 b",
@@ -3533,7 +4029,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-96-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 122.881,
+      "sy_vmag": 10.568,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-130 c",
@@ -3561,7 +4061,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-130-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 316.663,
+      "sy_vmag": 11.572,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-276 d",
@@ -3589,7 +4093,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-276-d.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1144.86,
+      "sy_vmag": 15.481,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-269 b",
@@ -3617,7 +4125,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-269-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 2257.32,
+      "sy_vmag": 15.646,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-416 b",
@@ -3645,7 +4157,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit Timing Variations",
       "lightcurve_file": "kepler-416-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 690.819,
+      "sy_vmag": 14.166,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-69 b",
@@ -3673,7 +4189,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-69-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 730.625,
+      "sy_vmag": 13.866,
+      "st_spectype": "G4 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-114 c",
@@ -3701,7 +4221,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-114-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 259.533,
+      "sy_vmag": 13.961,
+      "st_spectype": "M0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-33 f",
@@ -3729,7 +4253,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-33-f.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1209.16,
+      "sy_vmag": 14.099,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-300 c",
@@ -3757,7 +4285,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-300-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1098.45,
+      "sy_vmag": 14.25,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-879 b",
@@ -3785,7 +4317,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-879-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 802.672,
+      "sy_vmag": 14.429,
+      "st_spectype": "G",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-139 c",
@@ -3813,7 +4349,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-139-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 391.038,
+      "sy_vmag": 12.775,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-58 d",
@@ -3841,7 +4381,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-58-d.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 969.252,
+      "sy_vmag": 15.086,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-415 b",
@@ -3869,7 +4413,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit Timing Variations",
       "lightcurve_file": "kepler-415-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 530.487,
+      "sy_vmag": 16.142,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-186 b",
@@ -3897,7 +4445,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-186-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 177.594,
+      "sy_vmag": 15.138,
+      "st_spectype": "M1",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-328 b",
@@ -3925,7 +4477,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-328-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 2213.19,
+      "sy_vmag": 15.794,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-38 b",
@@ -3953,7 +4509,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-38-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1174.59,
+      "sy_vmag": 14.015,
+      "st_spectype": "G4 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-1167 b",
@@ -3981,7 +4541,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1167-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 820.905,
+      "sy_vmag": 16.047,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-115 c",
@@ -4009,7 +4573,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-115-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 623.609,
+      "sy_vmag": 13.545,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-58 c",
@@ -4037,7 +4605,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-58-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 969.252,
+      "sy_vmag": 15.086,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-33 e",
@@ -4065,7 +4637,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-33-e.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1209.16,
+      "sy_vmag": 14.099,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-626 b",
@@ -4093,7 +4669,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-626-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 635.643,
+      "sy_vmag": 14.086,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-280 c",
@@ -4121,7 +4701,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-280-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 780.361,
+      "sy_vmag": 14.35,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "HD 86226 c",
@@ -4149,7 +4733,11 @@
       "disc_year": 2020,
       "discoverymethod": "Transit",
       "lightcurve_file": "hd-86226-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 45.683,
+      "sy_vmag": 7.93,
+      "st_spectype": "G1 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-92 b",
@@ -4177,7 +4765,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-92-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 477.992,
+      "sy_vmag": 11.671,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-145 c",
@@ -4205,7 +4797,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-145-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 566.85,
+      "sy_vmag": 11.977,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-272 c",
@@ -4233,7 +4829,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-272-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 889.608,
+      "sy_vmag": 14.811,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-214 b",
@@ -4261,7 +4861,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-214-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1208.44,
+      "sy_vmag": 14.057,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "HIP 41378 b",
@@ -4289,7 +4893,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "hip-41378-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 106.289,
+      "sy_vmag": 8.93,
+      "st_spectype": "F6",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-1600 c",
@@ -4317,7 +4925,11 @@
       "disc_year": 2021,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1600-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1030.81,
+      "sy_vmag": 16.076,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-238 f",
@@ -4345,7 +4957,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-238-f.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1798.75,
+      "sy_vmag": 15.297,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-350 d",
@@ -4373,7 +4989,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-350-d.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 956.859,
+      "sy_vmag": 13.965,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "HD 106315 b",
@@ -4401,7 +5021,11 @@
       "disc_year": 2017,
       "discoverymethod": "Transit",
       "lightcurve_file": "hd-106315-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 109.353,
+      "sy_vmag": 8.951,
+      "st_spectype": "F5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-122 f",
@@ -4429,7 +5053,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit Timing Variations",
       "lightcurve_file": "kepler-122-f.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1027.45,
+      "sy_vmag": 14.403,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-347 b",
@@ -4457,7 +5085,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-347-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1298.88,
+      "sy_vmag": 14.567,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-410 A b",
@@ -4485,7 +5117,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-410-a-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 147.527,
+      "sy_vmag": 9.495,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-1735 b",
@@ -4513,7 +5149,11 @@
       "disc_year": 2021,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1735-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 245.303,
+      "sy_vmag": 15.896,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-181 b",
@@ -4541,7 +5181,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-181-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 609.283,
+      "sy_vmag": 14.854,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-644 b",
@@ -4569,7 +5213,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-644-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1318.05,
+      "sy_vmag": 14.031,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-124 d",
@@ -4597,7 +5245,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-124-d.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 420.046,
+      "sy_vmag": 14.4,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-11 b",
@@ -4625,7 +5277,11 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-11-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 646.346,
+      "sy_vmag": 13.817,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-33 c",
@@ -4653,7 +5309,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-33-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1209.16,
+      "sy_vmag": 14.099,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-341 c",
@@ -4681,7 +5341,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-341-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1047.03,
+      "sy_vmag": 14.739,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "HIP 41378 c",
@@ -4709,7 +5373,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "hip-41378-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 106.289,
+      "sy_vmag": 8.93,
+      "st_spectype": "F6",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-654 b",
@@ -4737,7 +5405,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-654-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 974.124,
+      "sy_vmag": 13.762,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-347 c",
@@ -4765,7 +5437,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-347-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 1298.88,
+      "sy_vmag": 14.567,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-1245 b",
@@ -4793,7 +5469,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1245-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 805.936,
+      "sy_vmag": 15.582,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-641 b",
@@ -4821,7 +5501,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-641-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 969.918,
+      "sy_vmag": 13.807,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-285 b",
@@ -4849,7 +5533,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-285-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 824.31,
+      "sy_vmag": 15.198,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-18 b",
@@ -4877,7 +5565,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-18-b.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 433.047,
+      "sy_vmag": 13.771,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-450 c",
@@ -4905,7 +5597,11 @@
       "disc_year": 2015,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-450-c.json",
-      "lightcurve_available": true
+      "lightcurve_available": true,
+      "sy_dist": 455.982,
+      "sy_vmag": 11.991,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "WASP-38 b",
@@ -4933,7 +5629,11 @@
       "disc_year": 2010,
       "discoverymethod": "Transit",
       "lightcurve_file": "wasp-38-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 136.24,
+      "sy_vmag": 9.391,
+      "st_spectype": "F8 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-32 f",
@@ -4961,7 +5661,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-32-f.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 323.847,
+      "sy_vmag": 16.36,
+      "st_spectype": "M1 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Kepler-880 b",
@@ -4989,7 +5693,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-880-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 601.324,
+      "sy_vmag": 11.845,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-59 c",
@@ -5017,7 +5725,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-59-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 1163.22,
+      "sy_vmag": 14.467,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-1506 b",
@@ -5045,7 +5757,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1506-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 2366.02,
+      "sy_vmag": 15.836,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-295 b",
@@ -5073,7 +5789,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-295-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 1699.19,
+      "sy_vmag": 14.631,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-1149 b",
@@ -5101,7 +5821,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1149-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 1217.73,
+      "sy_vmag": 15.146,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-157 b",
@@ -5129,7 +5853,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-157-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 773.713,
+      "sy_vmag": 14.206,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-311 c",
@@ -5157,7 +5885,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-311-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 778.654,
+      "sy_vmag": 13.902,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-50 c",
@@ -5185,7 +5917,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-50-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 250.11,
+      "sy_vmag": 10.544,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-595 c",
@@ -5213,7 +5949,11 @@
       "disc_year": 2020,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-595-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 643.009,
+      "sy_vmag": 15.067,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-402 c",
@@ -5241,7 +5981,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-402-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 625.339,
+      "sy_vmag": 13.27,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-784 b",
@@ -5269,7 +6013,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-784-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 1303.72,
+      "sy_vmag": 13.392,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "KOI-94 b",
@@ -5297,7 +6045,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "koi-94-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 477.052,
+      "sy_vmag": 12.314,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-134 c",
@@ -5325,7 +6077,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-134-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 334.797,
+      "sy_vmag": 12.318,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-59 b",
@@ -5353,7 +6109,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-59-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 1163.22,
+      "sy_vmag": 14.467,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-65 d",
@@ -5381,7 +6141,11 @@
       "disc_year": 2012,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-65-d.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 303.728,
+      "sy_vmag": 10.922,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-33 b",
@@ -5409,7 +6173,11 @@
       "disc_year": 2011,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-33-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 1209.16,
+      "sy_vmag": 14.099,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-338 e",
@@ -5437,7 +6205,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit Timing Variations",
       "lightcurve_file": "kepler-338-e.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 552.798,
+      "sy_vmag": 12.19,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-314 b",
@@ -5465,7 +6237,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-314-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 268.881,
+      "sy_vmag": 12.64,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-128 b",
@@ -5493,7 +6269,11 @@
       "disc_year": 2013,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-128-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 396.379,
+      "sy_vmag": 11.693,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-1288 b",
@@ -5521,7 +6301,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1288-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 814.078,
+      "sy_vmag": 13.199,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-1398 c",
@@ -5549,7 +6333,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1398-c.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 852.204,
+      "sy_vmag": 13.752,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-1581 b",
@@ -5577,7 +6365,11 @@
       "disc_year": 2016,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-1581-b.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 493.175,
+      "sy_vmag": 12.442,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-450 d",
@@ -5605,7 +6397,11 @@
       "disc_year": 2015,
       "discoverymethod": "Transit",
       "lightcurve_file": "kepler-450-d.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 455.982,
+      "sy_vmag": 11.991,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "Kepler-37 e",
@@ -5633,7 +6429,11 @@
       "disc_year": 2014,
       "discoverymethod": "Transit Timing Variations",
       "lightcurve_file": "kepler-37-e.json",
-      "lightcurve_available": false
+      "lightcurve_available": false,
+      "sy_dist": 63.9207,
+      "sy_vmag": 9.770001,
+      "st_spectype": null,
+      "st_spectype_approx": "~G (Teff-based estimate)"
     },
     {
       "pl_name": "LP 791-18 c",
@@ -5664,7 +6464,11 @@
       "lightcurve_file": "lp-791-18-c.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 26.4927,
+      "sy_vmag": 16.91,
+      "st_spectype": "M(6.1 +/- 0.7) V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "LP 791-18 b",
@@ -5695,7 +6499,11 @@
       "lightcurve_file": "lp-791-18-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 26.4927,
+      "sy_vmag": 16.91,
+      "st_spectype": "M(6.1 +/- 0.7) V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-6894 b",
@@ -5726,7 +6534,11 @@
       "lightcurve_file": "toi-6894-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 73.8131,
+      "sy_vmag": null,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-2267 d",
@@ -5757,7 +6569,11 @@
       "lightcurve_file": "toi-2267-d.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 22.55,
+      "sy_vmag": null,
+      "st_spectype": "M6 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2267 c",
@@ -5788,7 +6604,11 @@
       "lightcurve_file": "toi-2267-c.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 22.55,
+      "sy_vmag": 15.56,
+      "st_spectype": "M5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2267 b",
@@ -5819,7 +6639,11 @@
       "lightcurve_file": "toi-2267-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 22.55,
+      "sy_vmag": 15.56,
+      "st_spectype": "M5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1080 b",
@@ -5850,7 +6674,11 @@
       "lightcurve_file": "toi-1080-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 25.559,
+      "sy_vmag": 15.349,
+      "st_spectype": "M4.0&plusmn;1.0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1227 b",
@@ -5881,7 +6709,11 @@
       "lightcurve_file": "toi-1227-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 100.641,
+      "sy_vmag": 16.999,
+      "st_spectype": "M4.5V-M5V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-715 b",
@@ -5912,7 +6744,11 @@
       "lightcurve_file": "toi-715-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 42.4048,
+      "sy_vmag": 16.683,
+      "st_spectype": "M4",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-6008 b",
@@ -5943,7 +6779,11 @@
       "lightcurve_file": "toi-6008-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 23.1008,
+      "sy_vmag": 15.97,
+      "st_spectype": "M5.0",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "LHS 3844 b",
@@ -5974,7 +6814,11 @@
       "lightcurve_file": "lhs-3844-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 14.8846,
+      "sy_vmag": 15.24,
+      "st_spectype": "M4.5-M5.0",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-7166 b",
@@ -6005,7 +6849,11 @@
       "lightcurve_file": "toi-7166-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 35.4153,
+      "sy_vmag": 15.79,
+      "st_spectype": "M4.5+/-0.5",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-6716 b",
@@ -6036,7 +6884,11 @@
       "lightcurve_file": "toi-6716-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 18.8873,
+      "sy_vmag": 14.8,
+      "st_spectype": "M4",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2120 b",
@@ -6067,7 +6919,11 @@
       "lightcurve_file": "toi-2120-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 32.1755,
+      "sy_vmag": 15.648,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-3884 b",
@@ -6098,7 +6954,11 @@
       "lightcurve_file": "toi-3884-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 43.1448,
+      "sy_vmag": 15.744,
+      "st_spectype": "M4",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-7384 b",
@@ -6129,7 +6989,11 @@
       "lightcurve_file": "toi-7384-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 66.7902,
+      "sy_vmag": 16.704,
+      "st_spectype": "M4",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1696 b",
@@ -6160,7 +7024,11 @@
       "lightcurve_file": "toi-1696-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 64.9172,
+      "sy_vmag": 16.82,
+      "st_spectype": "M5V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2266 b",
@@ -6191,7 +7059,11 @@
       "lightcurve_file": "toi-2266-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 51.6004,
+      "sy_vmag": 16.54,
+      "st_spectype": "M5.0+0.5-0.5",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-6086 b",
@@ -6222,7 +7094,11 @@
       "lightcurve_file": "toi-6086-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 31.4566,
+      "sy_vmag": 14.981,
+      "st_spectype": "M3.0",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-540 b",
@@ -6253,7 +7129,11 @@
       "lightcurve_file": "toi-540-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 14.0022,
+      "sy_vmag": 14.823,
+      "st_spectype": "M V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1680 b",
@@ -6284,7 +7164,11 @@
       "lightcurve_file": "toi-1680-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 37.2209,
+      "sy_vmag": 15.87,
+      "st_spectype": "M4.5+/-0.5",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5713 b",
@@ -6315,7 +7199,11 @@
       "lightcurve_file": "toi-5713-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 40.8668,
+      "sy_vmag": 15.355,
+      "st_spectype": "M3.5+/-0.5",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-6002 b",
@@ -6346,7 +7234,11 @@
       "lightcurve_file": "toi-6002-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 32.0266,
+      "sy_vmag": 14.6,
+      "st_spectype": "M3.5+/-0.5",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-6478 b",
@@ -6377,7 +7269,11 @@
       "lightcurve_file": "toi-6478-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 38.6057,
+      "sy_vmag": 15.99,
+      "st_spectype": "M4.0+/-0.5",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-6324 b",
@@ -6408,7 +7304,11 @@
       "lightcurve_file": "toi-6324-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 20.5488,
+      "sy_vmag": 13.386,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-4552 b",
@@ -6439,7 +7339,11 @@
       "lightcurve_file": "toi-4552-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 27.2684,
+      "sy_vmag": 14.44,
+      "st_spectype": "M4.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-4860 b",
@@ -6470,7 +7374,11 @@
       "lightcurve_file": "toi-4860-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 80.1423,
+      "sy_vmag": 16.47,
+      "st_spectype": "M3.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-762 A b",
@@ -6501,7 +7409,11 @@
       "lightcurve_file": "toi-762-a-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 98.4458,
+      "sy_vmag": 16.0,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1743 b",
@@ -6532,7 +7444,11 @@
       "lightcurve_file": "toi-1743-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 41.2758,
+      "sy_vmag": 14.972,
+      "st_spectype": "M4 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2015 b",
@@ -6563,7 +7479,11 @@
       "lightcurve_file": "toi-2015-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 47.3444,
+      "sy_vmag": 16.11,
+      "st_spectype": "M4 +/- 0.5",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2096 c",
@@ -6594,7 +7514,11 @@
       "lightcurve_file": "toi-2096-c.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 48.4809,
+      "sy_vmag": 15.92,
+      "st_spectype": "M4",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2096 b",
@@ -6625,7 +7549,11 @@
       "lightcurve_file": "toi-2096-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 48.4809,
+      "sy_vmag": 15.92,
+      "st_spectype": "M4",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "LHS 475 b",
@@ -6656,7 +7584,11 @@
       "lightcurve_file": "lhs-475-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 12.4814,
+      "sy_vmag": 13.0,
+      "st_spectype": "M3.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-4336 A b",
@@ -6687,7 +7619,11 @@
       "lightcurve_file": "toi-4336-a-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 22.5455,
+      "sy_vmag": 13.6,
+      "st_spectype": "M3.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-519 b",
@@ -6718,7 +7654,11 @@
       "lightcurve_file": "toi-519-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 115.557,
+      "sy_vmag": 17.35,
+      "st_spectype": "M V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5720 b",
@@ -6749,7 +7689,11 @@
       "lightcurve_file": "toi-5720-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 35.8256,
+      "sy_vmag": 13.847,
+      "st_spectype": "M3.5 +/- 1.0",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1224 b",
@@ -6780,7 +7724,11 @@
       "lightcurve_file": "toi-1224-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 37.3312,
+      "sy_vmag": 13.95,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "Gliese 12 b",
@@ -6811,7 +7759,11 @@
       "lightcurve_file": "gliese-12-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 12.21,
+      "sy_vmag": 12.6,
+      "st_spectype": "M4 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2136 b",
@@ -6842,7 +7794,11 @@
       "lightcurve_file": "toi-2136-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 33.3631,
+      "sy_vmag": 14.32,
+      "st_spectype": "M4.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "GJ 3473 b",
@@ -6873,7 +7829,11 @@
       "lightcurve_file": "gj-3473-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 27.3644,
+      "sy_vmag": 13.74,
+      "st_spectype": "M4",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "LTT 3780 c",
@@ -6904,7 +7864,11 @@
       "lightcurve_file": "ltt-3780-c.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 21.9814,
+      "sy_vmag": 13.14,
+      "st_spectype": "M3.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "LTT 3780 b",
@@ -6935,7 +7899,11 @@
       "lightcurve_file": "ltt-3780-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 21.9814,
+      "sy_vmag": 13.14,
+      "st_spectype": "M3.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-7149 b",
@@ -6966,7 +7934,11 @@
       "lightcurve_file": "toi-7149-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 126.126,
+      "sy_vmag": null,
+      "st_spectype": "M4 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-782 b",
@@ -6997,7 +7969,11 @@
       "lightcurve_file": "toi-782-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 52.5122,
+      "sy_vmag": 14.83,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-771 b",
@@ -7028,7 +8004,11 @@
       "lightcurve_file": "toi-771-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 25.2788,
+      "sy_vmag": 14.888,
+      "st_spectype": "M3",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1468 c",
@@ -7059,7 +8039,11 @@
       "lightcurve_file": "toi-1468-c.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 24.7399,
+      "sy_vmag": 12.5,
+      "st_spectype": "M3.0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1468 b",
@@ -7090,7 +8074,11 @@
       "lightcurve_file": "toi-1468-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 24.7399,
+      "sy_vmag": 12.5,
+      "st_spectype": "M3.0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "LHS 1478 b",
@@ -7121,7 +8109,11 @@
       "lightcurve_file": "lhs-1478-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 18.2276,
+      "sy_vmag": 13.304,
+      "st_spectype": "m3 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "GJ 3929 b",
@@ -7152,7 +8144,11 @@
       "lightcurve_file": "gj-3929-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 15.8095,
+      "sy_vmag": 12.675,
+      "st_spectype": "M3.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-3235 b",
@@ -7183,7 +8179,11 @@
       "lightcurve_file": "toi-3235-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 72.811,
+      "sy_vmag": 15.16,
+      "st_spectype": "M V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-406.01",
@@ -7214,7 +8214,11 @@
       "lightcurve_file": "toi-406-01.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 31.0597,
+      "sy_vmag": 13.773,
+      "st_spectype": "M3",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-406 c",
@@ -7245,7 +8249,11 @@
       "lightcurve_file": "toi-406-c.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 31.0597,
+      "sy_vmag": 13.773,
+      "st_spectype": "M3",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-4479 b",
@@ -7276,7 +8284,11 @@
       "lightcurve_file": "toi-4479-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 80.6532,
+      "sy_vmag": 15.18,
+      "st_spectype": "M3.0",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-122 b",
@@ -7307,7 +8319,11 @@
       "lightcurve_file": "toi-122-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 62.118,
+      "sy_vmag": 15.526,
+      "st_spectype": "M3 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1448 b",
@@ -7338,7 +8354,11 @@
       "lightcurve_file": "toi-1448-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 73.3345,
+      "sy_vmag": 15.678,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "L 98-59 c",
@@ -7369,7 +8389,11 @@
       "lightcurve_file": "l-98-59-c.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 10.6194,
+      "sy_vmag": 11.685,
+      "st_spectype": "M3 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "L 98-59 d",
@@ -7400,7 +8424,11 @@
       "lightcurve_file": "l-98-59-d.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 10.6194,
+      "sy_vmag": 11.685,
+      "st_spectype": "M3 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "L 98-59 b",
@@ -7431,7 +8459,11 @@
       "lightcurve_file": "l-98-59-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 10.6194,
+      "sy_vmag": 11.685,
+      "st_spectype": "M3 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5728 b",
@@ -7462,7 +8494,11 @@
       "lightcurve_file": "toi-5728-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 54.7045,
+      "sy_vmag": 15.02,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-6000 b",
@@ -7493,7 +8529,11 @@
       "lightcurve_file": "toi-6000-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 75.7664,
+      "sy_vmag": 15.454,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-6255 b",
@@ -7524,7 +8564,11 @@
       "lightcurve_file": "toi-6255-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 20.3167,
+      "sy_vmag": 12.747,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-4438 b",
@@ -7555,7 +8599,11 @@
       "lightcurve_file": "toi-4438-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 30.0346,
+      "sy_vmag": 13.69,
+      "st_spectype": "M3.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5205 b",
@@ -7586,7 +8634,11 @@
       "lightcurve_file": "toi-5205-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 86.4493,
+      "sy_vmag": 15.899,
+      "st_spectype": "M4.0",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2257 b",
@@ -7617,7 +8669,11 @@
       "lightcurve_file": "toi-2257-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 57.7911,
+      "sy_vmag": 15.211,
+      "st_spectype": "M3",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-244 b",
@@ -7648,7 +8704,11 @@
       "lightcurve_file": "toi-244-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 22.0337,
+      "sy_vmag": 12.861,
+      "st_spectype": "M2.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2094 b",
@@ -7679,7 +8739,11 @@
       "lightcurve_file": "toi-2094-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 50.0248,
+      "sy_vmag": 14.409,
+      "st_spectype": "M3 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5716 b",
@@ -7710,7 +8774,11 @@
       "lightcurve_file": "toi-5716-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 39.4122,
+      "sy_vmag": 15.83,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-5388.01",
@@ -7741,7 +8809,11 @@
       "lightcurve_file": "toi-5388-01.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 18.5226,
+      "sy_vmag": 12.728,
+      "st_spectype": "M3.0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-6383 A b",
@@ -7772,7 +8844,11 @@
       "lightcurve_file": "toi-6383-a-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 171.319,
+      "sy_vmag": 16.63,
+      "st_spectype": "M3",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TIC 231949697 b",
@@ -7803,7 +8879,11 @@
       "lightcurve_file": "tic-231949697-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 50.2408,
+      "sy_vmag": 13.188,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-5799 b",
@@ -7834,7 +8914,11 @@
       "lightcurve_file": "toi-5799-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 27.8123,
+      "sy_vmag": 13.29,
+      "st_spectype": "M2 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-4588 b",
@@ -7865,7 +8949,11 @@
       "lightcurve_file": "toi-4588-b.json",
       "lightcurve_available": true,
       "selection_bucket": "hot_a_b",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 225.181,
+      "sy_vmag": 9.24,
+      "st_spectype": null,
+      "st_spectype_approx": "~A (Teff-based estimate)"
     },
     {
       "pl_name": "GJ 1252 b",
@@ -7896,7 +8984,11 @@
       "lightcurve_file": "gj-1252-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 20.373,
+      "sy_vmag": 12.68,
+      "st_spectype": "M3",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-700 c",
@@ -7927,7 +9019,11 @@
       "lightcurve_file": "toi-700-c.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 31.1265,
+      "sy_vmag": 13.151,
+      "st_spectype": "M2.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-700 d",
@@ -7958,7 +9054,11 @@
       "lightcurve_file": "toi-700-d.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 31.1265,
+      "sy_vmag": 13.151,
+      "st_spectype": "M2.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-700 b",
@@ -7989,7 +9089,11 @@
       "lightcurve_file": "toi-700-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 31.1265,
+      "sy_vmag": 13.151,
+      "st_spectype": "M2.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-700 e",
@@ -8020,7 +9124,11 @@
       "lightcurve_file": "toi-700-e.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 31.1265,
+      "sy_vmag": 13.151,
+      "st_spectype": "M2.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1685 b",
@@ -8051,7 +9159,11 @@
       "lightcurve_file": "toi-1685-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 37.6153,
+      "sy_vmag": 13.378,
+      "st_spectype": "M3 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-3984 A b",
@@ -8082,7 +9194,11 @@
       "lightcurve_file": "toi-3984-a-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 108.883,
+      "sy_vmag": 15.694,
+      "st_spectype": "M4+/-0.5",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1201 b",
@@ -8113,7 +9229,11 @@
       "lightcurve_file": "toi-1201-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 37.8871,
+      "sy_vmag": 12.26,
+      "st_spectype": "M2.0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1883 b",
@@ -8144,7 +9264,11 @@
       "lightcurve_file": "toi-1883-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 115.369,
+      "sy_vmag": 15.792,
+      "st_spectype": "M",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "GJ 238 b",
@@ -8175,7 +9299,11 @@
       "lightcurve_file": "gj-238-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 15.2142,
+      "sy_vmag": 11.62,
+      "st_spectype": "M2.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "LHS 1678 c",
@@ -8206,7 +9334,11 @@
       "lightcurve_file": "lhs-1678-c.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 19.8782,
+      "sy_vmag": 12.6,
+      "st_spectype": "M2.0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "LHS 1678 b",
@@ -8237,7 +9369,11 @@
       "lightcurve_file": "lhs-1678-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 19.8782,
+      "sy_vmag": 12.6,
+      "st_spectype": "M2.0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "LHS 1678 d",
@@ -8268,7 +9404,11 @@
       "lightcurve_file": "lhs-1678-d.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 19.8782,
+      "sy_vmag": 12.6,
+      "st_spectype": "M2.0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2285 b",
@@ -8299,7 +9439,11 @@
       "lightcurve_file": "toi-2285-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 42.409,
+      "sy_vmag": 13.403,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1994 b",
@@ -8330,7 +9474,11 @@
       "lightcurve_file": "toi-1994-b.json",
       "lightcurve_available": true,
       "selection_bucket": "hot_a_b",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 515.603,
+      "sy_vmag": 10.514,
+      "st_spectype": null,
+      "st_spectype_approx": "~A (Teff-based estimate)"
     },
     {
       "pl_name": "GJ 357 b",
@@ -8361,7 +9509,11 @@
       "lightcurve_file": "gj-357-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 9.44181,
+      "sy_vmag": 10.91,
+      "st_spectype": "M2.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-270 c",
@@ -8392,7 +9544,11 @@
       "lightcurve_file": "toi-270-c.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 22.4793,
+      "sy_vmag": 12.603,
+      "st_spectype": "M",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-270 d",
@@ -8423,7 +9579,11 @@
       "lightcurve_file": "toi-270-d.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 22.4793,
+      "sy_vmag": 12.603,
+      "st_spectype": "M3 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-270 b",
@@ -8454,7 +9614,11 @@
       "lightcurve_file": "toi-270-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 22.4793,
+      "sy_vmag": 12.603,
+      "st_spectype": "M3 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1431 b",
@@ -8485,7 +9649,11 @@
       "lightcurve_file": "toi-1431-b.json",
       "lightcurve_available": true,
       "selection_bucket": "hot_a_b",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 148.925,
+      "sy_vmag": 8.03,
+      "st_spectype": "Am C",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-674 b",
@@ -8516,7 +9684,11 @@
       "lightcurve_file": "toi-674-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 46.0851,
+      "sy_vmag": 14.203,
+      "st_spectype": "M2 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-269 b",
@@ -8547,7 +9719,11 @@
       "lightcurve_file": "toi-269-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 57.0225,
+      "sy_vmag": 14.37,
+      "st_spectype": "M2 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1243 b",
@@ -8578,7 +9754,11 @@
       "lightcurve_file": "toi-1243-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 43.1865,
+      "sy_vmag": 13.427,
+      "st_spectype": "M2.0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-654.01",
@@ -8609,7 +9789,11 @@
       "lightcurve_file": "toi-654-01.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 57.7553,
+      "sy_vmag": 14.54,
+      "st_spectype": "M2 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "GJ 367 b",
@@ -8640,7 +9824,11 @@
       "lightcurve_file": "gj-367-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 9.41263,
+      "sy_vmag": 10.153,
+      "st_spectype": "M V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-4364 b",
@@ -8671,7 +9859,11 @@
       "lightcurve_file": "toi-4364-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 43.9662,
+      "sy_vmag": 13.564,
+      "st_spectype": "M4 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2407 b",
@@ -8702,7 +9894,11 @@
       "lightcurve_file": "toi-2407-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 92.4366,
+      "sy_vmag": 14.68,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-6330 b",
@@ -8733,7 +9929,11 @@
       "lightcurve_file": "toi-6330-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 139.042,
+      "sy_vmag": 16.33,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "AU Mic b",
@@ -8764,7 +9964,11 @@
       "lightcurve_file": "au-mic-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 9.7221,
+      "sy_vmag": 8.81,
+      "st_spectype": "M1 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "AU Mic c",
@@ -8795,7 +9999,11 @@
       "lightcurve_file": "au-mic-c.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 9.7221,
+      "sy_vmag": 8.81,
+      "st_spectype": "M1 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "Wolf 327 b",
@@ -8826,7 +10034,11 @@
       "lightcurve_file": "wolf-327-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 28.5321,
+      "sy_vmag": 13.018,
+      "st_spectype": "M2.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-521 b",
@@ -8857,7 +10069,11 @@
       "lightcurve_file": "toi-521-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 60.9425,
+      "sy_vmag": 14.691,
+      "st_spectype": "M3",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5489 b",
@@ -8888,7 +10104,11 @@
       "lightcurve_file": "toi-5489-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 45.0907,
+      "sy_vmag": 13.824,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-5489 c",
@@ -8919,7 +10139,11 @@
       "lightcurve_file": "toi-5489-c.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 45.0907,
+      "sy_vmag": 13.824,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1634 b",
@@ -8950,7 +10174,11 @@
       "lightcurve_file": "toi-1634-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 35.2736,
+      "sy_vmag": 13.217,
+      "st_spectype": "M2",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1231 b",
@@ -8981,7 +10209,11 @@
       "lightcurve_file": "toi-1231-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 27.6227,
+      "sy_vmag": 12.36,
+      "st_spectype": "M3 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-4559 b",
@@ -9012,7 +10244,11 @@
       "lightcurve_file": "toi-4559-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 31.6354,
+      "sy_vmag": 13.115,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1266 b",
@@ -9043,7 +10279,11 @@
       "lightcurve_file": "toi-1266-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 36.0118,
+      "sy_vmag": 12.941,
+      "st_spectype": "M2",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1266 c",
@@ -9074,7 +10314,11 @@
       "lightcurve_file": "toi-1266-c.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 36.0118,
+      "sy_vmag": 12.941,
+      "st_spectype": "M2",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1846 b",
@@ -9105,7 +10349,11 @@
       "lightcurve_file": "toi-1846-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 47.2496,
+      "sy_vmag": 13.971,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "TIC 46432937 b",
@@ -9136,7 +10384,11 @@
       "lightcurve_file": "tic-46432937-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 90.5369,
+      "sy_vmag": 14.268,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-912 b",
@@ -9167,7 +10419,11 @@
       "lightcurve_file": "toi-912-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 26.1072,
+      "sy_vmag": 12.67,
+      "st_spectype": "M3",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-3785 b",
@@ -9198,7 +10454,11 @@
       "lightcurve_file": "toi-3785-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 79.7634,
+      "sy_vmag": 14.595,
+      "st_spectype": "M2 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5319 b",
@@ -9229,7 +10489,11 @@
       "lightcurve_file": "toi-5319-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 61.171,
+      "sy_vmag": 13.947,
+      "st_spectype": "M",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5293 A b",
@@ -9260,7 +10524,11 @@
       "lightcurve_file": "toi-5293-a-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 162.229,
+      "sy_vmag": 16.19,
+      "st_spectype": "M3+/-1",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "GJ 806 b",
@@ -9291,7 +10559,11 @@
       "lightcurve_file": "gj-806-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 12.0445,
+      "sy_vmag": 10.79,
+      "st_spectype": "M1.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5916 b",
@@ -9322,7 +10594,11 @@
       "lightcurve_file": "toi-5916-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 199.724,
+      "sy_vmag": 16.602,
+      "st_spectype": "M2&plusmn;0.5",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-6034 b",
@@ -9353,7 +10629,11 @@
       "lightcurve_file": "toi-6034-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 117.992,
+      "sy_vmag": 15.189,
+      "st_spectype": null,
+      "st_spectype_approx": "~M (Teff-based estimate)"
     },
     {
       "pl_name": "LHS 1815 b",
@@ -9384,7 +10664,11 @@
       "lightcurve_file": "lhs-1815-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 29.8424,
+      "sy_vmag": 12.167,
+      "st_spectype": "M1",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-756 b",
@@ -9415,7 +10699,11 @@
       "lightcurve_file": "toi-756-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 86.1759,
+      "sy_vmag": 14.607,
+      "st_spectype": "M1 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-530 b",
@@ -9446,7 +10734,11 @@
       "lightcurve_file": "toi-530-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 148.762,
+      "sy_vmag": 15.403,
+      "st_spectype": "M0.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-3714 b",
@@ -9477,7 +10769,11 @@
       "lightcurve_file": "toi-3714-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 112.71,
+      "sy_vmag": 15.7,
+      "st_spectype": "M2",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-663 c",
@@ -9508,7 +10804,11 @@
       "lightcurve_file": "toi-663-c.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 64.2308,
+      "sy_vmag": 13.667,
+      "st_spectype": "M1 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-663 b",
@@ -9539,7 +10839,11 @@
       "lightcurve_file": "toi-663-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 64.2308,
+      "sy_vmag": 13.667,
+      "st_spectype": "M1 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-663 d",
@@ -9570,7 +10874,11 @@
       "lightcurve_file": "toi-663-d.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 64.2308,
+      "sy_vmag": 13.667,
+      "st_spectype": "M1 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1695 b",
@@ -9601,7 +10909,11 @@
       "lightcurve_file": "toi-1695-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 45.1309,
+      "sy_vmag": 12.989,
+      "st_spectype": "M1 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-4529 b",
@@ -9632,7 +10944,11 @@
       "lightcurve_file": "toi-4529-b.json",
       "lightcurve_available": true,
       "selection_bucket": "very_cool_m",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 28.384,
+      "sy_vmag": 12.214,
+      "st_spectype": "M1.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-620 b",
@@ -9663,7 +10979,11 @@
       "lightcurve_file": "toi-620-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 33.0231,
+      "sy_vmag": 12.262,
+      "st_spectype": "M2.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2068 b",
@@ -9694,7 +11014,11 @@
       "lightcurve_file": "toi-2068-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 52.9328,
+      "sy_vmag": 13.007,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-5688 A b",
@@ -9725,7 +11049,11 @@
       "lightcurve_file": "toi-5688-a-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 226.318,
+      "sy_vmag": 15.78,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-776 b",
@@ -9756,7 +11084,11 @@
       "lightcurve_file": "toi-776-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 27.1701,
+      "sy_vmag": 11.536,
+      "st_spectype": "M1 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5486 b",
@@ -9787,7 +11119,11 @@
       "lightcurve_file": "toi-5486-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 89.6811,
+      "sy_vmag": 14.297,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-2095 c",
@@ -9818,7 +11154,11 @@
       "lightcurve_file": "toi-2095-c.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 41.9176,
+      "sy_vmag": 13.19,
+      "st_spectype": "M2.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2095 b",
@@ -9849,7 +11189,11 @@
       "lightcurve_file": "toi-2095-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 41.9176,
+      "sy_vmag": 13.19,
+      "st_spectype": "M2.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "NGTS-33 b",
@@ -9880,7 +11224,11 @@
       "lightcurve_file": "ngts-33-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 437.855,
+      "sy_vmag": 11.604,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "GJ 341 b",
@@ -9911,7 +11259,11 @@
       "lightcurve_file": "gj-341-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 10.454,
+      "sy_vmag": 9.49,
+      "st_spectype": "M1",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-4666 b",
@@ -9942,7 +11294,11 @@
       "lightcurve_file": "toi-4666-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 154.749,
+      "sy_vmag": 15.333,
+      "st_spectype": "M2&plusmn;0.5",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5007 b",
@@ -9973,7 +11329,11 @@
       "lightcurve_file": "toi-5007-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 203.352,
+      "sy_vmag": 15.327,
+      "st_spectype": "M1&plusmn;0.5",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-4201 b",
@@ -10004,7 +11364,11 @@
       "lightcurve_file": "toi-4201-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 189.011,
+      "sy_vmag": 15.163,
+      "st_spectype": "M1.0+/-0.5",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2081 b",
@@ -10035,7 +11399,11 @@
       "lightcurve_file": "toi-2081-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 62.3446,
+      "sy_vmag": 13.369,
+      "st_spectype": "M1.0",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2497 b",
@@ -10066,7 +11434,11 @@
       "lightcurve_file": "toi-2497-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 285.289,
+      "sy_vmag": 9.547,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-3629 b",
@@ -10097,7 +11469,11 @@
       "lightcurve_file": "toi-3629-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 130.091,
+      "sy_vmag": 14.639,
+      "st_spectype": "M1",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1756 b",
@@ -10128,7 +11504,11 @@
       "lightcurve_file": "toi-1756-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 86.7159,
+      "sy_vmag": 13.88,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-5634 A b",
@@ -10159,7 +11539,11 @@
       "lightcurve_file": "toi-5634-a-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 306.144,
+      "sy_vmag": 16.854,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1518 b",
@@ -10190,7 +11574,11 @@
       "lightcurve_file": "toi-1518-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 225.888,
+      "sy_vmag": 8.952,
+      "st_spectype": "F0",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-3757 b",
@@ -10221,7 +11609,11 @@
       "lightcurve_file": "toi-3757-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 181.139,
+      "sy_vmag": 14.812,
+      "st_spectype": "M0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-159 b",
@@ -10252,7 +11644,11 @@
       "lightcurve_file": "toi-159-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 347.593,
+      "sy_vmag": 11.021,
+      "st_spectype": "F0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-532 b",
@@ -10283,7 +11679,11 @@
       "lightcurve_file": "toi-532-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 135.047,
+      "sy_vmag": 14.413,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-2274 b",
@@ -10314,7 +11714,11 @@
       "lightcurve_file": "toi-2274-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 48.876,
+      "sy_vmag": 11.995,
+      "st_spectype": "M",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "LP 714-47 b",
@@ -10345,7 +11749,11 @@
       "lightcurve_file": "lp-714-47-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 52.616,
+      "sy_vmag": 12.492,
+      "st_spectype": "M0.0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1728 b",
@@ -10376,7 +11784,11 @@
       "lightcurve_file": "toi-1728-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 60.798,
+      "sy_vmag": 12.39,
+      "st_spectype": "M0",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1749 d",
@@ -10407,7 +11819,11 @@
       "lightcurve_file": "toi-1749-d.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 99.5561,
+      "sy_vmag": 13.86,
+      "st_spectype": "M0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1749 c",
@@ -10438,7 +11854,11 @@
       "lightcurve_file": "toi-1749-c.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 99.5561,
+      "sy_vmag": 13.86,
+      "st_spectype": "M0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1749 b",
@@ -10469,7 +11889,11 @@
       "lightcurve_file": "toi-1749-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 99.5561,
+      "sy_vmag": 13.86,
+      "st_spectype": "M0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5616 b",
@@ -10500,7 +11924,11 @@
       "lightcurve_file": "toi-5616-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 390.415,
+      "sy_vmag": 16.74,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "Ross 176 b",
@@ -10531,7 +11959,11 @@
       "lightcurve_file": "ross-176-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 46.4488,
+      "sy_vmag": 11.524,
+      "st_spectype": "K7 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1759 b",
@@ -10562,7 +11994,11 @@
       "lightcurve_file": "toi-1759-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 40.0654,
+      "sy_vmag": 11.93,
+      "st_spectype": "M0.0 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2005 b",
@@ -10593,7 +12029,11 @@
       "lightcurve_file": "toi-2005-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 328.475,
+      "sy_vmag": 9.867,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1238 b",
@@ -10624,7 +12064,11 @@
       "lightcurve_file": "toi-1238-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 70.7145,
+      "sy_vmag": 12.796,
+      "st_spectype": "K7/M0",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2459 b",
@@ -10655,7 +12099,11 @@
       "lightcurve_file": "toi-2459-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 36.6113,
+      "sy_vmag": 10.772,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-4898 b",
@@ -10686,7 +12134,11 @@
       "lightcurve_file": "toi-4898-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 98.5958,
+      "sy_vmag": 13.62,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1260 d",
@@ -10717,7 +12169,11 @@
       "lightcurve_file": "toi-1260-d.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 73.5977,
+      "sy_vmag": 11.922,
+      "st_spectype": "K6 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1260 c",
@@ -10748,7 +12204,11 @@
       "lightcurve_file": "toi-1260-c.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 73.5977,
+      "sy_vmag": 11.922,
+      "st_spectype": "K6 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1260 b",
@@ -10779,7 +12239,11 @@
       "lightcurve_file": "toi-1260-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 73.5977,
+      "sy_vmag": 11.922,
+      "st_spectype": "K6 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5218 b",
@@ -10810,7 +12274,11 @@
       "lightcurve_file": "toi-5218-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 377.483,
+      "sy_vmag": 16.044,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-3082 b",
@@ -10841,7 +12309,11 @@
       "lightcurve_file": "toi-3082-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 113.048,
+      "sy_vmag": 12.934,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "BD-14 3065 b",
@@ -10872,7 +12344,11 @@
       "lightcurve_file": "bd-14-3065-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 589.423,
+      "sy_vmag": 11.1,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1782.01",
@@ -10903,7 +12379,11 @@
       "lightcurve_file": "toi-1782-01.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 95.2649,
+      "sy_vmag": 12.329,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-4153 b",
@@ -10934,7 +12414,11 @@
       "lightcurve_file": "toi-4153-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 423.84,
+      "sy_vmag": 11.601,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-615 b",
@@ -10965,7 +12449,11 @@
       "lightcurve_file": "toi-615-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 360.408,
+      "sy_vmag": 10.825,
+      "st_spectype": "F2 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2443 b",
@@ -10996,7 +12484,11 @@
       "lightcurve_file": "toi-2443-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 23.9258,
+      "sy_vmag": 9.51,
+      "st_spectype": "K5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HD 2685 b",
@@ -11027,7 +12519,11 @@
       "lightcurve_file": "hd-2685-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 196.852,
+      "sy_vmag": 9.595,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-5777 b",
@@ -11058,7 +12554,11 @@
       "lightcurve_file": "toi-5777-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 114.277,
+      "sy_vmag": 13.012,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "WASP-108 b",
@@ -11089,7 +12589,11 @@
       "lightcurve_file": "wasp-108-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 258.777,
+      "sy_vmag": 11.211,
+      "st_spectype": "F9",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2093 c",
@@ -11120,7 +12624,11 @@
       "lightcurve_file": "toi-2093-c.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 82.7982,
+      "sy_vmag": 11.925,
+      "st_spectype": "K5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1466 b",
@@ -11151,7 +12659,11 @@
       "lightcurve_file": "toi-1466-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 86.5783,
+      "sy_vmag": 12.189,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-500 b",
@@ -11182,7 +12694,11 @@
       "lightcurve_file": "toi-500-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 47.3924,
+      "sy_vmag": 10.54,
+      "st_spectype": "K6 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-4773 b",
@@ -11213,7 +12729,11 @@
       "lightcurve_file": "toi-4773-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 492.888,
+      "sy_vmag": 12.075,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-4405 b",
@@ -11244,7 +12764,11 @@
       "lightcurve_file": "toi-4405-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 155.501,
+      "sy_vmag": 13.476,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "HD 73583 b",
@@ -11275,7 +12799,11 @@
       "lightcurve_file": "hd-73583-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 31.5666,
+      "sy_vmag": 9.67,
+      "st_spectype": "K4 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HD 73583 c",
@@ -11306,7 +12834,11 @@
       "lightcurve_file": "hd-73583-c.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 31.5666,
+      "sy_vmag": 9.67,
+      "st_spectype": "K4 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-836.01",
@@ -11337,7 +12869,11 @@
       "lightcurve_file": "toi-836-01.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 27.5024,
+      "sy_vmag": 9.92,
+      "st_spectype": "K V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-836 b",
@@ -11368,7 +12904,11 @@
       "lightcurve_file": "toi-836-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 27.5024,
+      "sy_vmag": 9.92,
+      "st_spectype": "K V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5614 b",
@@ -11399,7 +12939,11 @@
       "lightcurve_file": "toi-5614-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 223.016,
+      "sy_vmag": 14.093,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-778 b",
@@ -11430,7 +12974,11 @@
       "lightcurve_file": "toi-778-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 161.743,
+      "sy_vmag": 9.109,
+      "st_spectype": "F3 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2152 A b",
@@ -11461,7 +13009,11 @@
       "lightcurve_file": "toi-2152-a-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 303.006,
+      "sy_vmag": 11.436,
+      "st_spectype": "F4 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-139 b",
@@ -11492,7 +13044,11 @@
       "lightcurve_file": "toi-139-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 42.4061,
+      "sy_vmag": 10.55,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-2134 c",
@@ -11523,7 +13079,11 @@
       "lightcurve_file": "toi-2134-c.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 22.6202,
+      "sy_vmag": 8.933,
+      "st_spectype": "K5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2134 b",
@@ -11554,7 +13114,11 @@
       "lightcurve_file": "toi-2134-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 22.6202,
+      "sy_vmag": 8.933,
+      "st_spectype": "K5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5605 b",
@@ -11585,7 +13149,11 @@
       "lightcurve_file": "toi-5605-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 95.0735,
+      "sy_vmag": 12.073,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "HIP 65 A b",
@@ -11616,7 +13184,11 @@
       "lightcurve_file": "hip-65-a-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 61.7856,
+      "sy_vmag": 11.0,
+      "st_spectype": "K4 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5704 b",
@@ -11647,7 +13219,11 @@
       "lightcurve_file": "toi-5704-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 89.637,
+      "sy_vmag": 11.529,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-824 b",
@@ -11678,7 +13254,11 @@
       "lightcurve_file": "toi-824-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 63.9262,
+      "sy_vmag": 11.314,
+      "st_spectype": "K4 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-712 d",
@@ -11709,7 +13289,11 @@
       "lightcurve_file": "toi-712-d.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 58.6212,
+      "sy_vmag": 10.838,
+      "st_spectype": "K4.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-712 b",
@@ -11740,7 +13324,11 @@
       "lightcurve_file": "toi-712-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 58.6212,
+      "sy_vmag": 10.838,
+      "st_spectype": "K4.5 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-6677 b",
@@ -11771,7 +13359,11 @@
       "lightcurve_file": "toi-6677-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 340.52,
+      "sy_vmag": 10.765,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-4641 b",
@@ -11802,7 +13394,11 @@
       "lightcurve_file": "toi-4641-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 86.3501,
+      "sy_vmag": 7.51,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "HD 21749 c",
@@ -11833,7 +13429,11 @@
       "lightcurve_file": "hd-21749-c.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 16.32,
+      "sy_vmag": 8.08,
+      "st_spectype": "K4.5",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2109 b",
@@ -11864,7 +13464,11 @@
       "lightcurve_file": "toi-2109-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 262.041,
+      "sy_vmag": 10.217,
+      "st_spectype": "F",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2989 b",
@@ -11895,7 +13499,11 @@
       "lightcurve_file": "toi-2989-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 195.795,
+      "sy_vmag": 13.859,
+      "st_spectype": "K4 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HD 101581 b",
@@ -11926,7 +13534,11 @@
       "lightcurve_file": "hd-101581-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 12.7781,
+      "sy_vmag": 7.77,
+      "st_spectype": "K4/5V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1105 b",
@@ -11957,7 +13569,11 @@
       "lightcurve_file": "toi-1105-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 79.5225,
+      "sy_vmag": 11.329,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1516 b",
@@ -11988,7 +13604,11 @@
       "lightcurve_file": "toi-1516-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 247.054,
+      "sy_vmag": 10.858,
+      "st_spectype": "F8 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1750 b",
@@ -12019,7 +13639,11 @@
       "lightcurve_file": "toi-1750-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 162.46,
+      "sy_vmag": 12.645,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "HD 23472 c",
@@ -12050,7 +13674,11 @@
       "lightcurve_file": "hd-23472-c.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 39.0341,
+      "sy_vmag": 9.73,
+      "st_spectype": "K4 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HD 23472 f",
@@ -12081,7 +13709,11 @@
       "lightcurve_file": "hd-23472-f.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 39.0341,
+      "sy_vmag": 9.73,
+      "st_spectype": "K4 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HD 23472 e",
@@ -12112,7 +13744,11 @@
       "lightcurve_file": "hd-23472-e.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 39.0341,
+      "sy_vmag": 9.73,
+      "st_spectype": "K4 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HD 23472 d",
@@ -12143,7 +13779,11 @@
       "lightcurve_file": "hd-23472-d.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 39.0341,
+      "sy_vmag": 9.73,
+      "st_spectype": "K4 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5232 b",
@@ -12174,7 +13814,11 @@
       "lightcurve_file": "toi-5232-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 609.388,
+      "sy_vmag": 12.246,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-163 b",
@@ -12205,7 +13849,11 @@
       "lightcurve_file": "toi-163-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 411.719,
+      "sy_vmag": 11.467,
+      "st_spectype": "F",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-558 b",
@@ -12236,7 +13884,11 @@
       "lightcurve_file": "toi-558-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 402.63,
+      "sy_vmag": 11.233,
+      "st_spectype": "F V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1064 c",
@@ -12267,7 +13919,11 @@
       "lightcurve_file": "toi-1064-c.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 68.0726,
+      "sy_vmag": 10.938,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1064 b",
@@ -12298,7 +13954,11 @@
       "lightcurve_file": "toi-1064-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 68.0726,
+      "sy_vmag": 10.938,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1180 b",
@@ -12329,7 +13989,11 @@
       "lightcurve_file": "toi-1180-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 72.0238,
+      "sy_vmag": 11.017,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-640 b",
@@ -12360,7 +14024,11 @@
       "lightcurve_file": "toi-640-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 341.997,
+      "sy_vmag": 10.51,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-5734 b",
@@ -12391,7 +14059,11 @@
       "lightcurve_file": "toi-5734-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 32.5102,
+      "sy_vmag": 9.613,
+      "st_spectype": "K3-K4 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2194 b",
@@ -12422,7 +14094,11 @@
       "lightcurve_file": "toi-2194-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 19.5711,
+      "sy_vmag": 8.42,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "HD 202772 A b",
@@ -12453,7 +14129,11 @@
       "lightcurve_file": "hd-202772-a-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 161.498,
+      "sy_vmag": 8.324,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1811 b",
@@ -12484,7 +14164,11 @@
       "lightcurve_file": "toi-1811-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 128.23,
+      "sy_vmag": 11.966,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1259 A b",
@@ -12515,7 +14199,11 @@
       "lightcurve_file": "toi-1259-a-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 118.106,
+      "sy_vmag": 12.079,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-201 b",
@@ -12546,7 +14234,11 @@
       "lightcurve_file": "toi-201-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 113.825,
+      "sy_vmag": 9.07,
+      "st_spectype": "F",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TIC 147027702 b",
@@ -12577,7 +14269,11 @@
       "lightcurve_file": "tic-147027702-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 457.186,
+      "sy_vmag": 11.286,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-5380 b",
@@ -12608,7 +14304,11 @@
       "lightcurve_file": "toi-5380-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 286.781,
+      "sy_vmag": 10.621,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-622 b",
@@ -12639,7 +14339,11 @@
       "lightcurve_file": "toi-622-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 123.297,
+      "sy_vmag": 8.995,
+      "st_spectype": "F6 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1836 b",
@@ -12670,7 +14374,11 @@
       "lightcurve_file": "toi-1836-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 191.649,
+      "sy_vmag": 9.765,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1301.01",
@@ -12701,7 +14409,11 @@
       "lightcurve_file": "toi-1301-01.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 90.8693,
+      "sy_vmag": 11.337,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "HR 858 b",
@@ -12732,7 +14444,11 @@
       "lightcurve_file": "hr-858-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 31.964,
+      "sy_vmag": 6.38,
+      "st_spectype": "F6 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HR 858 d",
@@ -12763,7 +14479,11 @@
       "lightcurve_file": "hr-858-d.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 31.964,
+      "sy_vmag": 6.38,
+      "st_spectype": "F6 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HR 858 c",
@@ -12794,7 +14514,11 @@
       "lightcurve_file": "hr-858-c.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 31.964,
+      "sy_vmag": 6.38,
+      "st_spectype": "F6 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-431 d",
@@ -12825,7 +14549,11 @@
       "lightcurve_file": "toi-431-d.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 32.5686,
+      "sy_vmag": 9.12,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-431 b",
@@ -12856,7 +14584,11 @@
       "lightcurve_file": "toi-431-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 32.5686,
+      "sy_vmag": 9.12,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-2104 b",
@@ -12887,7 +14619,11 @@
       "lightcurve_file": "toi-2104-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 76.7418,
+      "sy_vmag": 10.838,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1859 b",
@@ -12918,7 +14654,11 @@
       "lightcurve_file": "toi-1859-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 224.385,
+      "sy_vmag": 10.33,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-815 c",
@@ -12949,7 +14689,11 @@
       "lightcurve_file": "toi-815-c.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 59.7117,
+      "sy_vmag": 10.217,
+      "st_spectype": "K3 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1135 b",
@@ -12980,7 +14724,11 @@
       "lightcurve_file": "toi-1135-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 114.048,
+      "sy_vmag": 9.54,
+      "st_spectype": "G0",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1416 b",
@@ -13011,7 +14759,11 @@
       "lightcurve_file": "toi-1416-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 55.0135,
+      "sy_vmag": 9.91,
+      "st_spectype": "G9 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1107 b",
@@ -13042,7 +14794,11 @@
       "lightcurve_file": "toi-1107-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 281.314,
+      "sy_vmag": 10.553,
+      "st_spectype": "F6 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HD 152843 c",
@@ -13073,7 +14829,11 @@
       "lightcurve_file": "hd-152843-c.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 107.898,
+      "sy_vmag": 8.855,
+      "st_spectype": "G0",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HD 152843 b",
@@ -13104,7 +14864,11 @@
       "lightcurve_file": "hd-152843-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 107.898,
+      "sy_vmag": 8.855,
+      "st_spectype": "G0",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-4551 b",
@@ -13135,7 +14899,11 @@
       "lightcurve_file": "toi-4551-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 215.986,
+      "sy_vmag": 9.973,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-205 b",
@@ -13166,7 +14934,11 @@
       "lightcurve_file": "toi-205-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 177.759,
+      "sy_vmag": 9.921,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-5153 b",
@@ -13197,7 +14969,11 @@
       "lightcurve_file": "toi-5153-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 390.484,
+      "sy_vmag": 11.932,
+      "st_spectype": "F8 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-677 b",
@@ -13228,7 +15004,11 @@
       "lightcurve_file": "toi-677-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 141.812,
+      "sy_vmag": 9.822,
+      "st_spectype": "F8",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-6707 b",
@@ -13259,7 +15039,11 @@
       "lightcurve_file": "toi-6707-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 641.467,
+      "sy_vmag": 12.93,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1807 b",
@@ -13290,7 +15074,11 @@
       "lightcurve_file": "toi-1807-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 42.5775,
+      "sy_vmag": 10.0,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-2154 b",
@@ -13321,7 +15109,11 @@
       "lightcurve_file": "toi-2154-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 296.46,
+      "sy_vmag": 11.068,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1333 b",
@@ -13352,7 +15144,11 @@
       "lightcurve_file": "toi-1333-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 200.492,
+      "sy_vmag": 9.438,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "HIP 113103 b",
@@ -13383,7 +15179,11 @@
       "lightcurve_file": "hip-113103-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 46.2122,
+      "sy_vmag": 9.95,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-4603 b",
@@ -13414,7 +15214,11 @@
       "lightcurve_file": "toi-4603-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 225.643,
+      "sy_vmag": 9.24,
+      "st_spectype": "F",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-892 b",
@@ -13445,7 +15249,11 @@
       "lightcurve_file": "toi-892-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 340.543,
+      "sy_vmag": 11.43,
+      "st_spectype": "F",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-4507 b",
@@ -13476,7 +15284,11 @@
       "lightcurve_file": "toi-4507-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 178.26,
+      "sy_vmag": 10.806,
+      "st_spectype": "F",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-150.01",
@@ -13507,7 +15319,11 @@
       "lightcurve_file": "toi-150-01.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 336.267,
+      "sy_vmag": 11.39,
+      "st_spectype": "F",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2046 b",
@@ -13538,7 +15354,11 @@
       "lightcurve_file": "toi-2046-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 289.668,
+      "sy_vmag": 11.552,
+      "st_spectype": "F8 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-628 b",
@@ -13569,7 +15389,11 @@
       "lightcurve_file": "toi-628-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 178.68,
+      "sy_vmag": 10.112,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1898 b",
@@ -13600,7 +15424,11 @@
       "lightcurve_file": "toi-1898-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 79.6682,
+      "sy_vmag": 7.87,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-333 b",
@@ -13631,7 +15459,11 @@
       "lightcurve_file": "toi-333-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 352.269,
+      "sy_vmag": 12.205,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-4010 d",
@@ -13662,7 +15494,11 @@
       "lightcurve_file": "toi-4010-d.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 177.504,
+      "sy_vmag": 12.291,
+      "st_spectype": "K V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5301 b",
@@ -13693,7 +15529,11 @@
       "lightcurve_file": "toi-5301-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 629.161,
+      "sy_vmag": 11.738,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-5786 b",
@@ -13724,7 +15564,11 @@
       "lightcurve_file": "toi-5786-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 192.475,
+      "sy_vmag": 10.186,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-3568 b",
@@ -13755,7 +15599,11 @@
       "lightcurve_file": "toi-3568-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 197.906,
+      "sy_vmag": 12.879,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-4377 b",
@@ -13786,7 +15634,11 @@
       "lightcurve_file": "toi-4377-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 455.82,
+      "sy_vmag": 11.707,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1453 b",
@@ -13817,7 +15669,11 @@
       "lightcurve_file": "toi-1453-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 78.7415,
+      "sy_vmag": 11.113,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-5350 b",
@@ -13848,7 +15704,11 @@
       "lightcurve_file": "toi-5350-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 277.419,
+      "sy_vmag": 11.953,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-4406 b",
@@ -13879,7 +15739,11 @@
       "lightcurve_file": "toi-4406-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 261.834,
+      "sy_vmag": 10.937,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-4495 c",
@@ -13910,7 +15774,11 @@
       "lightcurve_file": "toi-4495-c.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 132.214,
+      "sy_vmag": 9.531,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-4495 b",
@@ -13941,7 +15809,11 @@
       "lightcurve_file": "toi-4495-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 132.214,
+      "sy_vmag": 9.531,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-181 b",
@@ -13972,7 +15844,11 @@
       "lightcurve_file": "toi-181-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 96.2338,
+      "sy_vmag": 11.191,
+      "st_spectype": "K",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2145 b",
@@ -14003,7 +15879,11 @@
       "lightcurve_file": "toi-2145-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 224.731,
+      "sy_vmag": 9.07,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "HD 5278 b",
@@ -14034,7 +15914,11 @@
       "lightcurve_file": "hd-5278-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 57.5846,
+      "sy_vmag": 7.94,
+      "st_spectype": "F V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HD 110082 b",
@@ -14065,7 +15949,11 @@
       "lightcurve_file": "hd-110082-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 105.096,
+      "sy_vmag": 9.23,
+      "st_spectype": "F8 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-2374 b",
@@ -14096,7 +15984,11 @@
       "lightcurve_file": "toi-2374-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 134.655,
+      "sy_vmag": 12.095,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-6393 b",
@@ -14127,7 +16019,11 @@
       "lightcurve_file": "toi-6393-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 186.229,
+      "sy_vmag": 12.513,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "HD 28109 c",
@@ -14158,7 +16054,11 @@
       "lightcurve_file": "hd-28109-c.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 139.611,
+      "sy_vmag": 9.42,
+      "st_spectype": "F8",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HD 28109 d",
@@ -14189,7 +16089,11 @@
       "lightcurve_file": "hd-28109-d.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 139.611,
+      "sy_vmag": 9.42,
+      "st_spectype": "F8",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "HD 28109 b",
@@ -14220,7 +16124,11 @@
       "lightcurve_file": "hd-28109-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 139.611,
+      "sy_vmag": 9.42,
+      "st_spectype": "F8",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-3071 b",
@@ -14251,7 +16159,11 @@
       "lightcurve_file": "toi-3071-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 485.219,
+      "sy_vmag": 12.383,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-216.01",
@@ -14282,7 +16194,11 @@
       "lightcurve_file": "toi-216-01.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 177.945,
+      "sy_vmag": 12.324,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-216.02",
@@ -14313,7 +16229,11 @@
       "lightcurve_file": "toi-216-02.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 177.945,
+      "sy_vmag": 12.324,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1670 c",
@@ -14344,7 +16264,11 @@
       "lightcurve_file": "toi-1670-c.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 168.067,
+      "sy_vmag": 9.889,
+      "st_spectype": "F7 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1670 b",
@@ -14375,7 +16299,11 @@
       "lightcurve_file": "toi-1670-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 168.067,
+      "sy_vmag": 9.889,
+      "st_spectype": "F7 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-411 c",
@@ -14406,7 +16334,11 @@
       "lightcurve_file": "toi-411-c.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 62.7792,
+      "sy_vmag": 8.270001,
+      "st_spectype": "F7/F8V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-411 b",
@@ -14437,7 +16369,11 @@
       "lightcurve_file": "toi-411-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 62.7792,
+      "sy_vmag": 8.270001,
+      "st_spectype": "F7/F8V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5110 b",
@@ -14468,7 +16404,11 @@
       "lightcurve_file": "toi-5110-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 392.259,
+      "sy_vmag": 11.06,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "NGTS-11 b",
@@ -14499,7 +16439,11 @@
       "lightcurve_file": "ngts-11-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 190.422,
+      "sy_vmag": 12.456,
+      "st_spectype": "K",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TIC 87422071 b",
@@ -14530,7 +16474,11 @@
       "lightcurve_file": "tic-87422071-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 384.758,
+      "sy_vmag": 11.982,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-880 c",
@@ -14561,7 +16509,11 @@
       "lightcurve_file": "toi-880-c.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 60.6679,
+      "sy_vmag": 10.104,
+      "st_spectype": "K",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5126 b",
@@ -14592,7 +16544,11 @@
       "lightcurve_file": "toi-5126-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 160.414,
+      "sy_vmag": 10.141,
+      "st_spectype": "F V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-5126 c",
@@ -14623,7 +16579,11 @@
       "lightcurve_file": "toi-5126-c.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 160.414,
+      "sy_vmag": 10.141,
+      "st_spectype": "F V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-880.02",
@@ -14654,7 +16614,11 @@
       "lightcurve_file": "toi-880-02.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 60.6679,
+      "sy_vmag": 10.104,
+      "st_spectype": "K",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1052 b",
@@ -14685,7 +16649,11 @@
       "lightcurve_file": "toi-1052-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 129.804,
+      "sy_vmag": 9.511,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-1694 b",
@@ -14716,7 +16684,11 @@
       "lightcurve_file": "toi-1694-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 124.68,
+      "sy_vmag": 11.446,
+      "st_spectype": "K2 V - K3 V",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-1291 b",
@@ -14747,7 +16719,11 @@
       "lightcurve_file": "toi-1291-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 428.123,
+      "sy_vmag": 11.516,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-5599 b",
@@ -14778,7 +16754,11 @@
       "lightcurve_file": "toi-5599-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 547.948,
+      "sy_vmag": 11.779,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "TOI-3261 b",
@@ -14809,7 +16789,11 @@
       "lightcurve_file": "toi-3261-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 300.141,
+      "sy_vmag": 13.261,
+      "st_spectype": "K1.5+/-1",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TIC 245076932 b",
@@ -14840,7 +16824,11 @@
       "lightcurve_file": "tic-245076932-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 303.96,
+      "sy_vmag": 11.727,
+      "st_spectype": null,
+      "st_spectype_approx": "~F (Teff-based estimate)"
     },
     {
       "pl_name": "HD 332231 b",
@@ -14871,7 +16859,11 @@
       "lightcurve_file": "hd-332231-b.json",
       "lightcurve_available": true,
       "selection_bucket": "warm_f",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 80.6665,
+      "sy_vmag": 8.558,
+      "st_spectype": "F8",
+      "st_spectype_approx": null
     },
     {
       "pl_name": "TOI-808 b",
@@ -14902,7 +16894,11 @@
       "lightcurve_file": "toi-808-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 98.1848,
+      "sy_vmag": 10.729,
+      "st_spectype": null,
+      "st_spectype_approx": "~K (Teff-based estimate)"
     },
     {
       "pl_name": "HD 221416 b",
@@ -14933,7 +16929,11 @@
       "lightcurve_file": "hd-221416-b.json",
       "lightcurve_available": true,
       "selection_bucket": "cool_k",
-      "selection_prefer_tess": true
+      "selection_prefer_tess": true,
+      "sy_dist": 95.5483,
+      "sy_vmag": 8.15,
+      "st_spectype": "K0 IV/V",
+      "st_spectype_approx": null
     }
   ]
 }
