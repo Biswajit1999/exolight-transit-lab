@@ -224,11 +224,13 @@ export class ExoSceneRenderer {
     const u1 = clamp(this.params.u1, 0, 1);
     const u2 = clamp(this.params.u2, 0, 1);
 
-    const limb = ctx.createRadialGradient(cx - radius * 0.18, cy - radius * 0.22, radius * 0.08, cx, cy, radius);
-    limb.addColorStop(0.00, rgb(lighter(base, 56), 1));
-    limb.addColorStop(0.38, rgb(base, 1));
-    limb.addColorStop(0.76, rgb(darker(base, 0.68 + 0.14 * (1 - u1)), 1));
-    limb.addColorStop(1.00, rgb(darker(base, 0.32 + 0.12 * (1 - u2)), 1));
+    const limb = ctx.createRadialGradient(cx - radius * 0.16, cy - radius * 0.20, radius * 0.05, cx, cy, radius);
+    limb.addColorStop(0.00, rgb(lighter(base, 72), 1));
+    limb.addColorStop(0.34, rgb(lighter(base, 18), 1));
+    limb.addColorStop(0.62, rgb(base, 1));
+    limb.addColorStop(0.85, rgb(darker(base, 0.58 + 0.16 * (1 - u1)), 1));
+    limb.addColorStop(0.96, rgb(darker(base, 0.30 + 0.10 * (1 - u2)), 1));
+    limb.addColorStop(1.00, rgb(darker(base, 0.14), 1));
 
     ctx.save();
     ctx.beginPath();
@@ -238,6 +240,27 @@ export class ExoSceneRenderer {
     ctx.fillStyle = limb;
     ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
 
+    // Coarse supergranulation: large soft convection cells so the disk
+    // reads as an organic, non-uniform surface even at a glance.
+    ctx.globalCompositeOperation = "soft-light";
+    for (let i = 0; i < 26; i += 1) {
+      const angle = hash(i + 5.2) * TWO_PI;
+      const r = Math.sqrt(hash(i + 9.6)) * radius * 0.92;
+      const x = cx + Math.cos(angle) * r;
+      const y = cy + Math.sin(angle) * r;
+      const mu = Math.sqrt(Math.max(0, 1 - (r / radius) ** 2));
+      const size = radius * (0.16 + hash(i + 61.3) * 0.16);
+      const warm = hash(i + 44.9) > 0.45;
+      const alpha = (warm ? 0.22 : 0.16) * (0.55 + 0.45 * mu);
+      const sg = ctx.createRadialGradient(x, y, 0, x, y, size);
+      sg.addColorStop(0, warm ? `rgba(255, 214, 140, ${alpha})` : `rgba(120, 46, 16, ${alpha})`);
+      sg.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = sg;
+      ctx.fillRect(x - size, y - size, size * 2, size * 2);
+    }
+
+    // Fine granulation: many small bright/dark cells, high enough contrast
+    // to be visible without a build-quality-dependent flicker.
     ctx.globalCompositeOperation = "screen";
     for (let i = 0; i < this.granules.length; i += 1) {
       const g = this.granules[i];
@@ -247,25 +270,27 @@ export class ExoSceneRenderer {
       const rr = x0 * x0 + y0 * y0;
       if (rr > 1) continue;
       const mu = Math.sqrt(Math.max(0, 1 - rr));
-      const flicker = 0.72 + 0.28 * Math.sin(time * 0.55 + g.phase);
-      const alpha = (g.warm ? 0.060 : 0.030) * mu * flicker;
+      const flicker = 0.78 + 0.22 * Math.sin(time * 0.55 + g.phase);
+      const alpha = (g.warm ? 0.20 : 0.03) * mu * flicker;
       const x = cx + x0 * radius;
       const y = cy + y0 * radius;
       const gr = ctx.createRadialGradient(x, y, 0, x, y, g.radius * radius * 5.4);
-      gr.addColorStop(0, g.warm ? `rgba(255, 236, 176, ${alpha})` : `rgba(150, 56, 18, ${alpha})`);
+      gr.addColorStop(0, g.warm ? `rgba(255, 240, 190, ${alpha})` : `rgba(150, 56, 18, ${alpha})`);
       gr.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = gr;
       ctx.fillRect(x - g.radius * radius * 6, y - g.radius * radius * 6, g.radius * radius * 12, g.radius * radius * 12);
     }
 
+    // Dark intergranular lanes: the thin dark network between granules is
+    // what actually sells "photosphere" over "smooth ball" at a glance.
     ctx.globalCompositeOperation = "multiply";
-    for (let i = 0; i < 46; i += 1) {
+    for (let i = 0; i < 90; i += 1) {
       const angle = hash(i + 77.4) * TWO_PI + time * 0.004;
-      const r = Math.sqrt(hash(i + 33.7)) * radius * 0.95;
+      const r = Math.sqrt(hash(i + 33.7)) * radius * 0.96;
       const x = cx + Math.cos(angle) * r;
       const y = cy + Math.sin(angle) * r;
-      const size = radius * (0.012 + hash(i + 91.2) * 0.030);
-      ctx.fillStyle = `rgba(80, 30, 12, ${0.018 + hash(i + 11.1) * 0.034})`;
+      const size = radius * (0.012 + hash(i + 91.2) * 0.032);
+      ctx.fillStyle = `rgba(70, 26, 10, ${0.05 + hash(i + 11.1) * 0.09})`;
       ctx.beginPath();
       ctx.ellipse(x, y, size * 1.35, size, angle, 0, TWO_PI);
       ctx.fill();
@@ -273,13 +298,29 @@ export class ExoSceneRenderer {
 
     ctx.restore();
 
-    const glow = ctx.createRadialGradient(cx, cy, radius * 0.86, cx, cy, radius * 1.22);
-    glow.addColorStop(0.00, "rgba(255, 185, 85, 0.00)");
-    glow.addColorStop(0.52, "rgba(255, 180, 82, 0.050)");
-    glow.addColorStop(1.00, "rgba(255, 180, 82, 0.00)");
+    // A thin, slightly brighter limb rim just inside the edge (real photosphere
+    // limb photos show a subtle rim brightening before the sharp cutoff) plus
+    // the outer corona bloom.
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, TWO_PI);
+    ctx.clip();
+    const rim = ctx.createRadialGradient(cx, cy, radius * 0.90, cx, cy, radius * 1.0);
+    rim.addColorStop(0, "rgba(255, 214, 150, 0)");
+    rim.addColorStop(0.7, "rgba(255, 214, 150, 0.05)");
+    rim.addColorStop(1, "rgba(255, 214, 150, 0.12)");
+    ctx.fillStyle = rim;
+    ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
+    ctx.restore();
+
+    const glow = ctx.createRadialGradient(cx, cy, radius * 0.86, cx, cy, radius * 1.30);
+    glow.addColorStop(0.00, "rgba(255, 190, 90, 0.00)");
+    glow.addColorStop(0.45, "rgba(255, 185, 88, 0.085)");
+    glow.addColorStop(0.72, "rgba(255, 178, 82, 0.035)");
+    glow.addColorStop(1.00, "rgba(255, 178, 82, 0.00)");
     ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(cx, cy, radius * 1.24, 0, TWO_PI);
+    ctx.arc(cx, cy, radius * 1.32, 0, TWO_PI);
     ctx.fill();
   }
 
