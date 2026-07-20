@@ -3,15 +3,16 @@
    src/scene.js
    ---------------------------------------------------------------------------
    Ultra-realistic WebGL scene renderer for the ExoLight Transit Lab.
-   v18: magnetic-field / plasma visual layer + dark transit silhouettes.
+   v19: baked cellular-noise granulation texture + dark transit silhouettes.
 
    This version is intentionally heavier than the recovery Canvas renderer:
    - true WebGL sphere rendering
-   - procedural GLSL stellar granulation
+   - photosphere granulation from a baked texture (tools/generate_star_texture.py,
+     assets/textures/photosphere_granulation.png), tinted per-target by
+     temperature and lit with physically-motivated limb darkening in-shader
    - animated rotating photosphere
    - temperature-based stellar colour
    - subtle non-flat coronal atmosphere / glow shell
-   - dipole-inspired magnetic loops and plasma field-line arcs
    - shaded planet and moon spheres
    - no cartoon orbit rings or dotted moon guides
    - stable public API for the current src/app.js
@@ -31,12 +32,14 @@ uniform mat3 uNormalMatrix;
 varying vec3 vWorld;
 varying vec3 vNormal;
 varying vec3 vViewNormal;
+varying vec3 vLocalNormal;
 
 void main() {
   vec4 world = uModel * vec4(aPosition, 1.0);
   vWorld = world.xyz;
   vNormal = normalize(uNormalMatrix * aNormal);
   vViewNormal = normalize((uView * vec4(vNormal, 0.0)).xyz);
+  vLocalNormal = aNormal;
   gl_Position = uProjection * uView * world;
 }
 `;
@@ -47,6 +50,7 @@ precision highp float;
 varying vec3 vWorld;
 varying vec3 vNormal;
 varying vec3 vViewNormal;
+varying vec3 vLocalNormal;
 
 uniform float uTime;
 uniform float uU1;
@@ -60,6 +64,7 @@ uniform vec3 uBaseColour;
 uniform vec3 uHotColour;
 uniform vec3 uCoolColour;
 uniform float uQuality;
+uniform sampler2D uGranulationTex;
 
 float hash(vec3 p) {
   p = fract(p * 0.3183099 + vec3(0.1031, 0.11369, 0.13787));
@@ -135,8 +140,6 @@ void main() {
   vec3 n = normalize(vNormal);
   float qLevel = clamp(uQuality, 0.0, 1.95);
 
-  vec3 rSlow = rotateX(rotateY(n, uTime * (0.070 + 0.032 * qLevel)), 0.12 * sin(uTime * 0.05));
-  vec3 rMid  = rotateY(n, -uTime * (0.135 + 0.060 * qLevel));
   vec3 rFast = rotateX(rotateY(n, uTime * (0.300 + 0.115 * qLevel)), 0.35);
 
   float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
@@ -146,19 +149,18 @@ void main() {
   float limb = clamp(1.0 - uU1 * oneMinusMu - uU2 * oneMinusMu * oneMinusMu, 0.025, 1.18);
   float sphericalDepth = 0.72 + 0.34 * pow(mu, 0.62);
 
-  // Layered convection: large cells + intergranular dark lanes + fine hot fragments.
-  float globalFlow = fbm(rSlow * 2.4 + vec3(uTime * 0.015, -uTime * 0.010, uTime * 0.012));
-  float superGran  = fbm(rSlow * 5.6 + vec3(-uTime * 0.032, uTime * 0.020, -uTime * 0.015));
-  float meso       = fbm(rMid  * 13.0 + vec3(uTime * 0.070, -uTime * 0.045, uTime * 0.034));
-  float granA      = fbm(rMid  * 34.0 + vec3(uTime * 0.160, -uTime * 0.105, uTime * 0.080));
-  float granB      = fbm(rFast * 86.0 + vec3(-uTime * 0.320, uTime * 0.235, -uTime * 0.160));
-  float granC      = fbm(rFast * 176.0 + vec3(uTime * 0.540, -uTime * 0.390, uTime * 0.270));
+  // Baked cellular granulation texture (tools/generate_star_texture.py) tinted
+  // below by the catalogue temperature colour. UV comes from the object-space
+  // normal, so the pattern rotates naturally with the sphere's own spin.
+  vec3 ln = normalize(vLocalNormal);
+  vec2 granUv = vec2(atan(ln.z, ln.x) / 6.28318530718 + 0.5, acos(clamp(ln.y, -1.0, 1.0)) / 3.14159265359);
+  float granTex = texture2D(uGranulationTex, granUv).r;
+  float sparkNoise = fbm(rFast * 176.0 + vec3(uTime * 0.540, -uTime * 0.390, uTime * 0.270));
 
-  float plasmaField = 0.18 * globalFlow + 0.22 * superGran + 0.20 * meso + 0.25 * granA + 0.11 * granB + 0.04 * granC;
-  float hotCell = smoothstep(0.54, 0.73, plasmaField);
-  float hotCore = smoothstep(0.66, 0.88, plasmaField);
-  float darkLane = smoothstep(0.43, 0.69, 1.0 - plasmaField);
-  float fineSpark = smoothstep(0.63, 0.91, granC) * smoothstep(0.20, 0.84, mu);
+  float hotCell = smoothstep(0.50, 0.74, granTex);
+  float hotCore = smoothstep(0.66, 0.90, granTex);
+  float darkLane = smoothstep(0.30, 0.55, 1.0 - granTex);
+  float fineSpark = smoothstep(0.63, 0.91, sparkNoise) * smoothstep(0.20, 0.84, mu);
 
   float tempFactor = clamp((uTeff - 3200.0) / 6400.0, 0.0, 1.0);
   float baseContrast = mix(0.38, 0.20, tempFactor);
@@ -167,7 +169,7 @@ void main() {
   float textureTerm =
     1.0
     + contrast * (0.78 * hotCell + 0.48 * hotCore - 0.82 * darkLane)
-    + contrast * 0.20 * ((granB - 0.5) + 0.55 * (granC - 0.5));
+    + contrast * 0.16 * (granTex - 0.5);
 
   // Self-luminous centre/edge structure. Not a planet lit by a lamp.
   float centreEmission = 0.78 + 0.30 * pow(mu, 0.52);
@@ -479,6 +481,7 @@ export class ExoSceneRenderer {
     }
 
     this.rebuildMeshes();
+    this.loadGranulationTexture();
 
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
@@ -489,21 +492,21 @@ export class ExoSceneRenderer {
     window.addEventListener("resize", () => this.resize(), { passive: true });
     this.resize();
     this.ready = true;
-    this.onStatus("Ultra stellar renderer + magnetic plasma layer online");
+    this.onStatus("Ultra stellar renderer + granulation texture online");
     this.frameHandle = requestAnimationFrame(time => this.loop(time));
   }
 
   qualitySettings() {
     if (this.quality === "ultra") {
-      return { sphereSegments: 320, sphereRings: 184, starCount: 2600, quality: 1.92, glow: 1.78, magnetic: 0.115 };
+      return { sphereSegments: 320, sphereRings: 184, starCount: 2600, quality: 1.92, glow: 1.78 };
     }
     if (this.quality === "high") {
-      return { sphereSegments: 220, sphereRings: 126, starCount: 1450, quality: 1.28, glow: 1.30, magnetic: 0.072 };
+      return { sphereSegments: 220, sphereRings: 126, starCount: 1450, quality: 1.28, glow: 1.30 };
     }
     if (this.quality === "low") {
-      return { sphereSegments: 72, sphereRings: 42, starCount: 320, quality: 0.42, glow: 0.70, magnetic: 0.0 };
+      return { sphereSegments: 72, sphereRings: 42, starCount: 320, quality: 0.42, glow: 0.70 };
     }
-    return { sphereSegments: 132, sphereRings: 78, starCount: 760, quality: 0.78, glow: 0.96, magnetic: 0.036 };
+    return { sphereSegments: 132, sphereRings: 78, starCount: 760, quality: 0.78, glow: 0.96 };
   }
 
   rebuildMeshes() {
@@ -513,7 +516,35 @@ export class ExoSceneRenderer {
     this.meshes.glowSphere = createSphereMesh(gl, Math.max(48, Math.floor(q.sphereSegments * 0.75)), Math.max(28, Math.floor(q.sphereRings * 0.75)));
     this.meshes.starfield = createStarfieldMesh(gl, q.starCount);
     this.meshes.chord = createLineMesh(gl, [-2.55, 0.0, 0.05, 2.55, 0.0, 0.05]);
-    this.meshes.magnetic = createMagneticFieldMesh(gl, this.quality);
+  }
+
+  loadGranulationTexture() {
+    const gl = this.gl;
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    // 1x1 mid-grey placeholder so the star still shades correctly (just flat)
+    // for the handful of frames before the real texture finishes loading.
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, 1, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, new Uint8Array([180]));
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    this.granulationTexture = texture;
+
+    const image = new Image();
+    image.onload = () => {
+      if (!this.ready || !this.gl) return;
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, gl.LUMINANCE, gl.UNSIGNED_BYTE, image);
+      // Power-of-two texture (1024x512): S wraps around the sphere's equator,
+      // T only needs to clamp since it runs pole-to-pole, not around.
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.generateMipmap(gl.TEXTURE_2D);
+    };
+    image.onerror = () => this.onWarning("Granulation texture failed to load; the photosphere will render without surface detail.");
+    image.src = new URL("../assets/textures/photosphere_granulation.png?v=20260720-granulation-v01", import.meta.url).href;
   }
 
   dispose() {
@@ -582,7 +613,6 @@ export class ExoSceneRenderer {
 
     this.drawStar(time, teff, colours, q);
     this.drawGlow(time, colours.glow, q);
-    this.drawMagneticField(time, colours, q);
 
     if (geom.planet.front) this.drawPlanet(geom.planet, time);
     if (geom.moon.enabled && geom.moon.front) this.drawMoon(geom.moon, time);
@@ -667,6 +697,11 @@ export class ExoSceneRenderer {
     const spot = spotCentreFromProjected(p.spotX, p.spotY);
     const model = mat4Scale(mat4RotateY(mat4Identity(), time * (this.quality === "ultra" ? 0.105 : 0.045)), [this.quality === "ultra" ? 1.56 : 1.50, this.quality === "ultra" ? 1.56 : 1.50, this.quality === "ultra" ? 1.56 : 1.50]);
 
+    const loc = useProgram(gl, this.programs.star);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this.granulationTexture);
+    if (loc.uGranulationTex) gl.uniform1i(loc.uGranulationTex, 0);
+
     this.drawSphere({
       program: this.programs.star,
       mesh: this.meshes.sphere,
@@ -708,38 +743,6 @@ export class ExoSceneRenderer {
     });
 
     gl.enable(gl.CULL_FACE);
-    gl.depthMask(true);
-    gl.disable(gl.BLEND);
-  }
-
-
-  drawMagneticField(time, colours, q) {
-    if (!this.meshes.magnetic || !q.magnetic) return;
-
-    const gl = this.gl;
-    const loc = useProgram(gl, this.programs.line);
-    const teff = numberOr(this.target.st_teff, 5772);
-    const hotStar = clamp((teff - 5200) / 4200, 0, 1);
-    const coolStar = clamp((5200 - teff) / 2500, 0, 1);
-    const fieldColour = mix3(
-      mix3([0.30, 0.93, 1.00], [0.62, 0.72, 1.35], hotStar),
-      [1.00, 0.40, 0.16],
-      coolStar * 0.38
-    );
-
-    // Illustrative stellar-activity overlay: dipole-like field lines, not a magnetic-field measurement.
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-    gl.depthMask(false);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.meshes.magnetic.position);
-    enableAttrib(gl, loc.aPosition, 3);
-    const spin = mat4RotateY(mat4Identity(), time * (this.quality === "ultra" ? 0.085 : 0.052));
-    setMat4(gl, loc.uModel, spin);
-    setMat4(gl, loc.uView, this.view);
-    setMat4(gl, loc.uProjection, this.projection);
-    setUniform(gl, loc.uColour, fieldColour);
-    setUniform(gl, loc.uAlpha, q.magnetic * (0.82 + 0.18 * Math.sin(time * 0.75)));
-    gl.drawArrays(gl.LINES, 0, this.meshes.magnetic.vertexCount);
     gl.depthMask(true);
     gl.disable(gl.BLEND);
   }
@@ -1029,85 +1032,6 @@ function createStarfieldMesh(gl, count) {
   };
 }
 
-
-function createMagneticFieldMesh(gl, quality = "balanced") {
-  const vertices = [];
-  const starRadius = quality === "ultra" ? 1.62 : 1.56;
-  const qualityScale = quality === "ultra" ? 1.0 : quality === "high" ? 0.74 : quality === "balanced" ? 0.46 : 0.0;
-  if (qualityScale <= 0.0) {
-    return { position: bufferData(gl, gl.ARRAY_BUFFER, new Float32Array([])), vertexCount: 0 };
-  }
-
-  const longitudes = [];
-  const longitudeCount = quality === "ultra" ? 14 : quality === "high" ? 10 : 6;
-  for (let i = 0; i < longitudeCount; i++) longitudes.push((i / longitudeCount) * TWO_PI);
-
-  const shells = quality === "ultra" ? [2.04, 2.22, 2.45, 2.74, 3.04] : quality === "high" ? [2.08, 2.35, 2.72] : [2.15, 2.60];
-  const segments = quality === "ultra" ? 70 : quality === "high" ? 50 : 34;
-
-  const tiltX = 0.34;
-  const tiltZ = -0.18;
-
-  for (const phi0 of longitudes) {
-    for (const shell of shells) {
-      const thetaMin = Math.asin(Math.sqrt(clamp(starRadius / shell, 0.08, 0.96)));
-      let previous = null;
-      for (let i = 0; i <= segments; i++) {
-        const theta = thetaMin + (Math.PI - 2 * thetaMin) * (i / segments);
-        const wobble = 0.030 * Math.sin(3.0 * theta + phi0 * 2.0);
-        const phi = phi0 + wobble;
-        const r = shell * Math.sin(theta) * Math.sin(theta);
-        const local = [
-          r * Math.sin(theta) * Math.cos(phi),
-          r * Math.cos(theta),
-          r * Math.sin(theta) * Math.sin(phi)
-        ];
-        const tilted = rotatePointZ(rotatePointX(local, tiltX), tiltZ);
-        if (previous) vertices.push(previous[0], previous[1], previous[2], tilted[0], tilted[1], tilted[2]);
-        previous = tilted;
-      }
-    }
-  }
-
-  // A few open polar streamers give the corona a plasma-like high-energy look.
-  const streamerCount = quality === "ultra" ? 18 : quality === "high" ? 12 : 6;
-  for (let i = 0; i < streamerCount; i++) {
-    const phi = (i / streamerCount) * TWO_PI + 0.16 * Math.sin(i * 2.1);
-    const sign = i % 2 === 0 ? 1 : -1;
-    let previous = null;
-    for (let j = 0; j <= segments; j++) {
-      const t = j / segments;
-      const radius = starRadius * (1.02 + 0.95 * t);
-      const polarAngle = 0.16 + 0.56 * t;
-      const twist = phi + sign * (0.42 * t + 0.13 * Math.sin(t * TWO_PI));
-      const local = [
-        radius * Math.sin(polarAngle) * Math.cos(twist),
-        sign * radius * Math.cos(polarAngle),
-        radius * Math.sin(polarAngle) * Math.sin(twist)
-      ];
-      const tilted = rotatePointZ(rotatePointX(local, tiltX), tiltZ);
-      if (previous) vertices.push(previous[0], previous[1], previous[2], tilted[0], tilted[1], tilted[2]);
-      previous = tilted;
-    }
-  }
-
-  return {
-    position: bufferData(gl, gl.ARRAY_BUFFER, new Float32Array(vertices)),
-    vertexCount: vertices.length / 3
-  };
-}
-
-function rotatePointX(p, angle) {
-  const c = Math.cos(angle);
-  const s = Math.sin(angle);
-  return [p[0], c * p[1] - s * p[2], s * p[1] + c * p[2]];
-}
-
-function rotatePointZ(p, angle) {
-  const c = Math.cos(angle);
-  const s = Math.sin(angle);
-  return [c * p[0] - s * p[1], s * p[0] + c * p[1], p[2]];
-}
 
 function createLineMesh(gl, data) {
   return {
