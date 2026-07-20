@@ -1,0 +1,32 @@
+/* Header hierarchy pass: brand first, telemetry second. */
+.app-header {
+  grid-template-columns: minmax(360px, 1.25fr) minmax(420px, .9fr) minmax(390px, .85fr) !important;
+  gap: 12px !important;
+}
+.brand h1 { font-size: 20px !important; letter-spacing: -.02em !important; }
+.brand p { font-size: 12px !important; opacity: .86; }
+.status-strip {
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(104px, 1fr);
+  grid-template-columns: none !important;
+  gap: 6px !important;
+  opacity: .88;
+}
+.status-tile {
+  min-height: 42px !important;
+  padding: 5px 8px !important;
+  border-radius: 10px !important;
+  background: color-mix(in srgb, var(--surface) 74%, transparent) !important;
+  box-shadow: none !important;
+}
+.status-tile span { font-size: 8.5px !important; letter-spacing: .085em !important; }
+.status-tile strong { margin-top: 1px !important; font-size: 11px !important; }
+.phaseiii-status-pill { background: color-mix(in srgb, var(--ok) 8%, var(--surface)) !important; }
+@media (max-width: 1320px) {
+  .app-header { grid-template-columns: minmax(290px, 1fr) minmax(300px, .9fr) minmax(320px, .8fr) !important; }
+  .status-strip { overflow: hidden; }
+}
+@media (max-width: 980px) {
+  .app-header { grid-template-columns: 1fr !important; grid-template-rows: auto auto auto; }
+  .status-strip { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
