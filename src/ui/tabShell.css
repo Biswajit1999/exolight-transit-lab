@@ -124,7 +124,9 @@ body[data-exolight-tab="evidence"] #residual-inspector-shell {
 }
 
 body[data-exolight-tab="model"] .main-panel {
-  grid-template-rows: minmax(335px, 1fr) 330px !important;
+  grid-template-rows: minmax(280px, 1fr) minmax(240px, 300px) minmax(90px, auto) !important;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 body[data-exolight-tab="mission"] .main-panel,

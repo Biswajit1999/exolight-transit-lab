@@ -1,4 +1,7 @@
 import { ExoSceneRenderer } from "./scene.js?v=20260519-magnetic-v18";
+import { buildTargetAudit } from "./intelligence/targetAudit.js";
+import { qualityBars } from "./intelligence/auditScore.js";
+import { diagnosticGauge } from "./ui/gauge.js";
 
 /* ============================================================================
    ExoIntel-Prime Main Thread Orchestrator - Physics Visibility v11
@@ -157,8 +160,16 @@ class ExoIntelPrimeApp {
           </div></section>
         </aside>
         <main class="main-panel">
-          <section class="card scene-panel"><div class="card-header"><h2>CGI theoretical model viewport</h2><span id="scene-status">mounting renderer</span></div><div id="scene-stage" class="scene-stage"></div></section>
+          <section class="card scene-panel">
+            <div class="card-header"><h2>CGI theoretical model viewport</h2><span id="scene-status">mounting renderer</span></div>
+            <div id="scene-stat-row" class="scene-stat-row" aria-label="Target quick facts"></div>
+            <div class="scene-stage-wrap">
+              <div id="scene-stage" class="scene-stage"></div>
+              <div id="scene-readiness-card" class="scene-readiness-card" aria-label="Target mission readiness"></div>
+            </div>
+          </section>
           <section class="card plot-card"><div class="card-header"><h2>Archival photometry versus theoretical model</h2><span id="plot-status">waiting for model</span></div><div class="plot-wrap"><canvas id="curve-canvas" class="plot-canvas"></canvas></div><div id="assumption-strip" class="assumption-strip"></div></section>
+          <section class="card evidence-summary-card" id="evidence-summary-card" aria-label="Quick-look evidence summary"></section>
         </main>
         <aside class="right-panel">
           <section class="card control-card"><div class="card-header"><h2>Model controls</h2><span>live what-if physics</span></div><div class="control-list" id="control-list">
@@ -176,7 +187,7 @@ class ExoIntelPrimeApp {
   }
 
   cacheDom() {
-    const ids = ["status-worker","status-revision","status-solver","status-fps","footer-utc","footer-message","scene-stage","scene-status","target-search","target-list","target-count","active-target-label","metric-depth-percent","metric-depth-secondary","metric-rprs-proxy","metric-residual-rms","metric-oot-rms","metric-snr","metric-moon","metric-spot","hypothesis-flags","planet-properties","star-properties","catalogue-properties","assumption-strip","plot-status","curve-canvas","button-theme","button-reset","button-high-fidelity"];
+    const ids = ["status-worker","status-revision","status-solver","status-fps","footer-utc","footer-message","scene-stage","scene-status","scene-stat-row","scene-readiness-card","evidence-summary-card","target-search","target-list","target-count","active-target-label","metric-depth-percent","metric-depth-secondary","metric-rprs-proxy","metric-residual-rms","metric-oot-rms","metric-snr","metric-moon","metric-spot","hypothesis-flags","planet-properties","star-properties","catalogue-properties","assumption-strip","plot-status","curve-canvas","button-theme","button-reset","button-high-fidelity"];
     for (const id of ids) this.dom[toCamel(id)] = document.getElementById(id);
     this.dom.canvas = this.dom.curveCanvas;
     this.dom.ctx = this.dom.canvas.getContext("2d");
@@ -258,6 +269,7 @@ class ExoIntelPrimeApp {
     this.setText(this.dom.plotStatus, `${message.mode || "theoretical model"} · ${phase.length.toLocaleString("en-GB")} phase samples`);
     this.setFriendlyStatus("Theoretical model updated. Archival data remain fixed; only the model curve changed.");
     this.renderMetrics(); this.renderHypothesisFlags(); this.updateSciencePanels(); this.updateAssumptionStrip(); this.updateScene(); this.draw();
+    this.renderSceneReadiness(); this.renderEvidenceSummary();
   }
 
   postToWorker(payload, transfer = []) {
@@ -347,6 +359,7 @@ class ExoIntelPrimeApp {
     this.activeTarget = target; this.latestTarget = target; this.setText(this.dom.activeTargetLabel, `${target.pl_name} · ${target.hostname}`); this.renderTargetList(this.dom.targetSearch.value);
     const q = this.latestParams.visualQuality || "balanced"; this.latestParams = { ...targetToParams(target, this.latestParams), visualQuality: q };
     this.syncControlsFromParams(); this.syncControlOutputs(); this.updateSciencePanels(); this.updateScene();
+    this.renderSceneStatRow(); this.renderSceneReadiness(); this.renderEvidenceSummary();
     await this.loadArchivalLightCurve(target); this.sendWorkerDataContext(); this.issueParameterRevision("target-change"); this.draw(); this.setFriendlyStatus(`Target locked: ${target.pl_name} around ${target.hostname}.`);
   }
 
@@ -420,6 +433,62 @@ class ExoIntelPrimeApp {
   }
 
   renderPropertyGrid(container, rows) { if (!container) return; const frag = document.createDocumentFragment(); for (const [label, value] of rows) { const node = document.createElement("div"); node.className = "property"; const s = document.createElement("span"); s.textContent = label; const v = document.createElement("strong"); v.textContent = value || "—"; node.append(s,v); frag.appendChild(node); } container.replaceChildren(frag); }
+
+  renderSceneStatRow() {
+    if (!this.dom.sceneStatRow) return;
+    const t = this.latestTarget || {};
+    const spectralType = t.st_spectype || t.st_spectype_approx;
+    const stats = [
+      ["Spectral type", spectralType || "—"],
+      ["Distance", formatUnit(t.sy_dist, "pc", 1)],
+      ["V mag", formatMaybe(t.sy_vmag, 2)],
+      ["R+/R⊕", firstFiniteUnit([t.pl_rade, t.pl_radj], ["R⊕", "RJ"], [2, 3])],
+      ["Mass", firstFiniteUnit([t.pl_bmasse, t.pl_bmassj], ["M⊕", "MJ"], [2, 3])]
+    ];
+    this.dom.sceneStatRow.innerHTML = stats.map(([label, value]) =>
+      `<div class="scene-stat"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`
+    ).join("");
+  }
+
+  buildCurrentAudit() {
+    return buildTargetAudit({ target: this.latestTarget, params: this.latestParams, metrics: this.metrics, archivalCurve: this.archivalCurve });
+  }
+
+  renderSceneReadiness() {
+    if (!this.dom.sceneReadinessCard) return;
+    const audit = this.buildCurrentAudit();
+    const quality = qualityBars(audit, { target: this.latestTarget, metrics: this.metrics, archivalCurve: this.archivalCurve });
+    const checklist = quality.map(item => `
+      <li class="${item.value >= 70 ? "pass" : item.value >= 40 ? "watch" : "warn"}">
+        <span>${item.value >= 70 ? "✓" : item.value >= 40 ? "•" : "!"}</span>${escapeHtml(item.label)}
+      </li>
+    `).join("");
+    this.dom.sceneReadinessCard.innerHTML = `
+      ${diagnosticGauge({ score: audit.audit.total, label: audit.audit.rating, detail: "Ready", size: "compact" })}
+      <ul class="scene-readiness-checklist">${checklist}</ul>
+    `;
+  }
+
+  renderEvidenceSummary() {
+    if (!this.dom.evidenceSummaryCard) return;
+    const audit = this.buildCurrentAudit();
+    const quality = qualityBars(audit, { target: this.latestTarget, metrics: this.metrics, archivalCurve: this.archivalCurve });
+    const tiles = quality.map(item => `
+      <div class="evidence-summary-tile">
+        <span>${escapeHtml(item.label)}</span>
+        <strong>${item.value}%</strong>
+        <div class="evidence-summary-track"><i style="width:${Math.max(0, Math.min(100, item.value))}%"></i></div>
+        <small>${escapeHtml(item.detail)}</small>
+      </div>
+    `).join("");
+    this.dom.evidenceSummaryCard.innerHTML = `
+      <div class="card-header"><h2>Quick-look evidence summary</h2><span>exploratory audit, not a detection claim</span></div>
+      <div class="evidence-summary-body">
+        <div class="evidence-summary-grid">${tiles}</div>
+        ${diagnosticGauge({ score: audit.audit.total, label: "Global evidence score", detail: audit.audit.rating, size: "compact" })}
+      </div>
+    `;
+  }
 
   updateAssumptionStrip() { if (!this.dom.assumptionStrip) return; const flags = [...(this.metrics.morphologyFlags.length ? this.metrics.morphologyFlags : ["baseline transit model"]), this.timings.surfaceSamples ? `${Number(this.timings.surfaceSamples).toLocaleString("en-GB")} surface samples` : null, "ppm + percent depth"].filter(Boolean); const frag = document.createDocumentFragment(); for (const flag of flags.slice(0,9)) { const pill = document.createElement("span"); const lower = String(flag).toLowerCase(); pill.className = "pill"; if (lower.includes("high") || lower.includes("loaded") || lower.includes("quadrature") || lower.includes("residuals near")) pill.classList.add("ok"); else if (lower.includes("moon") || lower.includes("spot") || lower.includes("eccentric") || lower.includes("circular") || lower.includes("exposure")) pill.classList.add("warn"); else if (lower.includes("mismatch") || lower.includes("low")) pill.classList.add("danger"); pill.textContent = flag; frag.appendChild(pill); } this.dom.assumptionStrip.replaceChildren(frag); }
 
@@ -508,7 +577,8 @@ class ExoIntelPrimeApp {
         left: pad.left,
         right: width - pad.right,
         minPhase: scale.minPhase,
-        maxPhase: scale.maxPhase
+        maxPhase: scale.maxPhase,
+        periodDays: finiteOrNull(this.latestTarget?.pl_orbper)
       },
       dpr,
       { grid, text, muted, accent, danger }
@@ -569,7 +639,7 @@ function selectControl(key,label,options,value,helpKey=null) { const opts = opti
 function readonlyControl(id,label,value,helpKey=null) { return `<div class="control-row"><label>${label}</label><div></div><output id="${id}-value">${value}</output>${helpKey ? help(helpKey) : ""}</div>`; }
 
 /* Data and plot helpers */
-function normaliseTarget(row) { if (!row || typeof row !== "object") return null; const name = stringValue(row.pl_name || row.name || row.planet || "Unknown planet"); const host = stringValue(row.hostname || row.host || "Unknown host"); const rpRs = numberValue(row.pl_ratror, 0.1); const depth = numberValue(row.pl_trandep, rpRs * rpRs * 1e6); return { id: `${host}::${name}`.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""), pl_name:name, hostname:host, discoverymethod:stringValue(row.discoverymethod || row.discovery_method || "Transit"), disc_year:numberValue(row.disc_year,null), pl_orbper:numberValue(row.pl_orbper,3), pl_trandur:numberValue(row.pl_trandur,2.5), pl_trandep:depth, pl_ratror:rpRs, pl_orbsmax:numberValue(row.pl_orbsmax,null), pl_orbincl:numberValue(row.pl_orbincl,88.5), pl_orbeccen:numberValue(row.pl_orbeccen,0), pl_orblper:numberValue(row.pl_orblper ?? row.omega,90), pl_bmassj:numberValue(row.pl_bmassj,null), pl_bmasse:numberValue(row.pl_bmasse,null), pl_radj:numberValue(row.pl_radj,null), pl_rade:numberValue(row.pl_rade,null), st_teff:numberValue(row.st_teff,5772), st_rad:numberValue(row.st_rad,1), st_mass:numberValue(row.st_mass,1), st_logg:numberValue(row.st_logg,null), st_met:numberValue(row.st_met,null), sy_snum:numberValue(row.sy_snum,null), sy_pnum:numberValue(row.sy_pnum,null), lightcurve_available:Boolean(row.lightcurve_available || row.has_lightcurve || row.has_observed_lc), lightcurve_file:stringValue(row.lightcurve_file || "") }; }
+function normaliseTarget(row) { if (!row || typeof row !== "object") return null; const name = stringValue(row.pl_name || row.name || row.planet || "Unknown planet"); const host = stringValue(row.hostname || row.host || "Unknown host"); const rpRs = numberValue(row.pl_ratror, 0.1); const depth = numberValue(row.pl_trandep, rpRs * rpRs * 1e6); return { id: `${host}::${name}`.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""), pl_name:name, hostname:host, discoverymethod:stringValue(row.discoverymethod || row.discovery_method || "Transit"), disc_year:numberValue(row.disc_year,null), pl_orbper:numberValue(row.pl_orbper,3), pl_trandur:numberValue(row.pl_trandur,2.5), pl_trandep:depth, pl_ratror:rpRs, pl_orbsmax:numberValue(row.pl_orbsmax,null), pl_orbincl:numberValue(row.pl_orbincl,88.5), pl_orbeccen:numberValue(row.pl_orbeccen,0), pl_orblper:numberValue(row.pl_orblper ?? row.omega,90), pl_bmassj:numberValue(row.pl_bmassj,null), pl_bmasse:numberValue(row.pl_bmasse,null), pl_radj:numberValue(row.pl_radj,null), pl_rade:numberValue(row.pl_rade,null), st_teff:numberValue(row.st_teff,5772), st_rad:numberValue(row.st_rad,1), st_mass:numberValue(row.st_mass,1), st_logg:numberValue(row.st_logg,null), st_met:numberValue(row.st_met,null), sy_snum:numberValue(row.sy_snum,null), sy_pnum:numberValue(row.sy_pnum,null), sy_dist:numberValue(row.sy_dist,null), sy_vmag:numberValue(row.sy_vmag,null), st_spectype:stringValue(row.st_spectype||"")||null, st_spectype_approx:stringValue(row.st_spectype_approx||"")||null, lightcurve_available:Boolean(row.lightcurve_available || row.has_lightcurve || row.has_observed_lc), lightcurve_file:stringValue(row.lightcurve_file || "") }; }
 function targetToParams(target, previous) { return { ...previous, rpRs: clamp(numberValue(target.pl_ratror, previous.rpRs), .01, .25), aRs: clamp(inferARs(target, previous.aRs), 2, 60), inclinationDeg: clamp(numberValue(target.pl_orbincl, previous.inclinationDeg), 75, 90), eccentricity: clamp(numberValue(target.pl_orbeccen, 0), 0, .95), omegaDeg: normaliseDegrees(numberValue(target.pl_orblper, 90)), fidelity: "preview", modelResolution: 720 }; }
 function inferARs(target,fallback) { const aAu = numberValue(target.pl_orbsmax,null); const rStar = numberValue(target.st_rad,null); if (!Number.isFinite(aAu) || !Number.isFinite(rStar) || rStar <= 0) return fallback; return aAu / (rStar * 0.00465047); }
 function normaliseLightCurvePayload(payload) { const rows = extractLightCurveRows(payload); const pts = []; for (const row of rows) { const phase = numberValue(row.phase ?? row.Phase ?? row.x ?? row[0], NaN); const flux = numberValue(row.flux ?? row.Flux ?? row.normalized_flux ?? row.y ?? row[1], NaN); const error = numberValue(row.error ?? row.flux_err ?? row.err ?? row[2], NaN); if (!Number.isFinite(phase) || !Number.isFinite(flux)) continue; if (phase < -1.5 || phase > 1.5 || flux < .2 || flux > 1.8) continue; pts.push({ phase, flux, error: Number.isFinite(error) ? error : 0 }); } pts.sort((a,b) => a.phase-b.phase); return { phase:new Float32Array(pts.map(p=>p.phase)), flux:new Float32Array(pts.map(p=>p.flux)), error:new Float32Array(pts.map(p=>p.error || 0)), source:stringValue(payload?.source || "local light-curve JSON"), points:pts.length }; }
@@ -702,17 +772,20 @@ function drawDifferencePanel(ctx, model, xMap, box, dpr, colours) {
   ctx.textBaseline = "top";
   ctx.fillText(`peak |Δ| ${Math.round(maxAbs).toLocaleString("en-GB")} ppm`, box.right - 8 * dpr, box.top + 7 * dpr);
 
+  const periodDays = Number.isFinite(box.periodDays) && box.periodDays > 0 ? box.periodDays : null;
+
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   ctx.fillStyle = colours.muted;
   for (let i = 0; i <= 4; i += 1) {
     const phase = box.minPhase + (i / 4) * (box.maxPhase - box.minPhase);
     const x = box.left + (i / 4) * panelWidth;
-    ctx.fillText(formatNumber(phase, 3), x, box.bottom + 8 * dpr);
+    const label = periodDays ? formatNumber(phase * periodDays * 24, 2) : formatNumber(phase, 3);
+    ctx.fillText(label, x, box.bottom + 8 * dpr);
   }
 
   ctx.fillStyle = colours.text;
-  ctx.fillText("Orbital phase", box.left + panelWidth / 2, box.bottom + 23 * dpr);
+  ctx.fillText(periodDays ? "Time from mid-transit (hours)" : "Orbital phase", box.left + panelWidth / 2, box.bottom + 23 * dpr);
 
   ctx.restore();
 }
