@@ -1,4 +1,4 @@
-import { ExoSceneRenderer } from "./scene.js?v=20260519-magnetic-v18";
+import { ExoSceneRenderer } from "./scene.js?v=20260720-webgl-restored-v01";
 import { buildTargetAudit } from "./intelligence/targetAudit.js";
 import { qualityBars } from "./intelligence/auditScore.js";
 import { diagnosticGauge, scoreTone } from "./ui/gauge.js";
