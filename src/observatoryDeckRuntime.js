@@ -1,12 +1,15 @@
 import { buildTargetAudit } from "./intelligence/targetAudit.js";
 import { renderVisualMeters } from "./ui/visualMeters.js";
 import { renderGeometryDiagram } from "./ui/geometryDiagram.js";
+import { renderSkyMap } from "./ui/skyMap.js";
+import { getNeighboursForTarget } from "./data/gaiaNeighbours.js";
 
 const TARGET_CACHE_URL = "./data/exoplanets.json";
 const TARGET_SEPARATOR = " · ";
 let targets = [];
 let mounted = false;
 let lastSignature = "";
+let lastSkyMapTarget = "";
 
 function isActiveTab() {
   return document.body.dataset.exolightTab === "observatory";
@@ -133,6 +136,7 @@ function ensureDeck() {
       </div>
       <div id="deck-visual-meters"></div>
       <div id="deck-geometry-slot"></div>
+      <div id="deck-skymap-slot"></div>
     `;
     mainPanel.insertBefore(shell, scenePanel);
   }
@@ -166,6 +170,18 @@ function renderDeck() {
   const geometrySlot = byId("deck-geometry-slot");
   if (meterSlot) meterSlot.innerHTML = renderVisualMeters(state);
   if (geometrySlot) geometrySlot.innerHTML = renderGeometryDiagram(state);
+
+  const targetKey = `${state.target?.pl_name || ""}::${state.target?.hostname || ""}`;
+  if (targetKey !== lastSkyMapTarget) {
+    lastSkyMapTarget = targetKey;
+    const skyMapSlot = byId("deck-skymap-slot");
+    if (skyMapSlot) skyMapSlot.innerHTML = `<section class="deck-skymap-card loading" aria-label="Gaia sky map"><p class="skymap-unavailable-note">Loading Gaia DR3 field…</p></section>`;
+    getNeighboursForTarget(state.target).then(entry => {
+      if (targetKey !== lastSkyMapTarget) return; // target changed again before this resolved
+      const slot = byId("deck-skymap-slot");
+      if (slot) slot.innerHTML = renderSkyMap(entry, state.target);
+    });
+  }
 }
 
 async function loadTargets() {
