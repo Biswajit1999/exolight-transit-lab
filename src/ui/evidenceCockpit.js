@@ -1,4 +1,5 @@
 import { buildEvidenceCockpit } from "../intelligence/evidenceBuilder.js";
+import { diagnosticGauge } from "./gauge.js";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -53,11 +54,7 @@ export function renderEvidenceCockpit(container, state) {
           <h2>${escapeHtml(cockpit.targetName)}</h2>
           <span>${escapeHtml(cockpit.hostName)}</span>
         </div>
-        <div class="evidence-score">
-          <strong>${cockpit.score}</strong>
-          <span>/100</span>
-          <small>evidence readiness</small>
-        </div>
+        ${diagnosticGauge({ score: cockpit.score, label: "Evidence readiness", className: "evidence-score", size: "large" })}
       </div>
 
       <div class="evidence-summary">
