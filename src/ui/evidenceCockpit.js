@@ -54,7 +54,7 @@ export function renderEvidenceCockpit(container, state) {
           <h2>${escapeHtml(cockpit.targetName)}</h2>
           <span>${escapeHtml(cockpit.hostName)}</span>
         </div>
-        ${diagnosticGauge({ score: cockpit.score, label: "Evidence readiness", className: "evidence-score", size: "large" })}
+        ${diagnosticGauge({ score: cockpit.score, label: "Evidence readiness", className: "evidence-score-gauge", size: "large" })}
       </div>
 
       <div class="evidence-summary">
