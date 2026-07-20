@@ -487,10 +487,6 @@ class ExoIntelPrimeApp {
       <div class="card-header"><h2>Quick-look evidence summary</h2><span>exploratory audit, not a detection claim</span></div>
       <div class="evidence-summary-body">
         <div class="evidence-summary-grid">${tiles}</div>
-        <div class="evidence-summary-gauge">
-          ${diagnosticGauge({ score: audit.audit.total, label: "Global score", detail: "/100", size: "compact" })}
-          <small>${escapeHtml(audit.audit.rating)}</small>
-        </div>
       </div>
     `;
   }

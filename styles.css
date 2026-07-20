@@ -266,9 +266,7 @@ button { cursor: pointer; }
 .evidence-summary-card { min-height: 0; display: grid; grid-template-rows: 36px auto; }
 .evidence-summary-card .card-header { min-height: 36px; }
 .evidence-summary-card .card-header span { font-size: 10px; }
-.evidence-summary-body { min-height: 0; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: center; padding: 8px 14px; }
-.evidence-summary-gauge { display: grid; justify-items: center; gap: 4px; }
-.evidence-summary-gauge small { max-width: 110px; color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .03em; text-align: center; text-transform: uppercase; line-height: 1.25; }
+.evidence-summary-body { min-height: 0; display: grid; align-items: center; padding: 8px 14px; }
 .evidence-summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; height: 100%; }
 .evidence-summary-tile { min-width: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; justify-content: center; }
 .evidence-summary-tile span { color: var(--muted); font-size: 9px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
