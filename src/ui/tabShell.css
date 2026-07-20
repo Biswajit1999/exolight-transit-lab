@@ -1,7 +1,7 @@
 /* ============================================================================
    ExoLight Phase III - Tabbed diagnostic shell
    Keeps the default model view light while preserving all advanced layers.
-   v02: compact tab pages with no stretched empty diagnostic cards.
+   v03: compact tab pages + shared circular diagnostic gauges.
    ============================================================================ */
 
 .exolight-tab-bar {
@@ -161,6 +161,85 @@ body[data-exolight-tab="observatory"] .scene-stage canvas,
 body[data-exolight-tab="residuals"] .scene-stage canvas,
 body[data-exolight-tab="evidence"] .scene-stage canvas {
   visibility: hidden;
+}
+
+.diagnostic-gauge {
+  --gauge-size: 112px;
+  --gauge-track: color-mix(in srgb, var(--line) 74%, transparent);
+  --gauge-fill: var(--model);
+  position: relative;
+  width: var(--gauge-size);
+  height: var(--gauge-size);
+  flex: 0 0 var(--gauge-size);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, .22));
+}
+
+.diagnostic-gauge.compact { --gauge-size: 92px; }
+.diagnostic-gauge.large { --gauge-size: 124px; }
+.diagnostic-gauge.good { --gauge-fill: var(--ok); }
+.diagnostic-gauge.watch { --gauge-fill: var(--accent); }
+.diagnostic-gauge.caution { --gauge-fill: var(--warn); }
+.diagnostic-gauge.poor { --gauge-fill: var(--danger); }
+.diagnostic-gauge.unknown { --gauge-fill: var(--muted); }
+
+.diagnostic-gauge-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    conic-gradient(var(--gauge-fill) calc(var(--score) * 1%), var(--gauge-track) 0),
+    radial-gradient(circle, color-mix(in srgb, var(--gauge-fill) 24%, transparent), transparent 64%);
+  mask: radial-gradient(circle, transparent 56%, black 57%);
+}
+
+.diagnostic-gauge-core {
+  position: absolute;
+  inset: 12px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  border: 1px solid color-mix(in srgb, var(--gauge-fill) 44%, var(--line));
+  border-radius: inherit;
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--gauge-fill) 10%, transparent), transparent 72%),
+    color-mix(in srgb, var(--surface-2) 92%, transparent);
+  text-align: center;
+}
+
+.diagnostic-gauge-core strong {
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: calc(var(--gauge-size) * .25);
+  font-weight: 950;
+  line-height: .88;
+}
+
+.diagnostic-gauge-core span {
+  color: var(--muted-2);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.diagnostic-gauge-core small {
+  max-width: 78px;
+  color: var(--muted);
+  font-size: 8.5px;
+  font-weight: 900;
+  line-height: 1.15;
+  text-transform: uppercase;
+  letter-spacing: .055em;
+}
+
+.phaseiii-status-pill {
+  border-color: color-mix(in srgb, var(--ok) 52%, var(--line)) !important;
+}
+
+.phaseiii-status-pill strong {
+  color: var(--ok) !important;
 }
 
 @media (max-width: 1180px) {
