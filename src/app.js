@@ -1,4 +1,4 @@
-import { ExoSceneRenderer } from "./scene.js?v=20260720-granulation-texture-v01";
+import { ExoSceneRenderer } from "./scene.js?v=20260720-limbfix-bloom-v01";
 import { buildTargetAudit } from "./intelligence/targetAudit.js";
 import { qualityBars } from "./intelligence/auditScore.js";
 import { diagnosticGauge, scoreTone } from "./ui/gauge.js";

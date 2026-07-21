@@ -142,7 +142,12 @@ void main() {
 
   vec3 rFast = rotateX(rotateY(n, uTime * (0.300 + 0.115 * qLevel)), 0.35);
 
-  float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
+  // vViewNormal.z is already in [0,1] across the camera-facing hemisphere
+  // (1 = disc centre, 0 = limb) given this camera's view-space convention --
+  // remapping it with *0.5+0.5 compressed the true limb range down to
+  // [0.5,1.0], which crippled limb darkening and let the small edge-glow
+  // terms below (facula, chroma tint, corona) out-brighten the disc centre.
+  float mu = clamp(vViewNormal.z, 0.0, 1.0);
   float oneMinusMu = 1.0 - mu;
 
   // Physically motivated limb darkening, with extra Ultra edge falloff so the star reads as a sphere.
@@ -181,14 +186,22 @@ void main() {
   // Keep stellar temperature colour visible. Cooler stars stay orange/red; hotter stars keep white/blue-white.
   vec3 colour = photosphere * limb * textureTerm * centreEmission * sphericalDepth;
 
-  // Thin bright facular fragments, especially toward the limb.
+  // Thin bright facular fragments, especially toward the limb. Kept small
+  // relative to the base limb-darkened brightness: these are meant to read
+  // as sparse bright flecks riding on top of an already-dim edge, not
+  // enough energy to out-shine the disc centre (that would invert the
+  // limb-darkening curve, which is the single most recognisable cue that
+  // makes a rendered sphere read as "a star" rather than "a flat disc").
   float facula = smoothstep(0.64, 0.91, fbm(rFast * 122.0 + vec3(7.1, uTime * 0.42, 3.2)));
-  colour += uHotColour * facula * pow(oneMinusMu, 1.06) * 0.044 * qLevel;
+  colour += uHotColour * facula * pow(oneMinusMu, 1.06) * 0.0025 * qLevel;
   colour += uHotColour * fineSpark * innerGlow * 0.030 * qLevel;
 
-  // Chromatic limb falloff: redder/darker at the edge, no chalky flat disk.
-  vec3 chromaLimb = mix(uCoolColour, vec3(1.15, 0.30, 0.070), 0.32);
-  colour = mix(colour, chromaLimb * 0.48, pow(oneMinusMu, 1.18) * 0.52);
+  // Chromatic limb falloff: tints the already-dimmed edge colour redder by
+  // multiplying it, rather than blending toward an independent fixed-bright
+  // target -- a blend-toward-bright can (and, before this fix, did) end up
+  // brighter than the limb-darkened value it's supposed to be shading.
+  vec3 chromaLimbTint = mix(uCoolColour, vec3(0.85, 0.32, 0.20), 0.4);
+  colour *= mix(vec3(1.0), chromaLimbTint, pow(oneMinusMu, 1.4) * 0.85);
 
   // Irregular starspot: broken penumbra and darker umbral islands.
   if (uSpotEnabled > 0.5) {
@@ -199,8 +212,8 @@ void main() {
     colour = mix(colour, umbraColour, smoothstep(0.58, 0.95, s) * 0.88);
   }
 
-  // Warm corona contribution only at the rim, not a flat disc over the star.
-  colour += uHotColour * pow(oneMinusMu, 3.0) * 0.035 * qLevel;
+  // Warm corona contribution only at the very rim, not a flat disc over the star.
+  colour += uHotColour * pow(oneMinusMu, 4.0) * 0.0022 * qLevel;
 
   // Filmic compression with saturation recovery. This avoids both chalk-white saturation and muddy brown.
   vec3 preTone = max(colour, vec3(0.0));
@@ -250,15 +263,23 @@ float noise(vec3 p) {
 }
 
 void main() {
-  float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
+  // See the matching fix in the star shader: vViewNormal.z is already in
+  // [0,1] across the visible hemisphere for this camera, so remapping it
+  // with *0.5+0.5 compressed the true edge range and distorted this rim's
+  // falloff curve.
+  float mu = clamp(vViewNormal.z, 0.0, 1.0);
   float edge = 1.0 - mu;
   float rim = smoothstep(0.58, 0.98, edge);
   float outer = pow(edge, 5.7);
   float texture = noise(vec3(gl_FragCoord.xy * 0.010, uTime * 0.030));
   float pulse = 0.96 + 0.04 * sin(uTime * 0.52);
   float broken = 0.72 + 0.36 * texture;
-  vec3 colour = uGlowColour * (0.20 * rim + 0.92 * outer) * uStrength * pulse * broken;
-  float alpha = clamp((0.018 * rim + 0.115 * outer) * uStrength * broken, 0.0, 0.22);
+  // rim/outer were calibrated against a compressed edge range that never
+  // actually reached these coefficients' intended peak (see the mu fix
+  // above) -- effectively this glow was almost inert before. Scaled down
+  // accordingly now that it actually activates.
+  vec3 colour = uGlowColour * (0.09 * rim + 0.40 * outer) * uStrength * pulse * broken;
+  float alpha = clamp((0.010 * rim + 0.050 * outer) * uStrength * broken, 0.0, 0.16);
   gl_FragColor = vec4(colour, alpha);
 }
 `;
@@ -307,7 +328,7 @@ void main() {
   vec3 light = normalize(uLightDir);
   float lambert = max(dot(n, light), 0.0);
   float night = 1.0 - lambert;
-  float mu = clamp(vViewNormal.z * 0.5 + 0.5, 0.0, 1.0);
+  float mu = clamp(vViewNormal.z, 0.0, 1.0);
   float rim = pow(1.0 - mu, 2.0);
 
   float bands = sin((n.y * 12.0 + noise(n * 10.0 + vec3(uTime * 0.08)) * 0.75) * 3.14159);
@@ -379,6 +400,71 @@ uniform vec3 uColour;
 uniform float uAlpha;
 void main() {
   gl_FragColor = vec4(uColour, uAlpha);
+}
+`;
+
+/* ----------------------------------------------------------------------
+   Bloom post-processing. Without this, even a well-lit, well-textured
+   sphere reads as "a lit ball" rather than something radiating light --
+   the soft glow bleeding past an object's edges into its surroundings is
+   what actually sells "luminous" in real-time rendering, not surface
+   detail. Three passes over a full-screen quad: extract bright pixels,
+   blur them (separable two-pass Gaussian), add back on top of the scene.
+   ---------------------------------------------------------------------- */
+
+const FULLSCREEN_VERTEX_SHADER = `
+attribute vec2 aPosition;
+varying vec2 vUv;
+void main() {
+  vUv = aPosition * 0.5 + 0.5;
+  gl_Position = vec4(aPosition, 0.0, 1.0);
+}
+`;
+
+const BRIGHTPASS_FRAGMENT_SHADER = `
+precision highp float;
+varying vec2 vUv;
+uniform sampler2D uScene;
+uniform float uThreshold;
+void main() {
+  vec3 colour = texture2D(uScene, vUv).rgb;
+  float luma = dot(colour, vec3(0.2126, 0.7152, 0.0722));
+  float knee = uThreshold * 0.5;
+  float soft = clamp(luma - uThreshold + knee, 0.0, 2.0 * knee);
+  soft = (soft * soft) / max(4.0 * knee, 1e-4);
+  float contribution = max(soft, luma - uThreshold);
+  gl_FragColor = vec4(colour * (contribution / max(luma, 1e-4)), 1.0);
+}
+`;
+
+const BLUR_FRAGMENT_SHADER = `
+precision highp float;
+varying vec2 vUv;
+uniform sampler2D uSource;
+uniform vec2 uTexelStep;
+void main() {
+  vec3 sum = texture2D(uSource, vUv).rgb * 0.227027;
+  vec2 o1 = uTexelStep * 1.3846153846;
+  vec2 o2 = uTexelStep * 3.2307692308;
+  sum += texture2D(uSource, vUv + o1).rgb * 0.3162162162;
+  sum += texture2D(uSource, vUv - o1).rgb * 0.3162162162;
+  sum += texture2D(uSource, vUv + o2).rgb * 0.0702702703;
+  sum += texture2D(uSource, vUv - o2).rgb * 0.0702702703;
+  gl_FragColor = vec4(sum, 1.0);
+}
+`;
+
+const COMPOSITE_FRAGMENT_SHADER = `
+precision highp float;
+varying vec2 vUv;
+uniform sampler2D uScene;
+uniform sampler2D uBloom;
+uniform float uBloomStrength;
+void main() {
+  vec3 scene = texture2D(uScene, vUv).rgb;
+  vec3 bloom = texture2D(uBloom, vUv).rgb;
+  vec3 colour = scene + bloom * uBloomStrength;
+  gl_FragColor = vec4(colour, 1.0);
 }
 `;
 
@@ -474,6 +560,9 @@ export class ExoSceneRenderer {
       this.programs.body = createProgram(gl, STAR_VERTEX_SHADER, BODY_FRAGMENT_SHADER);
       this.programs.starfield = createProgram(gl, STARFIELD_VERTEX_SHADER, STARFIELD_FRAGMENT_SHADER);
       this.programs.line = createProgram(gl, LINE_VERTEX_SHADER, LINE_FRAGMENT_SHADER);
+      this.programs.brightpass = createProgram(gl, FULLSCREEN_VERTEX_SHADER, BRIGHTPASS_FRAGMENT_SHADER);
+      this.programs.blur = createProgram(gl, FULLSCREEN_VERTEX_SHADER, BLUR_FRAGMENT_SHADER);
+      this.programs.composite = createProgram(gl, FULLSCREEN_VERTEX_SHADER, COMPOSITE_FRAGMENT_SHADER);
     } catch (error) {
       this.ready = false;
       this.onWarning(`WebGL shader failed: ${error.message}`);
@@ -482,6 +571,7 @@ export class ExoSceneRenderer {
 
     this.rebuildMeshes();
     this.loadGranulationTexture();
+    this.quad = createFullscreenQuad(gl);
 
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
@@ -568,16 +658,41 @@ export class ExoSceneRenderer {
 
   resize() {
     if (!this.canvas || !this.gl) return;
+    const gl = this.gl;
     const rect = this.canvas.getBoundingClientRect();
     const width = Math.max(2, Math.floor(rect.width * this.pixelRatio));
     const height = Math.max(2, Math.floor(rect.height * this.pixelRatio));
     if (this.canvas.width !== width || this.canvas.height !== height) {
       this.canvas.width = width;
       this.canvas.height = height;
+      this.rebuildBloomTargets(width, height);
+    } else if (!this.fbo?.scene) {
+      this.rebuildBloomTargets(width, height);
     }
-    this.gl.viewport(0, 0, width, height);
+    gl.viewport(0, 0, width, height);
     this.view = mat4LookAt(this.camera.eye, this.camera.target, this.camera.up);
     this.projection = mat4Perspective(this.camera.fov, width / Math.max(1, height), this.camera.near, this.camera.far);
+  }
+
+  rebuildBloomTargets(width, height) {
+    const gl = this.gl;
+    if (!gl) return;
+    if (this.fbo) {
+      deleteFramebufferTarget(gl, this.fbo.scene);
+      deleteFramebufferTarget(gl, this.fbo.bright);
+      deleteFramebufferTarget(gl, this.fbo.blurA);
+      deleteFramebufferTarget(gl, this.fbo.blurB);
+    }
+    // Bloom passes run at half resolution: cheaper, and a fixed-tap blur
+    // kernel covers a proportionally wider (softer) glow radius this way.
+    const bw = Math.max(2, Math.floor(width / 2));
+    const bh = Math.max(2, Math.floor(height / 2));
+    this.fbo = {
+      scene: createFramebufferTarget(gl, width, height),
+      bright: createFramebufferTarget(gl, bw, bh),
+      blurA: createFramebufferTarget(gl, bw, bh),
+      blurB: createFramebufferTarget(gl, bw, bh)
+    };
   }
 
   loop(time) {
@@ -598,6 +713,12 @@ export class ExoSceneRenderer {
     if (!gl) return;
 
     this.resize();
+
+    const useBloom = Boolean(this.fbo?.scene) && this.quality !== "low";
+    if (useBloom) {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo.scene.framebuffer);
+      gl.viewport(0, 0, this.fbo.scene.width, this.fbo.scene.height);
+    }
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     const q = this.qualitySettings();
@@ -616,6 +737,59 @@ export class ExoSceneRenderer {
 
     if (geom.planet.front) this.drawPlanet(geom.planet, time);
     if (geom.moon.enabled && geom.moon.front) this.drawMoon(geom.moon, time);
+
+    if (useBloom) this.renderBloom(q);
+  }
+
+  renderBloom(q) {
+    const gl = this.gl;
+    const { scene, bright, blurA, blurB } = this.fbo;
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.CULL_FACE);
+
+    const strength = this.quality === "ultra" ? 0.85 : this.quality === "high" ? 0.65 : 0.5;
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, bright.framebuffer);
+    gl.viewport(0, 0, bright.width, bright.height);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, scene.texture);
+    drawFullscreenPass(gl, this.programs.brightpass, this.quad, loc => {
+      gl.uniform1i(loc.uScene, 0);
+      gl.uniform1f(loc.uThreshold, 0.62);
+    });
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, blurA.framebuffer);
+    gl.viewport(0, 0, blurA.width, blurA.height);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, bright.texture);
+    drawFullscreenPass(gl, this.programs.blur, this.quad, loc => {
+      gl.uniform1i(loc.uSource, 0);
+      gl.uniform2f(loc.uTexelStep, 1 / blurA.width, 0);
+    });
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, blurB.framebuffer);
+    gl.viewport(0, 0, blurB.width, blurB.height);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, blurA.texture);
+    drawFullscreenPass(gl, this.programs.blur, this.quad, loc => {
+      gl.uniform1i(loc.uSource, 0);
+      gl.uniform2f(loc.uTexelStep, 0, 1 / blurB.height);
+    });
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, scene.texture);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, blurB.texture);
+    drawFullscreenPass(gl, this.programs.composite, this.quad, loc => {
+      gl.uniform1i(loc.uScene, 0);
+      gl.uniform1i(loc.uBloom, 1);
+      gl.uniform1f(loc.uBloomStrength, strength);
+    });
+
+    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.CULL_FACE);
   }
 
   computeGeometry(time) {
@@ -955,6 +1129,51 @@ function compileShader(gl, type, source) {
     throw new Error(message);
   }
   return shader;
+}
+
+function createFramebufferTarget(gl, width, height) {
+  const texture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+  const framebuffer = gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+  const depth = gl.createRenderbuffer();
+  gl.bindRenderbuffer(gl.RENDERBUFFER, depth);
+  gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
+  gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depth);
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.bindTexture(gl.TEXTURE_2D, null);
+  return { framebuffer, texture, depth, width, height };
+}
+
+function deleteFramebufferTarget(gl, target) {
+  if (!target) return;
+  gl.deleteTexture(target.texture);
+  gl.deleteRenderbuffer(target.depth);
+  gl.deleteFramebuffer(target.framebuffer);
+}
+
+function createFullscreenQuad(gl) {
+  return {
+    position: bufferData(gl, gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3])),
+    vertexCount: 3
+  };
+}
+
+function drawFullscreenPass(gl, program, quad, setup) {
+  const loc = useProgram(gl, program);
+  gl.bindBuffer(gl.ARRAY_BUFFER, quad.position);
+  enableAttrib(gl, loc.aPosition, 2);
+  if (setup) setup(loc);
+  gl.drawArrays(gl.TRIANGLES, 0, quad.vertexCount);
 }
 
 function useProgram(gl, program) {
