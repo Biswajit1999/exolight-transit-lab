@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "exolight-reference-targets-v1",
+  "notes": "Golden cases are hand-curated reference fixtures. Do not regenerate expected values from current code output.",
+  "cases": [
+    {
+      "id": "hd-189733-b",
+      "type": "observational-benchmark",
+      "rationale": "Protects the published-target sanity check used by the Phase III physics-core validation layer.",
+      "inputs": {
+        "periodDays": 2.218576,
+        "stellarMassSolar": 0.82,
+        "stellarRadiusSolar": 0.76,
+        "radiusRatio": 0.1436,
+        "impactParameter": 0
+      },
+      "expected": {
+        "semiMajorAxisAU": {
+          "value": 0.031,
+          "absoluteTolerance": 0.004,
+          "rationale": "Catalogue values and constants differ slightly between literature sources; tolerance protects order-of-magnitude correctness without overfitting."
+        },
+        "depthPpm": {
+          "value": 20625,
+          "absoluteTolerance": 900,
+          "rationale": "Depth from Rp/Rstar is a simple geometric approximation, not a bandpass-specific fitted transit depth."
+        },
+        "durationHoursApprox": {
+          "value": 1.8,
+          "absoluteTolerance": 0.8,
+          "rationale": "Approximate central-transit duration only; impact parameter and fitted transit shape are not encoded here."
+        }
+      }
+    },
+    {
+      "id": "synthetic-central-transit",
+      "type": "deterministic-geometry",
+      "rationale": "Protects the basic forward-model geometry for a simple circular central transit.",
+      "inputs": {
+        "periodDays": 3,
+        "stellarMassSolar": 1,
+        "stellarRadiusSolar": 1,
+        "radiusRatio": 0.1,
+        "scaledSemiMajorAxis": 12,
+        "inclinationDeg": 90,
+        "eccentricity": 0,
+        "omegaDeg": 90,
+        "limb": [0, 0, 0, 0],
+        "noisePpm": 0
+      },
+      "expected": {
+        "classification": "TRANSIT",
+        "depthPpm": {
+          "value": 10000,
+          "absoluteTolerance": 1200,
+          "rationale": "Numerical disk integration uses finite surface sampling, so the tolerance covers grid resolution while catching scientific drift."
+        },
+        "minimumPhase": {
+          "value": 0.5,
+          "absoluteTolerance": 0.006,
+          "rationale": "For the current phase convention, a central circular transit should minimize near mid-transit."
+        },
+        "symmetryPpm": {
+          "maximum": 900,
+          "rationale": "The model should remain approximately symmetric about phase 0.5 for a central circular transit."
+        }
+      }
+    },
+    {
+      "id": "synthetic-non-transiting",
+      "type": "deterministic-geometry",
+      "rationale": "Protects the distinction between a valid no-transit geometry and a failed model calculation.",
+      "inputs": {
+        "periodDays": 5,
+        "stellarMassSolar": 1,
+        "stellarRadiusSolar": 1,
+        "radiusRatio": 0.08,
+        "scaledSemiMajorAxis": 15,
+        "inclinationDeg": 80,
+        "eccentricity": 0,
+        "omegaDeg": 90,
+        "limb": [0, 0, 0, 0],
+        "noisePpm": 0
+      },
+      "expected": {
+        "classification": "NO_TRANSIT",
+        "maxDepthPpm": {
+          "maximum": 50,
+          "rationale": "Impact parameter is far outside the stellar disk, so any non-zero depth should be numerical noise only."
+        }
+      }
+    },
+    {
+      "id": "synthetic-dilution-check",
+      "type": "dilution-physics",
+      "rationale": "Protects the Phase III blend/dilution utility used by Evidence and false-positive readiness panels.",
+      "inputs": {
+        "observedDepthFraction": 0.01,
+        "contaminantToTargetFluxRatio": 0.25
+      },
+      "expected": {
+        "correctedDepthFraction": {
+          "value": 0.0125,
+          "absoluteTolerance": 0.000001,
+          "rationale": "Observed depth must be multiplied by 1 + contaminant/target flux ratio."
+        },
+        "correctedRadiusRatio": {
+          "value": 0.1118033989,
+          "absoluteTolerance": 0.000001,
+          "rationale": "Corrected radius ratio is sqrt(corrected depth fraction)."
+        }
+      }
+    }
+  ]
+}
