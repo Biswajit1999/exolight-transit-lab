@@ -1,13 +1,38 @@
-# ExoIntel-Prime  
-### Interactive Exoplanet Transit Photometry Laboratory
+<div align="center">
+
+# 🪐 ExoIntel-Prime
+
+### ExoLight Transit Lab — Browser-Based Exoplanet Transit Photometry Laboratory
+
+**A free, zero-dependency browser lab for exploring real exoplanet transit photometry, forward-modelled transit physics, residual diagnostics, and provenance-aware evidence checks. No install, no login, no build step.**
+
+[![Live demo](https://img.shields.io/badge/live%20demo-open%20lab-4fc3f7?style=for-the-badge)](https://biswajit1999.github.io/exolight-transit-lab/)
+[![License: MIT](https://img.shields.io/github/license/Biswajit1999/exolight-transit-lab?style=flat-square)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/Biswajit1999/exolight-transit-lab?style=flat-square)](https://github.com/Biswajit1999/exolight-transit-lab/stargazers)
+[![Last commit](https://img.shields.io/github/last-commit/Biswajit1999/exolight-transit-lab?style=flat-square)](https://github.com/Biswajit1999/exolight-transit-lab/commits/main)
+[![Physics core validated](https://img.shields.io/badge/physics%20core-validated-4caf50?style=flat-square)](results/validation/reference-summary.md)
+[![Zero dependencies](https://img.shields.io/badge/dependencies-zero-informational?style=flat-square)](package.json)
 
 🌐 **Live website:** [Open ExoIntel-Prime](https://biswajit1999.github.io/exolight-transit-lab/)
 
 ![ExoIntel-Prime Dashboard](assets/exointel-prime-dashboard.png)
 
-**ExoIntel-Prime** is a browser-based exoplanet transit photometry laboratory designed for scientific visualisation, education, and research communication. It compares locally cached archival light curves with a worker-computed theoretical transit model and renders the corresponding star–planet system in a cinematic WebGL scene.
+</div>
 
-The project runs directly on GitHub Pages using plain HTML, CSS, and JavaScript ES modules. There is no React, Vite, npm, build step, or server dependency required for the public website.
+---
+
+## Why this project is different
+
+**ExoIntel-Prime** is a browser-based exoplanet transit photometry laboratory designed for scientific visualisation, education, and research communication. It compares locally cached archival light curves with a worker-computed theoretical transit model and renders the corresponding star–planet system in a realistic browser scene.
+
+This is not a synthetic astronomy toy. The project is built around four principles:
+
+- **Real light-curve context** — local archival photometry is displayed against the model where available, while model-only targets are labelled honestly.
+- **Separation between data, model, and hypotheses** — catalogue values, worker-computed model values, starspot demonstrations, and exomoon-like demonstrations are kept visibly distinct.
+- **Validated scientific core** — physics helpers and deterministic reference cases are checked through `npm run validate` and GitHub Actions.
+- **Static-first reproducibility** — the public website runs directly from GitHub Pages using plain HTML, CSS, and JavaScript ES modules.
+
+There is no React, Vite, npm runtime dependency, bundler, server, login, or cloud database required for the public website.
 
 ---
 
@@ -19,10 +44,11 @@ ExoIntel-Prime is built to make that connection visible:
 
 - the **points** show archival or locally processed photometry;
 - the **curve** shows the theoretical browser-computed model;
-- the **3D scene** shows the corresponding star–planet geometry;
+- the **scene** shows the corresponding star–planet geometry;
+- the **diagnostic tabs** show Mission Control, Observatory Deck, Residuals, and Evidence checks;
 - the **scientific readout** explains the model diagnostics in plain language.
 
-This is not just a decorative website. The model curve is computed from a physical forward model in a Web Worker, while the interface remains responsive.
+The model curve is computed from a physical forward model in a Web Worker, while the interface remains responsive.
 
 ---
 
@@ -37,11 +63,15 @@ The current version includes:
 - optional starspot morphology;
 - optional exomoon hypothesis mode;
 - live residual and out-of-transit diagnostics;
-- animated WebGL stellar rendering;
+- Mission Control target audits;
+- Observatory Deck visual diagnostics;
+- Residual Intelligence charts;
+- false-positive Evidence cockpit;
+- realistic stellar photosphere rendering;
 - temperature-based stellar colour;
 - light and night mode;
-- cinematic 0–100% loading sequence;
-- static GitHub Pages deployment.
+- static GitHub Pages deployment;
+- deterministic reference regression checks.
 
 ---
 
@@ -53,7 +83,7 @@ For a small planet crossing a uniform stellar disk, the approximate transit dept
 
 ```text
 δ ≈ (Rp / R★)^2
-````
+```
 
 where:
 
@@ -124,6 +154,35 @@ It should not be interpreted as a complete eccentric-orbit fitting engine.
 
 ---
 
+## Validation and regression checks
+
+The scientific core is protected by two validation layers:
+
+```bash
+npm run validate:physics
+npm run validate:references
+npm run validate
+```
+
+`validate:physics` checks the Phase III physics benchmark around HD 189733 b.  
+`validate:references` runs deterministic golden-case regressions for:
+
+- HD 189733 b benchmark values;
+- a synthetic central transit;
+- a synthetic non-transiting geometry;
+- a synthetic dilution/blend correction case.
+
+The generated evidence files are stored in:
+
+```text
+results/validation/reference-report.json
+results/validation/reference-summary.md
+```
+
+These checks are designed to detect silent scientific drift. They are not detection claims, posterior inference results, or false-positive probabilities.
+
+---
+
 ## Interface overview
 
 ### Target archive
@@ -158,18 +217,34 @@ Small question-mark icons explain scientific terms for non-specialist users.
 
 ---
 
-### WebGL model viewport
+### Diagnostic tabs
 
-The main viewport renders a cinematic theoretical model of the selected system. The star colour is tied to the catalogue effective temperature `st_teff` where available.
+The interface is split into five lightweight tabs:
+
+| Tab | Purpose |
+|---|---|
+| Model + Plot | Default light view: scene, model controls, and light curve |
+| Mission Control | Target audit, quality bars, provenance snapshot, recent events, exports |
+| Observatory Deck | Geometry and visual diagnostics |
+| Residuals | Residual scatter, binned residuals, and quick-look systematics charts |
+| Evidence | False-positive evidence readiness with explicit `PASS`, `CAUTION`, and `UNKNOWN` states |
+
+The non-default tabs are lazily mounted to keep the first page load responsive.
+
+---
+
+### Stellar model viewport
+
+The main viewport renders a theoretical model of the selected system. The star colour is tied to the catalogue effective temperature `st_teff` where available.
 
 The scene includes:
 
-* animated stellar photosphere;
+* realistic stellar photosphere texture;
 * procedural granulation;
 * limb-darkened stellar disk;
-* soft coronal glow;
-* shaded planet and moon bodies;
+* dark transit silhouette;
 * optional starspot visualisation;
+* optional moon-like silhouette;
 * target-dependent stellar colour.
 
 The visual scene is designed for intuition and communication. The plotted model curve still comes from the worker physics engine.
@@ -195,7 +270,7 @@ The catalogue eccentricity and argument of periastron are passed to the worker w
 
 ## Important scientific caution
 
-ExoIntel-Prime is an interactive scientific visualisation and education tool. It is not yet a formal professional fitting pipeline.
+ExoIntel-Prime is an interactive scientific visualisation, education, and research-communication tool. It is not yet a formal professional fitting pipeline.
 
 A good visual match does **not** prove:
 
@@ -215,7 +290,7 @@ Formal analysis would require additional steps such as:
 * model comparison;
 * validation against established modelling tools.
 
-The exomoon and starspot modes are hypothesis demonstrations only.
+The exomoon and starspot modes are hypothesis demonstrations only. Evidence badges must show `UNKNOWN` when the required data are missing; the project should never show a pass state for an unavailable diagnostic.
 
 ---
 
@@ -225,26 +300,39 @@ The exomoon and starspot modes are hypothesis demonstrations only.
 exolight-transit-lab/
 ├── index.html
 ├── styles.css
+├── package.json
 ├── README.md
 │
 ├── src/
 │   ├── app.js
-│   ├── scene.js
-│   └── transitWorker.js
+│   ├── sceneRealistic.js
+│   ├── transitWorker.js
+│   ├── physics/
+│   ├── intelligence/
+│   └── ui/
 │
 ├── data/
 │   ├── exoplanets.json
 │   └── lightcurves/
 │
+├── tests/
+│   ├── referenceTargets.json
+│   └── helpers/
+│
+├── scripts/
+│   ├── validate-physics.mjs
+│   └── run-reference-regressions.mjs
+│
+├── results/
+│   └── validation/
+│
 ├── assets/
 │   └── exointel-prime-dashboard.png
 │
 └── docs/
-    └── ExoIntel_Prime_User_Guide.pdf
 ```
 
 ---
-
 
 ## Running locally
 
@@ -260,6 +348,12 @@ Then open:
 
 ```text
 http://localhost:8000
+```
+
+To run the scientific validation suite:
+
+```bash
+npm run validate
 ```
 
 ---
@@ -381,20 +475,20 @@ Before adding a custom light curve:
 
 ## Performance notes
 
-The site includes high-quality WebGL rendering and numerical transit calculations. For normal use:
+The site includes high-quality rendering and numerical transit calculations. For normal use:
 
 * use **Balanced** visual quality;
 * use **Ultra** for screenshots, videos, and demonstrations;
 * use **High-accuracy model** only after selecting a target and approximate parameters;
 * use **Low** if the browser becomes slow or the device is on battery power.
 
-The visual quality selector changes the 3D rendering only. It does not change the worker physics calculation.
+The visual quality selector changes the scene rendering only. It does not change the worker physics calculation.
 
 ---
 
 ## Hardware advisory
 
-ExoIntel-Prime uses browser-based WebGL rendering and worker-side numerical modelling. Most modern laptops and desktops should run the site normally in Balanced mode.
+ExoIntel-Prime uses browser-based rendering and worker-side numerical modelling. Most modern laptops and desktops should run the site normally in Balanced mode.
 
 However, Ultra visual quality and high-accuracy model mode can increase CPU/GPU usage. On older or low-power devices, this may cause:
 
@@ -421,7 +515,8 @@ Current design principles:
 * browser-native ES modules;
 * physics isolated in a Web Worker;
 * rendering separated from model computation;
-* clear distinction between archival data and theoretical model.
+* clear distinction between archival data and theoretical model;
+* explicit `UNKNOWN` states when evidence fields are missing.
 
 ---
 
@@ -429,13 +524,15 @@ Current design principles:
 
 Planned future upgrades include:
 
-* validation against standard transit modelling packages;
+* formal audit JSON schema;
+* geometry plausibility / grazing-risk checker;
+* honest Gaia-neighbour contamination cache;
+* sector/systematics timeline;
+* analyzer plugin bus;
+* injection-recovery and perturbation harness;
 * analytic Mandel–Agol model option;
 * Kipping `q1`, `q2` limb-darkening parameterisation;
-* visible finite-exposure controls;
 * uncertainty-weighted residuals;
-* automatic phase alignment;
-* dilution and third-light terms;
 * CSV upload support;
 * MAST/TESS/Kepler ingestion pipeline;
 * multi-transit stacking;
