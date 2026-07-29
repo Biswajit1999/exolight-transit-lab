@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "exolight-reference-report-v1",
+  "generatedUtc": "2026-07-29T21:22:00.000Z",
+  "physicsCoreVersion": "phase-iii-core-v0.1",
+  "passed": true,
+  "summary": {
+    "cases": 4,
+    "passed": 4,
+    "failed": 0,
+    "assertions": 22
+  },
+  "fixtureSchemaVersion": "exolight-reference-targets-v1",
+  "results": [
+    {
+      "id": "hd-189733-b",
+      "type": "observational-benchmark",
+      "rationale": "Protects the published-target sanity check used by the Phase III physics-core validation layer.",
+      "passed": true,
+      "fixtureValid": true,
+      "outputs": {
+        "semiMajorAxisAU": 0.03115967487322792,
+        "depthPpm": 20620.96,
+        "durationHoursApprox": 1.9265869892115424
+      },
+      "assertions": [
+        { "label": "semiMajorAxisAU finite", "passed": true },
+        { "label": "depthPpm finite", "passed": true },
+        { "label": "durationHoursApprox finite", "passed": true },
+        { "label": "semiMajorAxisAU within tolerance", "passed": true },
+        { "label": "depthPpm within tolerance", "passed": true },
+        { "label": "durationHoursApprox within tolerance", "passed": true }
+      ]
+    },
+    {
+      "id": "synthetic-central-transit",
+      "type": "deterministic-geometry",
+      "rationale": "Protects the basic forward-model geometry for a simple circular central transit.",
+      "passed": true,
+      "fixtureValid": true,
+      "outputs": {
+        "classification": "TRANSIT",
+        "depthPpm": 10460.069444449882,
+        "minimumPhase": 0.490875,
+        "minimumFlux": 0.9895399305555501,
+        "symmetryPpm": 0,
+        "minFlux": 0.9895399305555501,
+        "maxFlux": 1,
+        "samples": 801,
+        "phaseWindow": "0.45-0.55"
+      },
+      "assertions": [
+        { "label": "model flux array finite", "passed": true },
+        { "label": "minimum flux non-negative", "passed": true },
+        { "label": "baseline flux not above tolerance", "passed": true },
+        { "label": "classification", "passed": true },
+        { "label": "depthPpm within tolerance", "passed": true },
+        { "label": "minimum phase within tolerance", "passed": true },
+        { "label": "symmetry within tolerance", "passed": true }
+      ]
+    },
+    {
+      "id": "synthetic-non-transiting",
+      "type": "deterministic-geometry",
+      "rationale": "Protects the distinction between a valid no-transit geometry and a failed model calculation.",
+      "passed": true,
+      "fixtureValid": true,
+      "outputs": {
+        "classification": "NO_TRANSIT",
+        "depthPpm": 0,
+        "minimumPhase": 0.45,
+        "minimumFlux": 1,
+        "symmetryPpm": 0,
+        "minFlux": 1,
+        "maxFlux": 1,
+        "samples": 801,
+        "phaseWindow": "0.45-0.55"
+      },
+      "assertions": [
+        { "label": "model flux array finite", "passed": true },
+        { "label": "minimum flux non-negative", "passed": true },
+        { "label": "baseline flux not above tolerance", "passed": true },
+        { "label": "classification", "passed": true },
+        { "label": "max depth near zero", "passed": true }
+      ]
+    },
+    {
+      "id": "synthetic-dilution-check",
+      "type": "dilution-physics",
+      "rationale": "Protects the Phase III blend/dilution utility used by Evidence and false-positive readiness panels.",
+      "passed": true,
+      "fixtureValid": true,
+      "outputs": {
+        "correctedDepthFraction": 0.0125,
+        "correctedRadiusRatio": 0.11180339887498949
+      },
+      "assertions": [
+        { "label": "corrected depth finite", "passed": true },
+        { "label": "corrected radius ratio finite", "passed": true },
+        { "label": "corrected depth within tolerance", "passed": true },
+        { "label": "corrected radius ratio within tolerance", "passed": true }
+      ]
+    }
+  ]
+}
