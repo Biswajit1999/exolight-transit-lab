@@ -3,7 +3,7 @@ import path from "node:path";
 import process from "node:process";
 
 import { semiMajorAxisFromPeriod } from "../src/physics/orbit.js";
-import { transitDepthPpm, transitDurationHours, makeLightCurve } from "../src/physics/transit.js";
+import { transitDepthPpm, transitDurationHours, fluxAt } from "../src/physics/transit.js";
 import { undilutedDepth, radiusRatioFromDilutedDepth } from "../src/physics/dilution.js";
 import { PHYSICS_CORE_VERSION } from "../src/physics/validation.js";
 import {
@@ -50,6 +50,15 @@ function classifyTransit(curve, thresholdPpm = 100) {
   return maxDepthPpm(curve) > thresholdPpm ? "TRANSIT" : "NO_TRANSIT";
 }
 
+function makeFocusedLightCurve(params, samples = 801, centre = 0.5, halfWidth = 0.05) {
+  return Array.from({ length: samples }, (_, index) => {
+    const fraction = samples === 1 ? 0.5 : index / (samples - 1);
+    const phase = centre - halfWidth + fraction * halfWidth * 2;
+    const model = fluxAt(params, phase);
+    return { phase, model };
+  });
+}
+
 function runObservationalBenchmark(testCase) {
   const assertions = [];
   const { inputs, expected } = testCase;
@@ -91,7 +100,7 @@ function runGeometryCase(testCase) {
     moon: false
   };
 
-  const curve = makeLightCurve(params, 801);
+  const curve = makeFocusedLightCurve(params, 801, 0.5, 0.05);
   const fluxes = curve.map(sample => sample.model);
   const depthPpm = maxDepthPpm(curve);
   const minimum = findMinimumSample(curve);
@@ -122,7 +131,8 @@ function runGeometryCase(testCase) {
       symmetryPpm,
       minFlux,
       maxFlux,
-      samples: curve.length
+      samples: curve.length,
+      phaseWindow: "0.45-0.55"
     },
     assertions
   };
