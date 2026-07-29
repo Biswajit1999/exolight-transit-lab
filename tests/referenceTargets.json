@@ -56,8 +56,8 @@
         },
         "minimumPhase": {
           "value": 0.5,
-          "absoluteTolerance": 0.006,
-          "rationale": "For the current phase convention, a central circular transit should minimize near mid-transit."
+          "absoluteTolerance": 0.012,
+          "rationale": "The finite grid can create a small flat-bottom plateau; the minimum must still occur within the central transit window."
         },
         "symmetryPpm": {
           "maximum": 900,
