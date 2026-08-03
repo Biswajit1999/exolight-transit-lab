@@ -1,0 +1,27 @@
+name: Validate frontend modules
+
+on:
+  push:
+    branches: [main, phase-iii/scientific-viewport-v2]
+  pull_request:
+    branches: [main]
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Check browser module syntax
+        run: |
+          node --check src/sceneScientific.js
+          node --check src/lightcurvePreprocessRuntime.js
+          node --check src/quickFitRuntime.js
+
+      - name: Validate scientific core
+        run: npm run validate
