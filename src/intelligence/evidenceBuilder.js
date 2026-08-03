@@ -1,4 +1,5 @@
 import { inferDilutionRisk } from "../physics/dilution.js";
+import { assessTransitPlausibility } from "../physics/plausibility.js";
 import { defaultTargetProvenance, provenanceCompleteness } from "../data/provenance.js";
 
 function finite(value) {
@@ -39,6 +40,29 @@ export function buildEvidenceCockpit({ target = {}, params = {}, metrics = {}, a
     nextStep: mismatch !== null && mismatch > 0.10
       ? "Check passband, dilution, radius-ratio source, and detrending before interpreting morphology."
       : "Keep monitoring residuals after parameter changes."
+  }));
+
+  const geometry = assessTransitPlausibility({
+    periodDays: target.pl_orbper ?? params.periodDays,
+    scaledSemiMajorAxis: params.aRs ?? params.scaledSemiMajorAxis ?? target.pl_ratdor,
+    inclinationDeg: params.incDeg ?? params.inclinationDeg ?? target.pl_orbincl,
+    eccentricity: target.pl_orbeccen ?? params.ecc ?? params.eccentricity ?? 0,
+    omegaDeg: target.pl_orblper ?? params.omegaDeg ?? 90,
+    radiusRatio: params.rpRs ?? params.radiusRatio ?? target.pl_ratror,
+    catalogueDurationHours: target.pl_trandur
+  });
+
+  evidence.push(item({
+    id: "geometry-plausibility",
+    label: "Geometry plausibility",
+    status: geometry.status,
+    detail: geometry.detail,
+    source: "Catalogue orbital parameters and current forward-model geometry",
+    nextStep: geometry.status === "unknown"
+      ? "Add the missing inclination, a/R★, radius ratio, period, or duration metadata."
+      : geometry.status === "pass"
+        ? "Compare the quick-look result with uncertainty-aware fitted parameters."
+        : "Review catalogue values, phase alignment, dilution, and transit-duration assumptions."
   }));
 
   evidence.push(item({
@@ -128,6 +152,7 @@ export function buildEvidenceCockpit({ target = {}, params = {}, metrics = {}, a
       ? "No major quick-look evidence warnings are visible."
       : `${worst.label}: ${worst.detail}`,
     evidence,
+    geometry,
     provenance: manifest,
     disclaimer: "Evidence badges are quick-look diagnostics, not a formal false-positive probability or validation claim."
   };
