@@ -1,0 +1,107 @@
+/* ============================================================================
+   ExoIntel-Prime — Scientific viewport and quick-refit presentation
+   Author: Biswajit Jana
+   ============================================================================ */
+
+.scene-stage-wrap {
+  background: #010308;
+}
+
+.scene-stage {
+  min-height: 0;
+  background:
+    radial-gradient(circle at 52% 48%, rgba(255, 236, 194, 0.035), transparent 32%),
+    linear-gradient(180deg, #010308 0%, #030811 100%);
+}
+
+.scientific-scene-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #010308;
+}
+
+.scene-panel .card-header > span {
+  color: var(--muted);
+  font-weight: 760;
+}
+
+.plot-header-actions {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+}
+
+.plot-header-actions > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quick-refit-button {
+  min-height: 30px;
+  padding: 0 11px;
+  border-color: color-mix(in srgb, var(--accent) 64%, var(--line));
+  color: #fff;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, white 8%), var(--accent));
+  box-shadow: 0 7px 18px color-mix(in srgb, var(--accent) 19%, transparent);
+}
+
+.quick-refit-button:hover {
+  color: #fff;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 82%, white 16%), color-mix(in srgb, var(--accent) 90%, black 6%));
+}
+
+.quick-refit-button:disabled {
+  opacity: 0.56;
+  cursor: progress;
+}
+
+.quick-refit-status {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  margin: 0 10px 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--surface-2) 84%, transparent);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.quick-refit-status[data-tone="working"] {
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--line));
+  color: var(--accent);
+}
+
+.quick-refit-status[data-tone="ok"] {
+  border-color: color-mix(in srgb, var(--ok) 58%, var(--line));
+  color: var(--ok);
+}
+
+.quick-refit-status[data-tone="warn"] {
+  border-color: color-mix(in srgb, var(--warn) 60%, var(--line));
+  color: var(--warn);
+}
+
+.theme-light .scene-panel,
+.theme-light .scene-stage-wrap,
+.theme-light .scene-stage,
+.theme-light .scientific-scene-canvas {
+  background: #010308;
+}
+
+@media (max-width: 900px) {
+  .plot-header-actions {
+    gap: 6px;
+  }
+
+  .plot-header-actions > span {
+    display: none;
+  }
+}
