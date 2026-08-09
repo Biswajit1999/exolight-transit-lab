@@ -22,11 +22,11 @@ function item({ id, label, status, detail, source = "ExoLight quick-look evidenc
   return { id, label, status, detail, source, nextStep };
 }
 
-export function buildEvidenceCockpit({ target = {}, params = {}, metrics = {}, archivalCurve = {}, provenance = null } = {}) {
+export function buildEvidenceCockpit({ target = {}, params = {}, metrics = {}, archivalCurve = {}, provenance = null, datasetManifest = null } = {}) {
   const evidence = [];
   const mismatch = fractionalDepthMismatch(target, metrics);
   const localPhotometry = Boolean(target.lightcurve_available || Number(archivalCurve.points) > 20);
-  const manifest = provenance || defaultTargetProvenance(target);
+  const manifest = provenance || defaultTargetProvenance(target, datasetManifest);
   const provenanceState = provenanceCompleteness(manifest);
 
   evidence.push(item({
@@ -137,8 +137,12 @@ export function buildEvidenceCockpit({ target = {}, params = {}, metrics = {}, a
     label: "Provenance",
     status: provenanceState.status,
     detail: provenanceState.detail,
-    source: "ExoLight provenance manifest",
-    nextStep: "Record upstream source table, retrieval date, archive version, and local transform for each displayed field."
+    source: datasetManifest?.upstream?.archive
+      ? `${datasetManifest.upstream.archive} via ExoLight dataset manifest`
+      : "ExoLight provenance manifest",
+    nextStep: provenanceState.status === "pass"
+      ? "Keep the manifest with any future local transformation or archive refresh."
+      : "Record missing upstream product identifiers, retrieval dates, archive versions, and local transforms where recoverable."
   }));
 
   const worst = evidence.reduce((max, current) => statusRank(current.status) > statusRank(max.status) ? current : max, evidence[0]);
@@ -153,6 +157,7 @@ export function buildEvidenceCockpit({ target = {}, params = {}, metrics = {}, a
       : `${worst.label}: ${worst.detail}`,
     evidence,
     geometry,
+    datasetManifest,
     provenance: manifest,
     disclaimer: "Evidence badges are quick-look diagnostics, not a formal false-positive probability or validation claim."
   };

@@ -3,6 +3,8 @@
    Every displayed diagnostic should eventually point to a source, transform, and version.
    ============================================================================ */
 
+import { manifestToProvenanceEvent } from "./datasetManifest.js";
+
 export const PROVENANCE_SCHEMA_VERSION = "exolight-provenance-v1";
 
 function stableString(value, fallback = "unknown") {
@@ -32,14 +34,14 @@ export function createProvenanceEvent({
     source: stableString(source),
     dataset: stableString(dataset),
     identifier: stableString(identifier),
-    retrievedUtc: retrievedUtc ? stableDate(retrievedUtc) : "unknown",
+    retrievedUtc: retrievedUtc && retrievedUtc !== "unknown" ? stableDate(retrievedUtc) : "unknown",
     version: stableString(version),
     transform: stableString(transform, "none"),
     notes: stableString(notes, "")
   };
 }
 
-export function defaultTargetProvenance(target = {}) {
+export function defaultTargetProvenance(target = {}, datasetManifest = null) {
   const planet = stableString(target.pl_name, "target");
   const host = stableString(target.hostname, "host");
   const identifier = `${planet} around ${host}`;
@@ -67,7 +69,9 @@ export function defaultTargetProvenance(target = {}) {
     transform: field === "pl_trandep" || field === "pl_ratror" ? "displayed or cross-checked by browser model" : "displayed directly"
   }));
 
-  if (target.lightcurve_available && target.lightcurve_file) {
+  if (datasetManifest && typeof datasetManifest === "object") {
+    events.push(createProvenanceEvent(manifestToProvenanceEvent(datasetManifest)));
+  } else if (target.lightcurve_available && target.lightcurve_file) {
     events.push(createProvenanceEvent({
       field: "lightcurve",
       source: "local ExoLight light-curve cache",
@@ -90,7 +94,8 @@ export function defaultTargetProvenance(target = {}) {
   return {
     schemaVersion: PROVENANCE_SCHEMA_VERSION,
     target: { planet, host },
-    completeness: "partial",
+    completeness: provenanceCompleteness({ events }).label.toLowerCase(),
+    datasetManifest: datasetManifest || null,
     events
   };
 }
@@ -111,7 +116,7 @@ export function provenanceCompleteness(manifest = {}) {
   }
 
   if (unknowns < events.length) {
-    return { status: "caution", label: "Partial", detail: "Fields have local source pointers, but not all retrieval dates or upstream archive versions are recorded yet." };
+    return { status: "caution", label: "Partial", detail: "Fields have source pointers, but not all retrieval dates or upstream archive identifiers are recorded yet." };
   }
 
   return { status: "unknown", label: "Unknown", detail: "Most displayed fields do not yet have usable provenance pointers." };

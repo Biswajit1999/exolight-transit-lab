@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "exolight-dataset-manifest-v1",
+  "target": "AU Mic b",
+  "host": "AU Mic",
+  "mission": "unknown",
+  "productType": "lightcurve",
+  "upstream": {
+    "archive": "MAST",
+    "productId": "unknown",
+    "sourceUrl": "unknown",
+    "retrievedUtc": "unknown",
+    "version": "unknown"
+  },
+  "local": {
+    "file": "data/lightcurves/au-mic-b.json",
+    "transform": [
+      "phase folding for ExoIntel-Prime"
+    ]
+  },
+  "units": {
+    "phase": "dimensionless",
+    "flux": "relative"
+  },
+  "notes": "The existing cache records a MAST public light curve obtained via Lightkurve. The original upstream product identifier, mission label, archive version, and retrieval timestamp were not preserved, so they remain explicitly unknown."
+}
