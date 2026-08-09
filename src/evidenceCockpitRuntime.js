@@ -1,10 +1,12 @@
 import { renderEvidenceCockpit } from "./ui/evidenceCockpit.js";
 
 const TARGET_CACHE_URL = "./data/exoplanets.json";
+const DATASET_MANIFEST_BASE_URL = "./data/provenance/";
 const TARGET_SEPARATOR = " · ";
 let targets = [];
 let mounted = false;
 let lastSignature = "";
+const manifestCache = new Map();
 
 function isActiveTab() {
   return document.body.dataset.exolightTab === "evidence";
@@ -100,6 +102,34 @@ function buildState() {
   };
 }
 
+function manifestFilename(target) {
+  const lightcurveFile = String(target?.lightcurve_file || "").trim();
+  if (!target?.lightcurve_available || !lightcurveFile) return null;
+  const basename = lightcurveFile.split("/").pop();
+  return basename.replace(/\.json$/i, "") + ".manifest.json";
+}
+
+async function loadDatasetManifest(target) {
+  const filename = manifestFilename(target);
+  if (!filename) return null;
+  if (manifestCache.has(filename)) return manifestCache.get(filename);
+
+  const request = fetch(`${DATASET_MANIFEST_BASE_URL}${encodeURIComponent(filename)}?v=${Date.now()}`, {
+    cache: "no-store",
+    headers: { Accept: "application/json" }
+  }).then(async response => {
+    if (response.status === 404) return null;
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return response.json();
+  }).catch(error => {
+    console.warn(`Evidence Cockpit provenance manifest unavailable for ${target?.pl_name || filename}:`, error);
+    return null;
+  });
+
+  manifestCache.set(filename, request);
+  return request;
+}
+
 function ensureContainer() {
   if (!isActiveTab()) return null;
   const mainPanel = document.querySelector(".main-panel");
@@ -119,18 +149,23 @@ function ensureContainer() {
   return byId("evidence-cockpit");
 }
 
-function updateEvidenceCockpit() {
+async function updateEvidenceCockpit() {
   if (!isActiveTab()) return;
   const container = ensureContainer();
   if (!container) return;
 
   const state = buildState();
+  state.datasetManifest = await loadDatasetManifest(state.target);
+
   const signature = JSON.stringify({
     target: state.target?.pl_name,
     host: state.target?.hostname,
     params: state.params,
     metrics: state.metrics,
-    points: state.archivalCurve?.points
+    points: state.archivalCurve?.points,
+    manifest: state.datasetManifest
+      ? [state.datasetManifest.schemaVersion, state.datasetManifest.upstream?.archive, state.datasetManifest.upstream?.productId]
+      : null
   });
 
   if (signature === lastSignature) return;
@@ -152,24 +187,24 @@ async function loadTargets() {
 
 function watchDashboard() {
   const observer = new MutationObserver(() => {
-    if (isActiveTab()) window.requestAnimationFrame(updateEvidenceCockpit);
+    if (isActiveTab()) window.requestAnimationFrame(() => { void updateEvidenceCockpit(); });
   });
   observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true });
-  window.addEventListener("resize", updateEvidenceCockpit);
-  window.addEventListener("exolight:tab-change", updateEvidenceCockpit);
-  window.setInterval(() => { if (isActiveTab()) updateEvidenceCockpit(); }, 1500);
+  window.addEventListener("resize", () => { void updateEvidenceCockpit(); });
+  window.addEventListener("exolight:tab-change", () => { void updateEvidenceCockpit(); });
+  window.setInterval(() => { if (isActiveTab()) void updateEvidenceCockpit(); }, 1500);
 }
 
 async function bootEvidenceCockpit() {
   if (mounted) return;
   mounted = true;
   await loadTargets();
-  updateEvidenceCockpit();
+  await updateEvidenceCockpit();
   watchDashboard();
 }
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", bootEvidenceCockpit, { once: true });
 } else {
-  bootEvidenceCockpit();
+  void bootEvidenceCockpit();
 }
