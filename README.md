@@ -161,6 +161,7 @@ The scientific core is protected by two validation layers:
 ```bash
 npm run validate:physics
 npm run validate:references
+npm run validate:observations
 npm run validate
 ```
 
@@ -177,9 +178,13 @@ The generated evidence files are stored in:
 ```text
 results/validation/reference-report.json
 results/validation/reference-summary.md
+results/validation/observational-integrity-report.json
+results/validation/observational-integrity-summary.md
 ```
 
 These checks are designed to detect silent scientific drift. They are not detection claims, posterior inference results, or false-positive probabilities.
+
+`validate:observations` audits the catalogue/light-curve boundary. It verifies that observed targets have local files, that local light curves contain finite phase/flux samples, that source provenance is present, and that model-only targets remain explicitly labelled through `lightcurve_available: false`.
 
 ---
 

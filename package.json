@@ -9,7 +9,8 @@
     "validate:references": "node scripts/run-reference-regressions.mjs",
     "validate:plausibility": "node tests/plausibility.test.mjs",
     "validate:manifests": "node tests/datasetManifest.test.mjs",
-    "validate": "npm run validate:physics && npm run validate:references && npm run validate:plausibility && npm run validate:manifests"
+    "validate:observations": "node scripts/validate-observational-integrity.mjs",
+    "validate": "npm run validate:physics && npm run validate:references && npm run validate:plausibility && npm run validate:manifests && npm run validate:observations"
   },
   "keywords": [
     "exoplanet",

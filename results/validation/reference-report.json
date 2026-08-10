@@ -1,6 +1,6 @@
 {
   "schemaVersion": "exolight-reference-report-v1",
-  "generatedUtc": "2026-07-29T21:22:00.000Z",
+  "generatedUtc": "2026-08-10T16:51:19.735Z",
   "physicsCoreVersion": "phase-iii-core-v0.1",
   "passed": true,
   "summary": {
@@ -18,17 +18,35 @@
       "passed": true,
       "fixtureValid": true,
       "outputs": {
-        "semiMajorAxisAU": 0.03115967487322792,
+        "semiMajorAxisAU": 0.031159674873227957,
         "depthPpm": 20620.96,
-        "durationHoursApprox": 1.9265869892115424
+        "durationHoursApprox": 1.92658698921154
       },
       "assertions": [
-        { "label": "semiMajorAxisAU finite", "passed": true },
-        { "label": "depthPpm finite", "passed": true },
-        { "label": "durationHoursApprox finite", "passed": true },
-        { "label": "semiMajorAxisAU within tolerance", "passed": true },
-        { "label": "depthPpm within tolerance", "passed": true },
-        { "label": "durationHoursApprox within tolerance", "passed": true }
+        {
+          "label": "semiMajorAxisAU finite",
+          "passed": true
+        },
+        {
+          "label": "depthPpm finite",
+          "passed": true
+        },
+        {
+          "label": "durationHoursApprox finite",
+          "passed": true
+        },
+        {
+          "label": "semiMajorAxisAU within tolerance",
+          "passed": true
+        },
+        {
+          "label": "depthPpm within tolerance",
+          "passed": true
+        },
+        {
+          "label": "durationHoursApprox within tolerance",
+          "passed": true
+        }
       ]
     },
     {
@@ -49,13 +67,34 @@
         "phaseWindow": "0.45-0.55"
       },
       "assertions": [
-        { "label": "model flux array finite", "passed": true },
-        { "label": "minimum flux non-negative", "passed": true },
-        { "label": "baseline flux not above tolerance", "passed": true },
-        { "label": "classification", "passed": true },
-        { "label": "depthPpm within tolerance", "passed": true },
-        { "label": "minimum phase within tolerance", "passed": true },
-        { "label": "symmetry within tolerance", "passed": true }
+        {
+          "label": "model flux array finite",
+          "passed": true
+        },
+        {
+          "label": "minimum flux non-negative",
+          "passed": true
+        },
+        {
+          "label": "baseline flux not above tolerance",
+          "passed": true
+        },
+        {
+          "label": "classification",
+          "passed": true
+        },
+        {
+          "label": "depthPpm within tolerance",
+          "passed": true
+        },
+        {
+          "label": "minimum phase within tolerance",
+          "passed": true
+        },
+        {
+          "label": "symmetry within tolerance",
+          "passed": true
+        }
       ]
     },
     {
@@ -76,11 +115,26 @@
         "phaseWindow": "0.45-0.55"
       },
       "assertions": [
-        { "label": "model flux array finite", "passed": true },
-        { "label": "minimum flux non-negative", "passed": true },
-        { "label": "baseline flux not above tolerance", "passed": true },
-        { "label": "classification", "passed": true },
-        { "label": "max depth near zero", "passed": true }
+        {
+          "label": "model flux array finite",
+          "passed": true
+        },
+        {
+          "label": "minimum flux non-negative",
+          "passed": true
+        },
+        {
+          "label": "baseline flux not above tolerance",
+          "passed": true
+        },
+        {
+          "label": "classification",
+          "passed": true
+        },
+        {
+          "label": "max depth near zero",
+          "passed": true
+        }
       ]
     },
     {
@@ -91,13 +145,25 @@
       "fixtureValid": true,
       "outputs": {
         "correctedDepthFraction": 0.0125,
-        "correctedRadiusRatio": 0.11180339887498949
+        "correctedRadiusRatio": 0.11180339887498948
       },
       "assertions": [
-        { "label": "corrected depth finite", "passed": true },
-        { "label": "corrected radius ratio finite", "passed": true },
-        { "label": "corrected depth within tolerance", "passed": true },
-        { "label": "corrected radius ratio within tolerance", "passed": true }
+        {
+          "label": "corrected depth finite",
+          "passed": true
+        },
+        {
+          "label": "corrected radius ratio finite",
+          "passed": true
+        },
+        {
+          "label": "corrected depth within tolerance",
+          "passed": true
+        },
+        {
+          "label": "corrected radius ratio within tolerance",
+          "passed": true
+        }
       ]
     }
   ]

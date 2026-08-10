@@ -1,7 +1,7 @@
 # ExoLight Reference Regression Summary
 
-Generated UTC: 2026-07-29T21:22:00.000Z  
-Physics core version: phase-iii-core-v0.1  
+Generated UTC: 2026-08-10T16:51:19.735Z
+Physics core version: phase-iii-core-v0.1
 Overall status: PASS
 
 ## Summary
@@ -15,7 +15,7 @@ Overall status: PASS
 
 | Case | Type | Status | Key output |
 |---|---|---:|---|
-| hd-189733-b | observational-benchmark | PASS | a=0.03116 AU |
+| hd-189733-b | observational-benchmark | PASS | depth 20621.0 ppm |
 | synthetic-central-transit | deterministic-geometry | PASS | depth 10460.1 ppm |
 | synthetic-non-transiting | deterministic-geometry | PASS | depth 0.0 ppm |
 | synthetic-dilution-check | dilution-physics | PASS | corrected depth 0.012500 |
