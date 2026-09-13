@@ -1,5 +1,6 @@
 import { buildEvidenceCockpit } from "../intelligence/evidenceBuilder.js";
 import { diagnosticGauge } from "./gauge.js";
+import { renderDataLineage } from "./dataLineage.js";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -41,6 +42,18 @@ function downloadJson(filename, payload) {
   URL.revokeObjectURL(url);
 }
 
+function lineagePayload(cockpit) {
+  return {
+    provenance: cockpit.provenance,
+    analysis: {
+      model: "ExoLight worker transit forward model",
+      diagnostics: cockpit.evidence
+        .filter(item => !["local-photometry", "provenance"].includes(item.id))
+        .map(item => item.label)
+    }
+  };
+}
+
 export function renderEvidenceCockpit(container, state) {
   if (!container) return null;
   const cockpit = buildEvidenceCockpit(state);
@@ -66,8 +79,10 @@ export function renderEvidenceCockpit(container, state) {
         ${cockpit.evidence.map(evidenceCard).join("")}
       </div>
 
+      ${renderDataLineage(lineagePayload(cockpit))}
+
       <details class="evidence-provenance">
-        <summary>Show provenance manifest preview</summary>
+        <summary>Inspect raw provenance record</summary>
         <pre>${escapeHtml(JSON.stringify(cockpit.provenance, null, 2))}</pre>
       </details>
 
