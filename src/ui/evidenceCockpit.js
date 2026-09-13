@@ -1,5 +1,6 @@
 import { buildEvidenceCockpit } from "../intelligence/evidenceBuilder.js";
 import { diagnosticGauge } from "./gauge.js";
+import { renderDataLineage } from "./dataLineage.js";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -66,8 +67,10 @@ export function renderEvidenceCockpit(container, state) {
         ${cockpit.evidence.map(evidenceCard).join("")}
       </div>
 
+      ${renderDataLineage(cockpit.lineage)}
+
       <details class="evidence-provenance">
-        <summary>Show provenance manifest preview</summary>
+        <summary>Inspect raw provenance record</summary>
         <pre>${escapeHtml(JSON.stringify(cockpit.provenance, null, 2))}</pre>
       </details>
 
