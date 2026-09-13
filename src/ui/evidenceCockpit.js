@@ -42,6 +42,18 @@ function downloadJson(filename, payload) {
   URL.revokeObjectURL(url);
 }
 
+function lineagePayload(cockpit) {
+  return {
+    provenance: cockpit.provenance,
+    analysis: {
+      model: "ExoLight worker transit forward model",
+      diagnostics: cockpit.evidence
+        .filter(item => !["local-photometry", "provenance"].includes(item.id))
+        .map(item => item.label)
+    }
+  };
+}
+
 export function renderEvidenceCockpit(container, state) {
   if (!container) return null;
   const cockpit = buildEvidenceCockpit(state);
@@ -67,7 +79,7 @@ export function renderEvidenceCockpit(container, state) {
         ${cockpit.evidence.map(evidenceCard).join("")}
       </div>
 
-      ${renderDataLineage(cockpit.lineage)}
+      ${renderDataLineage(lineagePayload(cockpit))}
 
       <details class="evidence-provenance">
         <summary>Inspect raw provenance record</summary>
