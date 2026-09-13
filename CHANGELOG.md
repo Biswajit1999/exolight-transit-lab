@@ -1,5 +1,38 @@
 # Changelog
 
+## v1.3.0 — Research Data Lineage HUD
+
+### Added
+
+- Research-facing Data Lineage panel for the Evidence cockpit.
+- Explicit source → local dataset → processing → analysis presentation for attached archival products.
+- Distinct model-only state so theoretical exploration cannot be mistaken for an attached observation.
+- `COMPLETE`, `PARTIAL`, `UNKNOWN`, and `INVALID` lineage states.
+- HTML-safe rendering for archive, file, transform, model, and diagnostic metadata.
+- Deterministic HUD lineage tests and `npm run validate:hud`.
+
+### Research integrity
+
+Unknown historical metadata remains visibly unknown. Model-only targets explicitly state that no archival observation is attached. The raw provenance record remains available for inspection below the human-readable lineage.
+
+### Architecture
+
+The lineage component is zero-dependency and separates data interpretation from HTML rendering. It consumes the existing provenance payload and current Evidence diagnostics without adding archive/network logic to the UI.
+
+### Validation
+
+Run the full suite with:
+
+```bash
+npm run validate
+```
+
+or the focused HUD tests with:
+
+```bash
+npm run validate:hud
+```
+
 ## v1.2.0 — Provenance-aware dataset manifests
 
 ### Added
