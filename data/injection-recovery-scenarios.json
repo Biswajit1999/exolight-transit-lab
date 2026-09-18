@@ -1,0 +1,11 @@
+{
+  "schema": "exolight-injection-recovery-scenarios-v1",
+  "researchQuestion": "How does within-event correlated noise change box-depth recovery, nominal 95% coverage, and three-sigma detection rates?",
+  "nullHypothesis": "At 1000 ppm depth and 500 ppm marginal noise, changing rho from 0 to 0.8 changes naive 95% coverage by no more than 0.10.",
+  "scenarios": [
+    {"scenarioId":"deep-white","depthPpm":1000,"noisePpm":500,"rho":0,"events":12,"pointsPerEvent":101,"durationPhase":0.03,"trials":1000,"seed":1801},
+    {"scenarioId":"deep-red","depthPpm":1000,"noisePpm":500,"rho":0.8,"events":12,"pointsPerEvent":101,"durationPhase":0.03,"trials":1000,"seed":1802},
+    {"scenarioId":"shallow-white","depthPpm":300,"noisePpm":500,"rho":0,"events":12,"pointsPerEvent":101,"durationPhase":0.03,"trials":1000,"seed":1803},
+    {"scenarioId":"shallow-red","depthPpm":300,"noisePpm":500,"rho":0.8,"events":12,"pointsPerEvent":101,"durationPhase":0.03,"trials":1000,"seed":1804}
+  ]
+}

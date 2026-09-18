@@ -1,6 +1,7 @@
 {
   "schema": "exolight-observational-integrity-v1",
-  "generatedAt": "2026-08-10T16:51:24.264Z",
+  "generatedAt": null,
+  "generationPolicy": "Deterministic build; Git history records execution time.",
   "catalogue": {
     "file": "data/exoplanets.json",
     "source": "NASA Exoplanet Archive TAP pscomppars",

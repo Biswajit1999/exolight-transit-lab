@@ -1,6 +1,6 @@
 # Observational Integrity Summary
 
-Generated: 2026-08-10T16:51:24.264Z
+Generated: not recorded (deterministic build)
 
 | Metric | Value |
 | --- | ---: |

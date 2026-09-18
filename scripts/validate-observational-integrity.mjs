@@ -172,7 +172,7 @@ function markdownSummary(report) {
   const lines = [
     "# Observational Integrity Summary",
     "",
-    `Generated: ${report.generatedAt}`,
+    `Generated: ${report.generatedAt ?? "not recorded (deterministic build)"}`,
     "",
     "| Metric | Value |",
     "| --- | ---: |",
@@ -244,7 +244,8 @@ async function main() {
 
   const report = {
     schema: "exolight-observational-integrity-v1",
-    generatedAt: new Date().toISOString(),
+    generatedAt: null,
+    generationPolicy: "Deterministic build; Git history records execution time.",
     catalogue: {
       file: "data/exoplanets.json",
       source: catalogue.source || "unknown",

@@ -194,7 +194,7 @@ function markdownReport(report) {
   const lines = [];
   lines.push("# ExoLight Reference Regression Summary");
   lines.push("");
-  lines.push(`Generated UTC: ${report.generatedUtc}`);
+  lines.push(`Generated UTC: ${report.generatedUtc ?? "not recorded (deterministic build)"}`);
   lines.push(`Physics core version: ${report.physicsCoreVersion}`);
   lines.push(`Overall status: ${report.passed ? "PASS" : "FAIL"}`);
   lines.push("");
@@ -241,7 +241,8 @@ async function main() {
 
   const report = {
     schemaVersion: "exolight-reference-report-v1",
-    generatedUtc: new Date().toISOString(),
+    generatedUtc: null,
+    generationPolicy: "Deterministic build; Git history records execution time.",
     physicsCoreVersion: PHYSICS_CORE_VERSION,
     passed: failedCount === 0,
     summary: {

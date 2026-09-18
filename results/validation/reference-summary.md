@@ -1,6 +1,6 @@
 # ExoLight Reference Regression Summary
 
-Generated UTC: 2026-08-10T16:51:19.735Z
+Generated UTC: not recorded (deterministic build)
 Physics core version: phase-iii-core-v0.1
 Overall status: PASS
 

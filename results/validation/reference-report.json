@@ -1,6 +1,7 @@
 {
   "schemaVersion": "exolight-reference-report-v1",
-  "generatedUtc": "2026-08-10T16:51:19.735Z",
+  "generatedUtc": null,
+  "generationPolicy": "Deterministic build; Git history records execution time.",
   "physicsCoreVersion": "phase-iii-core-v0.1",
   "passed": true,
   "summary": {
