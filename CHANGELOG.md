@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.4.0 — Correlated-noise injection–recovery
+
+- Added four deterministic 1,000-trial transit-depth injection scenarios.
+- Compared naïve independent-sample and event-cluster uncertainty estimates.
+- Rejected the predeclared coverage null: correlation changed naïve 95%
+  coverage by 0.394, while event-cluster coverage remained 0.932.
+- Demonstrated a shallow correlated-noise case where naïve and cluster-aware
+  three-sigma detection rates differ (0.980 versus 0.612).
+- Made committed validation reports deterministic by removing wall-clock
+  timestamps from generated content.
+- Added machine-readable results, a methods/limitations report, tests, and a
+  before/after research-maturity audit.
+
 ## v1.3.0 — Research Data Lineage HUD
 
 ### Added

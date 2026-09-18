@@ -186,6 +186,17 @@ These checks are designed to detect silent scientific drift. They are not detect
 
 `validate:observations` audits the catalogue/light-curve boundary. It verifies that observed targets have local files, that local light curves contain finite phase/flux samples, that source provenance is present, and that model-only targets remain explicitly labelled through `lightcurve_available: false`.
 
+### Injection–recovery study
+
+Version 1.4 adds an executed [correlated-noise injection–recovery study](docs/INJECTION_RECOVERY_STUDY.md), not just a roadmap item. A transparent box-depth baseline is tested in 4,000 seeded trials across white and AR(1) noise. For a 1,000 ppm transit, naïve 95% coverage falls from 0.943 to 0.549 under correlation, while event-cluster coverage is 0.932. For a 300 ppm correlated-noise transit, the naïve three-sigma detection rate is 0.980 versus 0.612 with event-cluster uncertainty.
+
+```bash
+npm run validate:injection
+```
+
+The absolute rates belong to the committed synthetic design; they are not TESS
+or Kepler completeness estimates.
+
 ---
 
 ## Interface overview

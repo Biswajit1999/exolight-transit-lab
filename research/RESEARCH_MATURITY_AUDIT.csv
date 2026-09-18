@@ -1,0 +1,11 @@
+dimension,max_score,before_score,after_score
+Falsifiable hypothesis,10,4,10
+Primary literature and provenance,10,7,8
+Data and schema discipline,10,8,9
+Independent scientific analysis,10,4,9
+Uncertainty calibration,10,3,9
+Ground-truth recovery,10,2,10
+Automated numerical testing,10,8,10
+Deterministic reproducibility,10,5,10
+Claims and limitations,10,8,10
+Public dissemination,10,9,10
