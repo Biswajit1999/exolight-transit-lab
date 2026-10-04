@@ -10,8 +10,7 @@
   three-sigma detection rates differ (0.980 versus 0.612).
 - Made committed validation reports deterministic by removing wall-clock
   timestamps from generated content.
-- Added machine-readable results, a methods/limitations report, tests, and a
-  before/after research-maturity audit.
+- Added machine-readable results, a methods/limitations report, and tests.
 
 ## v1.3.0 — Research Data Lineage HUD
 
