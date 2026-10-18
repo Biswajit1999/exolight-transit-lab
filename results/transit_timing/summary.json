@@ -1,0 +1,23 @@
+{
+  "data_class": "synthetic numerical demonstration; no measured transit times",
+  "seed": 20261018,
+  "time_standard": "illustrative BJD_TDB days; not converted from UTC",
+  "n_transits": 28,
+  "injected_period_days": 3.271,
+  "injected_ttv_amplitude_days": 0.0009,
+  "fitted_period_days": 3.2709938303869777,
+  "fitted_period_formal_error_days": 1.4220711732508917e-05,
+  "ephemeris_chi2": 71.26831574000443,
+  "ephemeris_dof": 26,
+  "loo_rms_z": 1.6654422947546075,
+  "loo_max_absolute_z": 3.495037205291018,
+  "even_odd_depth_difference_fraction": 1.9569509028398088e-05,
+  "even_odd_depth_difference_error_fraction": 0.00011338934190276815,
+  "even_odd_depth_z": 0.17258684722924864,
+  "limitations": [
+    "fixed-epoch independent Gaussian timing errors assumed",
+    "unmodelled TTV biases linear ephemeris and formal covariance",
+    "even/odd test assumes independent depth estimates",
+    "no time-system conversion or barycentric correction"
+  ]
+}
