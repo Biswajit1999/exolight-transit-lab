@@ -19,6 +19,7 @@ jobs:
 
       - name: Check browser module syntax
         run: |
+          node --check src/app.js
           node --check src/sceneScientific.js
           node --check src/lightcurvePreprocessRuntime.js
           node --check src/quickFitRuntime.js
