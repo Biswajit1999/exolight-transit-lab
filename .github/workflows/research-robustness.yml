@@ -1,0 +1,28 @@
+name: Transit research robustness
+on:
+  push:
+    branches: ["research/**"]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  science:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install research dependencies
+        run: python -m pip install numpy pytest
+      - name: Test cadence, dilution and baseline diagnostics
+        run: python -m pytest -q tests/test_transit_robustness.py
+      - name: Execute retained TESS/SPOC-derived light curve
+        run: python scripts/run_transit_robustness.py --output transit_robustness_results.json
+      - name: Validate existing browser science
+        run: npm run validate
+      - name: Preserve numerical diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: transit-robustness
+          path: transit_robustness_results.json
+          if-no-files-found: error
