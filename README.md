@@ -23,6 +23,10 @@
 
 ## Why this project is different
 
+![Observed HD 189733 b transit, with binned medians and the central spread of the archived TESS photometry](assets/hd189733-observed-transit.png)
+
+[See the observation and download the curve](https://biswajit1999.github.io/exolight-transit-lab/evidence.html). The 730 plotted points come from the repository’s processed, phase-folded TESS light curve. Bars show the 16th–84th percentile of the points in each display bin because per-point uncertainties are absent from this product. Use `python scripts/plot_hd189733_transit.py` with NumPy and Matplotlib to regenerate the figure.
+
 **ExoIntel-Prime** is a browser-based exoplanet transit photometry laboratory designed for scientific visualisation, education, and research communication. It compares locally cached archival light curves with a worker-computed theoretical transit model and renders the corresponding star–planet system in a realistic browser scene.
 
 This is not a synthetic astronomy toy. The project is built around four principles:
