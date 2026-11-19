@@ -134,6 +134,7 @@ class ExoIntelPrimeApp {
           <div class="status-tile"><span>Frame rate</span><strong id="status-fps">-- fps</strong></div>
         </section>
         <section class="header-actions">
+          <a class="button" href="./evidence.html">Transit evidence</a>
           <label class="theme-switch" title="Toggle light and night mode"><input id="button-theme" type="checkbox" ${this.theme === "dark" ? "checked" : ""} aria-label="Toggle night mode" /><span class="theme-switch-track"><span class="theme-switch-thumb"></span></span><span id="theme-switch-label" class="theme-switch-label">${this.theme === "dark" ? "Night mode" : "Light mode"}</span></label>
           <button class="button" id="button-reset" type="button">Reset model</button>
           <button class="button primary" id="button-high-fidelity" type="button">High-accuracy model</button>

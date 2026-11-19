@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HD 189733 b transit evidence · ExoLight Transit Lab</title>
+  <meta name="description" content="A phase-folded HD 189733 b transit from the processed TESS SPOC light curve in ExoLight Transit Lab.">
+  <style>
+    body { margin: 0; background: #111b26; color: #eef3f6; font: 1rem/1.6 system-ui, sans-serif; }
+    main { width: min(900px, calc(100% - 2rem)); margin: 2.5rem auto 4rem; }
+    h1 { font-size: clamp(2rem, 7vw, 3.5rem); line-height: 1.12; margin: .8rem 0; }
+    h2 { line-height: 1.2; }
+    p, figcaption { max-width: 72ch; }
+    a { color: #a7dff3; text-underline-offset: .2em; }
+    figure { margin: 1.5rem 0; }
+    img { display: block; width: 100%; height: auto; border: 1px solid #53636f; }
+    figcaption { margin-top: .75rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <a href="./">Open the interactive transit laboratory</a>
+    <h1>HD 189733 b in TESS photometry</h1>
+    <p>As the planet crosses its star, the phase-folded flux drops and returns to its out-of-transit baseline. The figure uses the committed SPOC PDCSAP flux product after the repository’s detrending, normalisation and initial binning.</p>
+    <figure>
+      <img src="assets/hd189733-observed-transit.png" width="936" height="528" alt="Relative flux versus hours from phase zero, with a roughly two percent transit near the centre">
+      <figcaption>The additional display bins show medians and 16th–84th percentile flux spread. The source JSON does not include individual photometric uncertainties, so the bars describe the points in each bin. Dashed lines mark the nominal archived duration around phase zero.</figcaption>
+    </figure>
+    <p><a href="data/lightcurves/hd-189733-b.json" download>Download the observed curve</a> · <a href="assets/hd189733-observed-transit.png" download>Download the figure</a></p>
+    <h2>How correlated noise changes transit recovery</h2>
+    <p>The separate injection–recovery experiment simulates transits under white and correlated noise. For the 1,000 ppm correlated case, independent-sample interval coverage was 54.9%, versus 93.2% when uncertainty was estimated across transit events.</p>
+    <p><a href="results/injection-recovery/results.csv" download>Download the simulated results</a> · <a href="https://github.com/Biswajit1999/exolight-transit-lab/blob/main/docs/INJECTION_RECOVERY_STUDY.md">Read the methods and assumptions</a></p>
+  </main>
+</body>
+</html>
