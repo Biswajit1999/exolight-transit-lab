@@ -1,0 +1,113 @@
+{
+  "schema": 1,
+  "project": "🪐 ExoIntel-Prime",
+  "tables": [
+    {
+      "path": "results/injection-recovery/results.csv",
+      "label": "Results",
+      "role": "Tables and numerical results",
+      "rows": 4,
+      "width_mismatches": 0,
+      "columns": [
+        {
+          "name": "scenario_id",
+          "blank": 0,
+          "text": 4,
+          "finite": 0,
+          "nonfinite": 0
+        },
+        {
+          "name": "depth_ppm",
+          "blank": 0,
+          "text": 0,
+          "finite": 4,
+          "nonfinite": 0,
+          "minimum": 300.0,
+          "maximum": 1000.0
+        },
+        {
+          "name": "noise_ppm",
+          "blank": 0,
+          "text": 0,
+          "finite": 4,
+          "nonfinite": 0,
+          "minimum": 500.0,
+          "maximum": 500.0
+        },
+        {
+          "name": "rho",
+          "blank": 0,
+          "text": 0,
+          "finite": 4,
+          "nonfinite": 0,
+          "minimum": 0.0,
+          "maximum": 0.8
+        },
+        {
+          "name": "trials",
+          "blank": 0,
+          "text": 0,
+          "finite": 4,
+          "nonfinite": 0,
+          "minimum": 1000.0,
+          "maximum": 1000.0
+        },
+        {
+          "name": "bias_ppm",
+          "blank": 0,
+          "text": 0,
+          "finite": 4,
+          "nonfinite": 0,
+          "minimum": -0.8038770070581904,
+          "maximum": 3.534786259810403
+        },
+        {
+          "name": "rmse_ppm",
+          "blank": 0,
+          "text": 0,
+          "finite": 4,
+          "nonfinite": 0,
+          "minimum": 36.46392907024006,
+          "maximum": 93.53190014363912
+        },
+        {
+          "name": "iid_coverage_95",
+          "blank": 0,
+          "text": 0,
+          "finite": 4,
+          "nonfinite": 0,
+          "minimum": 0.549,
+          "maximum": 0.95
+        },
+        {
+          "name": "cluster_coverage_95",
+          "blank": 0,
+          "text": 0,
+          "finite": 4,
+          "nonfinite": 0,
+          "minimum": 0.916,
+          "maximum": 0.932
+        },
+        {
+          "name": "iid_detection_rate_3sigma",
+          "blank": 0,
+          "text": 0,
+          "finite": 4,
+          "nonfinite": 0,
+          "minimum": 0.98,
+          "maximum": 1.0
+        },
+        {
+          "name": "cluster_detection_rate_3sigma",
+          "blank": 0,
+          "text": 0,
+          "finite": 4,
+          "nonfinite": 0,
+          "minimum": 0.612,
+          "maximum": 1.0
+        }
+      ]
+    }
+  ],
+  "excluded": []
+}
