@@ -1,0 +1,399 @@
+{
+  "schema": 1,
+  "project": "🪐 ExoIntel-Prime",
+  "repository": "https://github.com/Biswajit1999/exolight-transit-lab",
+  "files": [
+    {
+      "label": "Reference summary",
+      "path": "results/validation/reference-summary.md",
+      "role": "Data and provenance",
+      "bytes": 907,
+      "sha256": "b9a40c689d67da108e3974ea5760fa80425951754d6ccbf41f735c7ff177411d",
+      "hash_basis": "LF-normalised text",
+      "format": "MD"
+    },
+    {
+      "label": "Bootstrap targets",
+      "path": "data/bootstrap-targets.json",
+      "role": "Data and provenance",
+      "bytes": 2711,
+      "sha256": "ce9624c57dc03f65008137631da2af6a7a5008b7a5a4b36661b28169d331c142",
+      "hash_basis": "LF-normalised text",
+      "format": "JSON",
+      "records": 8,
+      "fields": [
+        "pl_name",
+        "hostname",
+        "pl_orbper",
+        "pl_trandep",
+        "pl_trandur",
+        "pl_ratror",
+        "pl_ratdor"
+      ]
+    },
+    {
+      "label": "Exoplanets",
+      "path": "data/exoplanets.json",
+      "role": "Data and provenance",
+      "bytes": 1286153,
+      "sha256": "0239ae5014c528c77d91ea9ea7d242aef043574db7586ebfdccf960dcfc9a8bc",
+      "hash_basis": "LF-normalised text",
+      "format": "JSON",
+      "keys": [
+        "schema",
+        "generated_utc",
+        "source",
+        "tap_url",
+        "adql",
+        "target_count",
+        "lightcurve_directory"
+      ],
+      "arrays": {
+        "columns": 25,
+        "targets": 1539
+      }
+    },
+    {
+      "label": "Gaia neighbours",
+      "path": "data/gaia-neighbours.json",
+      "role": "Data and provenance",
+      "bytes": 2240737,
+      "sha256": "a6f79b306b59029b3458693e3b9dc9bf7010ab9bdb67e580f5dff8ca1262e5c5",
+      "hash_basis": "LF-normalised text",
+      "format": "JSON",
+      "keys": [
+        "au-mic-b",
+        "au-mic-c",
+        "bd-14-3065-b",
+        "corot-11-b",
+        "corot-13-b",
+        "corot-18-b",
+        "corot-3-b"
+      ],
+      "arrays": {}
+    },
+    {
+      "label": "Injection recovery scenarios",
+      "path": "data/injection-recovery-scenarios.json",
+      "role": "Data and provenance",
+      "bytes": 983,
+      "sha256": "373dde031591745db8030b4d16f658599503d0f4ee0f93b8b3050a0994051273",
+      "hash_basis": "LF-normalised text",
+      "format": "JSON",
+      "keys": [
+        "schema",
+        "researchQuestion",
+        "nullHypothesis",
+        "scenarios"
+      ],
+      "arrays": {
+        "scenarios": 4
+      }
+    },
+    {
+      "label": "Au mic b",
+      "path": "data/lightcurves/au-mic-b.json",
+      "role": "Data and provenance",
+      "bytes": 87104,
+      "sha256": "f71ad7299f9cb50bf437d7a92818c78785ac63f060e3a496ac87447f0eb59858",
+      "hash_basis": "LF-normalised text",
+      "format": "JSON",
+      "keys": [
+        "source",
+        "target",
+        "host",
+        "period_days",
+        "t0_used",
+        "phase_window",
+        "points"
+      ],
+      "arrays": {
+        "phase": 1800,
+        "flux": 1800,
+        "error": 1800
+      }
+    },
+    {
+      "label": "Au mic c",
+      "path": "data/lightcurves/au-mic-c.json",
+      "role": "Data and provenance",
+      "bytes": 87164,
+      "sha256": "e7224d0e49fecb9db43d14cae5907da873b30ec0f8b40c9c6e9a4e74c7533122",
+      "hash_basis": "LF-normalised text",
+      "format": "JSON",
+      "keys": [
+        "source",
+        "target",
+        "host",
+        "period_days",
+        "t0_used",
+        "phase_window",
+        "points"
+      ],
+      "arrays": {
+        "phase": 1800,
+        "flux": 1800,
+        "error": 1800
+      }
+    },
+    {
+      "label": "Bd 14 3065 b",
+      "path": "data/lightcurves/bd-14-3065-b.json",
+      "role": "Data and provenance",
+      "bytes": 87238,
+      "sha256": "5169c3b0164589e4ac5553d83e2197685380b9511d0890e7949292501f3ba3aa",
+      "hash_basis": "LF-normalised text",
+      "format": "JSON",
+      "keys": [
+        "source",
+        "target",
+        "host",
+        "period_days",
+        "t0_used",
+        "phase_window",
+        "points"
+      ],
+      "arrays": {
+        "phase": 1800,
+        "flux": 1800,
+        "error": 1800
+      }
+    },
+    {
+      "label": "Corot 11 b",
+      "path": "data/lightcurves/corot-11-b.json",
+      "role": "Data and provenance",
+      "bytes": 97029,
+      "sha256": "5af032db5f033e5b354e21cc79cf6667f8121506cddbd311a82e8201426bdb2c",
+      "hash_basis": "LF-normalised text",
+      "format": "JSON",
+      "keys": [
+        "schema",
+        "generated_utc",
+        "source",
+        "planet",
+        "hostname",
+        "period_days",
+        "transit_midpoint"
+      ],
+      "arrays": {
+        "phase": 749,
+        "flux": 749,
+        "error": 749,
+        "points": 749
+      }
+    },
+    {
+      "label": "Corot 13 b",
+      "path": "data/lightcurves/corot-13-b.json",
+      "role": "Data and provenance",
+      "bytes": 97255,
+      "sha256": "fd8b3dc0cdda10407963dd16a54dafa163da36b4af27b5f5d54657b6f0fea0ea",
+      "hash_basis": "LF-normalised text",
+      "format": "JSON",
+      "keys": [
+        "schema",
+        "generated_utc",
+        "source",
+        "planet",
+        "hostname",
+        "period_days",
+        "transit_midpoint"
+      ],
+      "arrays": {
+        "phase": 751,
+        "flux": 751,
+        "error": 751,
+        "points": 751
+      }
+    },
+    {
+      "label": "Corot 18 b",
+      "path": "data/lightcurves/corot-18-b.json",
+      "role": "Data and provenance",
+      "bytes": 69678,
+      "sha256": "61f901e88c0267c168bb3e024f4b057d59abf226de02a07e219b969fc836be52",
+      "hash_basis": "LF-normalised text",
+      "format": "JSON",
+      "keys": [
+        "schema",
+        "generated_utc",
+        "source",
+        "planet",
+        "hostname",
+        "period_days",
+        "transit_midpoint"
+      ],
+      "arrays": {
+        "phase": 536,
+        "flux": 536,
+        "error": 536,
+        "points": 536
+      }
+    },
+    {
+      "label": "Corot 3 b",
+      "path": "data/lightcurves/corot-3-b.json",
+      "role": "Data and provenance",
+      "bytes": 95994,
+      "sha256": "5d38f5de1fe27f4e64e3f096aca62b721f60f737bd6e4df86dca4377eff6f74a",
+      "hash_basis": "LF-normalised text",
+      "format": "JSON",
+      "keys": [
+        "schema",
+        "generated_utc",
+        "source",
+        "planet",
+        "hostname",
+        "period_days",
+        "transit_midpoint"
+      ],
+      "arrays": {
+        "phase": 741,
+        "flux": 741,
+        "error": 741,
+        "points": 741
+      }
+    },
+    {
+      "label": "Provenance example",
+      "path": "results/audits/provenance-example.json",
+      "role": "Tables and numerical results",
+      "bytes": 1485,
+      "sha256": "58934836089df87b70e798b8dc06ed84f2527105152af3242e347fda98c7bd63",
+      "hash_basis": "LF-normalised text",
+      "format": "JSON",
+      "keys": [
+        "schemaVersion",
+        "target",
+        "completeness",
+        "events"
+      ],
+      "arrays": {
+        "events": 3
+      }
+    },
+    {
+      "label": "Report",
+      "path": "results/injection-recovery/report.json",
+      "role": "Tables and numerical results",
+      "bytes": 2176,
+      "sha256": "bcf7c4c0767d3eff7a4c7321454f5e605cfd123bf115ce5289c42b1ca35f8f8d",
+      "hash_basis": "LF-normalised text",
+      "format": "JSON",
+      "keys": [
+        "schema",
+        "generatedAt",
+        "generationPolicy",
+        "researchQuestion",
+        "nullHypothesis",
+        "nullThresholdAbsoluteCoverageChange",
+        "observedAbsoluteCoverageChange"
+      ],
+      "arrays": {
+        "results": 4
+      }
+    },
+    {
+      "label": "Results",
+      "path": "results/injection-recovery/results.csv",
+      "role": "Tables and numerical results",
+      "bytes": 483,
+      "sha256": "694426b142433875730590c1400a81bc070cfa5d52e7d8f39f4441a7a6dd9b95",
+      "hash_basis": "LF-normalised text",
+      "format": "CSV",
+      "rows": 4,
+      "columns": 11,
+      "headers": [
+        "scenario_id",
+        "depth_ppm",
+        "noise_ppm",
+        "rho",
+        "trials",
+        "bias_ppm",
+        "rmse_ppm"
+      ],
+      "preview": [
+        [
+          "deep-white",
+          "1000",
+          "500",
+          "0",
+          "1000",
+          "-0.8038770070581904",
+          "36.66538977231464"
+        ],
+        [
+          "deep-red",
+          "1000",
+          "500",
+          "0.8",
+          "1000",
+          "3.534786259810403",
+          "91.50215608024752"
+        ],
+        [
+          "shallow-white",
+          "300",
+          "500",
+          "0",
+          "1000",
+          "1.9138769443559909",
+          "36.46392907024006"
+        ],
+        [
+          "shallow-red",
+          "300",
+          "500",
+          "0.8",
+          "1000",
+          "0.7867843190887811",
+          "93.53190014363912"
+        ]
+      ]
+    },
+    {
+      "label": "Observational integrity report",
+      "path": "results/validation/observational-integrity-report.json",
+      "role": "Tables and numerical results",
+      "bytes": 8219,
+      "sha256": "40367fbeb3d5789a371bc3c9ddfa3c2c704f7e2007b64377ae75ec1a9d9d4742",
+      "hash_basis": "LF-normalised text",
+      "format": "JSON",
+      "keys": [
+        "schema",
+        "generatedAt",
+        "generationPolicy",
+        "catalogue",
+        "lightcurves",
+        "failures",
+        "warnings"
+      ],
+      "arrays": {
+        "failures": 0,
+        "warnings": 87
+      }
+    },
+    {
+      "label": "Reference report",
+      "path": "results/validation/reference-report.json",
+      "role": "Tables and numerical results",
+      "bytes": 4489,
+      "sha256": "9ef2848c0a6abfdb17845a1d4041a02bc67dcf80597898e58c105b4f9bd249f0",
+      "hash_basis": "LF-normalised text",
+      "format": "JSON",
+      "keys": [
+        "schemaVersion",
+        "generatedUtc",
+        "generationPolicy",
+        "physicsCoreVersion",
+        "passed",
+        "summary",
+        "fixtureSchemaVersion"
+      ],
+      "arrays": {
+        "results": 4
+      }
+    }
+  ]
+}

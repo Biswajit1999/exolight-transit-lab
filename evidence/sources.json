@@ -1,0 +1,91 @@
+{
+  "project": "🪐 ExoIntel-Prime",
+  "repository": "https://github.com/Biswajit1999/exolight-transit-lab",
+  "files": [
+    {
+      "label": "Reference summary",
+      "path": "results/validation/reference-summary.md",
+      "role": "Data and provenance"
+    },
+    {
+      "label": "Bootstrap targets",
+      "path": "data/bootstrap-targets.json",
+      "role": "Data and provenance"
+    },
+    {
+      "label": "Exoplanets",
+      "path": "data/exoplanets.json",
+      "role": "Data and provenance"
+    },
+    {
+      "label": "Gaia neighbours",
+      "path": "data/gaia-neighbours.json",
+      "role": "Data and provenance"
+    },
+    {
+      "label": "Injection recovery scenarios",
+      "path": "data/injection-recovery-scenarios.json",
+      "role": "Data and provenance"
+    },
+    {
+      "label": "Au mic b",
+      "path": "data/lightcurves/au-mic-b.json",
+      "role": "Data and provenance"
+    },
+    {
+      "label": "Au mic c",
+      "path": "data/lightcurves/au-mic-c.json",
+      "role": "Data and provenance"
+    },
+    {
+      "label": "Bd 14 3065 b",
+      "path": "data/lightcurves/bd-14-3065-b.json",
+      "role": "Data and provenance"
+    },
+    {
+      "label": "Corot 11 b",
+      "path": "data/lightcurves/corot-11-b.json",
+      "role": "Data and provenance"
+    },
+    {
+      "label": "Corot 13 b",
+      "path": "data/lightcurves/corot-13-b.json",
+      "role": "Data and provenance"
+    },
+    {
+      "label": "Corot 18 b",
+      "path": "data/lightcurves/corot-18-b.json",
+      "role": "Data and provenance"
+    },
+    {
+      "label": "Corot 3 b",
+      "path": "data/lightcurves/corot-3-b.json",
+      "role": "Data and provenance"
+    },
+    {
+      "label": "Provenance example",
+      "path": "results/audits/provenance-example.json",
+      "role": "Tables and numerical results"
+    },
+    {
+      "label": "Report",
+      "path": "results/injection-recovery/report.json",
+      "role": "Tables and numerical results"
+    },
+    {
+      "label": "Results",
+      "path": "results/injection-recovery/results.csv",
+      "role": "Tables and numerical results"
+    },
+    {
+      "label": "Observational integrity report",
+      "path": "results/validation/observational-integrity-report.json",
+      "role": "Tables and numerical results"
+    },
+    {
+      "label": "Reference report",
+      "path": "results/validation/reference-report.json",
+      "role": "Tables and numerical results"
+    }
+  ]
+}
